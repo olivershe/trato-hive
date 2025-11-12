@@ -21,6 +21,18 @@ services:
     volumes:
       - redis_data:/data
 
+  neo4j:
+    image: neo4j:5-community
+    container_name: trato-hive-neo4j
+    environment:
+      NEO4J_AUTH: neo4j/password
+      NEO4J_PLUGINS: '["apoc"]'
+    ports:
+      - '7474:7474'
+      - '7687:7687'
+    volumes:
+      - neo4j_data:/data
+
   # Vector database - uncomment when ready
   # weaviate:
   #   image: semitechnologies/weaviate:latest
@@ -37,4 +49,5 @@ services:
 volumes:
   postgres_data:
   redis_data:
+  neo4j_data:
   # weaviate_data:
