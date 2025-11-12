@@ -147,22 +147,63 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" not an "AI-A
 
 ## 6. Git & CI Rules
 
+### Git Workflow Management
+
+**The `@git-workflow-manager` Agent:**
+All Git operations (branching, commits, merges, rebases, PRs) should be handled by the git-workflow-manager agent to ensure consistency and safety. This agent is invoked proactively for:
+
+- **Branch Operations:** Creating feature/fix/chore branches following naming conventions
+- **Commits:** Crafting semantic commit messages with proper type/scope formatting
+- **Pre-PR Preparation:** Rebasing on main, running tests, ensuring clean history
+- **Conflict Resolution:** Handling merge conflicts during rebases
+- **History Cleanup:** Squashing WIP commits, interactive rebases
+- **PR Creation:** Final validation and pushing to remote
+
+**When to Invoke:**
+```
+User signals:
+- "I've finished implementing [feature]" → invoke for commit
+- "Let's create a PR" → invoke for PR preparation
+- "Start new feature [name]" → invoke for branch creation
+- "Getting merge conflicts" → invoke for conflict resolution
+- "Clean up commits" → invoke for history cleanup
+```
+
 **Branching Strategy:**
 - `main`: protected branch, requires PR + reviews
 - `feature/{slug}`: new features
 - `fix/{slug}`: bug fixes
 - `chore/{slug}`: maintenance, deps, tooling
 
-**Commit Messages:**
-- Semantic commits: `type(scope): message`
-- Types: `feat`, `fix`, `chore`, `docs`, `test`, `refactor`, `perf`, `style`
-- Example: `feat(deals): add verifiable fact sheet widget`
+**Commit Message Format:**
+```
+type(scope): brief description
+
+- Detailed change 1
+- Detailed change 2
+- Detailed change 3
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```
+
+Types: `feat`, `fix`, `chore`, `docs`, `test`, `refactor`, `perf`, `style`
+Scopes: `deals`, `discovery`, `diligence`, `generator`, `command-center`, or package names
 
 **Pull Requests:**
 - PRs must reference: plan summary, test evidence, updated logs
 - PR description must include: "Closes #issue", acceptance criteria checklist
 - Required checks: tests pass, lint pass, typecheck pass, security scan pass
 - For UI PRs: attach 1440px screenshots and design review decision
+
+**Safety Rules (enforced by git-workflow-manager):**
+- Backup branch created before destructive operations (rebase, force push, hard reset)
+- Secret scanning on all commits (API keys, tokens, credentials)
+- No .env files or sensitive config in commits
+- Tests must pass before push
+- No force push to main
+- No rebasing public/shared branches
 
 **CI Pipeline (.github/workflows/ci.yml):**
 1. Install dependencies
@@ -306,11 +347,37 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" not an "AI-A
 9. **Small diffs:** Keep PRs focused and reviewable (<500 lines ideal)
 10. **Always cite sources:** In plan mode and PRs, reference all files read
 
-## 11. Emergency Contacts & Escalation
+## 11. Agent Collaboration & Escalation
+
+**Specialized Agents:**
+The Trato Hive project uses specialized agents for domain-specific tasks. Invoke proactively when user signals indicate the need:
+
+**`@git-workflow-manager`** - All Git operations
+- Branch creation, commits, merges, rebases
+- Conflict resolution, history cleanup
+- PR preparation and validation
+- Secret scanning and safety checks
+- Invoke when: user finishes feature, requests PR, encounters conflicts, wants to start new work
+
+**`@agent-architecture-review`** - Architecture compliance
+- Changes spanning multiple layers
+- New packages or features
+- Cross-feature integration
+- Database schema changes
+- API design reviews
+- Invoke when: major refactoring, new modules, performance concerns
+
+**`@agent-design-review`** - UI/UX quality assurance
+- Visual consistency validation
+- Accessibility compliance
+- Responsive design testing
+- Token usage verification
+- Invoke when: significant UI changes, before merging UI PRs
 
 **For critical security issues:**
 - Immediately flag in ERROR_LOG.md with [SECURITY] prefix
-- Invoke `@agent-security-review` for immediate assessment
+- Invoke `@agent-security-review` for immediate assessment (if available)
+- Coordinate with `@git-workflow-manager` to prevent committing secrets
 - Do not proceed with deployment until resolved
 
 **For architecture decisions:**
