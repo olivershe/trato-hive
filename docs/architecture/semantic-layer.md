@@ -11,7 +11,7 @@ The **Semantic Layer** builds meaning from raw documents. It extracts verifiable
 
 1. **Fact Extraction:** Transform parsed documents into discrete facts with citations. Each fact records the source document ID, page number, excerpt, confidence and a citation link (golden citation) that binds the fact to its origin.
 2. **Knowledge Graph Management:** Maintain entities (Deals, Companies, Documents, Facts) and relationships (e.g., deal → company; company → document; document → fact). Support graph queries to traverse these relationships.
-3. **Vector Indexing:** Compute vector embeddings for facts, documents and queries. Store them in a vector database (e.g., Weaviate, Pinecone) to facilitate semantic search and lookalike discovery. Use open‑source or cost‑efficient options to avoid expensive proprietary services.
+3. **Vector Indexing:** Compute vector embeddings for facts, documents and queries using OpenAI's text-embedding-3-large (3,072 dimensions). Store embeddings in **Pinecone** (required) for semantic search and lookalike discovery with fast, scalable similarity queries.
 4. **Citation Linking:** Implement the “golden thread” by linking each displayed number or statement back to its source【516335038796236†L90-L99】. Provide functions to retrieve citations and highlight excerpts in documents.
 5. **Exported Interfaces:** Provide APIs to create facts, query facts, link citations and fetch portions of the knowledge graph.
 
@@ -47,11 +47,19 @@ Document --derivedFrom--> SourceFile
 
 ```
 
-Edges are labelled (e.g., `owns`, `has`, `contains`) to express semantics. Graph traversal enables queries such as “Find all facts related to deals in the ‘Sourcing’ stage” or “List documents containing facts about EBITDA”. The graph is stored in a graph database (e.g., Neo4j) or a relational database with adjacency lists; selection depends on cost and performance needs.
+Edges are labelled (e.g., `owns`, `has`, `contains`) to express semantics. Graph traversal enables queries such as "Find all facts related to deals in the 'Sourcing' stage" or "List documents containing facts about EBITDA". The graph is stored in **Neo4j** (required) for native graph storage and Cypher query language support. Neo4j provides optimal performance for complex relationship traversals and is deployed via Docker (see docker-compose.yml).
 
 ## 4. Vector Indexing
 
-For semantic search, each fact and document is embedded into a high‑dimensional vector space using an embedding model (e.g., OpenAI’s `text-embedding-ada-002`). The embeddings are stored in a vector index (e.g., Weaviate). Similarity queries (cosine similarity or dot product) allow the system to find facts relevant to a query or similar companies for lookalike discovery. To minimise cost, we may choose self‑hosted solutions (e.g., Faiss, Milvus) if licensing permits.
+For semantic search, each fact and document is embedded into a 3,072-dimensional vector space using OpenAI's **text-embedding-3-large** model. The embeddings are stored in **Pinecone** (managed vector database) for fast similarity queries at scale.
+
+**Pinecone Configuration:**
+- Index dimensionality: 3,072
+- Similarity metric: Cosine similarity
+- Metadata filtering: Enabled for firmId, dealId, documentType
+- Namespaces: Segmented by firm for multi-tenancy
+
+Similarity queries (cosine similarity) allow the system to find facts relevant to a query or similar companies for lookalike discovery. LangChain's Pinecone integration (@langchain/pinecone) provides seamless embedding storage and retrieval.
 
 ## 5. Citation Linking Mechanism
 

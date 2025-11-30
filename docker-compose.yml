@@ -1,53 +1,72 @@
-version: '3.8'
+version: '3.9'
 
 services:
   postgres:
-    image: postgres:15-alpine
+    image: postgres:16-alpine
     container_name: trato-hive-postgres
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: trato_hive_dev
+      POSTGRES_USER: trato
+      POSTGRES_PASSWORD: dev_password
+      POSTGRES_DB: trato_hive
     ports:
       - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U trato"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - trato-hive
 
   redis:
     image: redis:7-alpine
     container_name: trato-hive-redis
+    command: redis-server --appendonly yes
     ports:
       - '6379:6379'
     volumes:
       - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - trato-hive
 
   neo4j:
     image: neo4j:5-community
     container_name: trato-hive-neo4j
     environment:
-      NEO4J_AUTH: neo4j/password
+      NEO4J_AUTH: neo4j/dev_password
       NEO4J_PLUGINS: '["apoc"]'
+      NEO4J_dbms_security_procedures_unrestricted: apoc.*
     ports:
-      - '7474:7474'
-      - '7687:7687'
+      - '7474:7474'  # Browser
+      - '7687:7687'  # Bolt
     volumes:
       - neo4j_data:/data
-
-  # Vector database - uncomment when ready
-  # weaviate:
-  #   image: semitechnologies/weaviate:latest
-  #   container_name: trato-hive-weaviate
-  #   ports:
-  #     - '8080:8080'
-  #   environment:
-  #     QUERY_DEFAULTS_LIMIT: 25
-  #     AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: 'true'
-  #     PERSISTENCE_DATA_PATH: '/var/lib/weaviate'
-  #   volumes:
-  #     - weaviate_data:/var/lib/weaviate
+      - neo4j_logs:/logs
+    healthcheck:
+      test: ["CMD-SHELL", "cypher-shell -u neo4j -p dev_password 'RETURN 1'"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - trato-hive
 
 volumes:
   postgres_data:
+    driver: local
   redis_data:
+    driver: local
   neo4j_data:
-  # weaviate_data:
+    driver: local
+  neo4j_logs:
+    driver: local
+
+networks:
+  trato-hive:
+    driver: bridge

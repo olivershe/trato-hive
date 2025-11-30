@@ -10,7 +10,7 @@ The **Data Plane** is the foundation of the Trato Hive stack. It handles inges
 ## 1. Responsibilities
 
 1. **Document Ingestion:** Accept files from the UI, agents or APIs. Support drag‑and‑drop uploads (e.g., zip archives containing VDR documents) as well as asynchronous ingestion from external storage (e.g., presigned URLs). Validate file types and sizes.
-2. **Parsing & OCR:** Convert documents into machine‑readable formats. For PDFs and images, run OCR using open‑source engines (Tesseract.js) to extract text. For spreadsheets (XLSX), parse sheets and normalise data. Extract metadata (title, author, pages) for indexing.
+2. **Parsing & OCR:** Convert documents into machine‑readable formats. For PDFs and images, use **Reducto AI** (primary) for advanced document parsing with superior accuracy, falling back to Tesseract.js for cost-sensitive or offline scenarios. For spreadsheets (XLSX), parse sheets and normalise data. Extract metadata (title, author, pages) for indexing.
 3. **Storage:** Store raw files and extracted text securely. Use S3 or an equivalent object storage service for files. Use a database for metadata and extracted text. Provide presigned URLs for download to avoid storing expensive copies in the UI.
 4. **Error Handling & Retry:** Detect ingestion failures (e.g., corrupted files, OCR errors) and implement retry logic. Capture errors in audit logs and notify the user via the Experience Layer.
 5. **Supported Formats:** Handle PDF (scanned or text‑based), Microsoft Office (DOCX, XLSX, PPTX), emails (EML/MSG), text files and zip archives containing mixed formats. Avoid proprietary or exotic formats to keep the scope manageable.
@@ -24,7 +24,8 @@ Located in `packages/data-plane/`, this package is divided into several modules:
 |--------|-------------|
 | `ingestion/` | Entry point for file uploads. Handles validation and orchestrates parsing and storage. |
 | `parsers/` | Contains parsers for different formats (PDF, XLSX, emails). Uses libraries like `pdfjs`, `xlsx` and `mailparser`. |
-| `ocr/` | Wraps Tesseract.js for performing OCR on scanned documents. Supports language selection and coordinate extraction for citation highlighting. |
+| `reducto/` | **Primary parser** - Integrates Reducto AI API for advanced document parsing with superior OCR accuracy, structured data extraction, and bounding box coordinates for citation highlighting. |
+| `ocr/` | **Fallback parser** - Wraps Tesseract.js for performing OCR on scanned documents when Reducto is unavailable or for cost optimization. Supports language selection and coordinate extraction. |
 | `storage/` | Integrates with object storage (e.g., S3) using SDKs. Handles upload, download (with presigned URLs) and deletion. |
 | `validators/` | Defines allowable file types and size limits; returns descriptive errors on invalid uploads. |
 
@@ -35,7 +36,24 @@ Located in `packages/data-plane/`, this package is divided into several modules:
 - **Versioning:** Object versioning is enabled on buckets to protect against accidental deletions or overwrites. Version IDs are stored in the database.
 - **Encryption:** Use S3 server‑side encryption with customer‑managed KMS keys (AES‑256)【516335038796236†L90-L99】.
 
-## 4. OCR Workflow with Tesseract.js
+## 4. Document Parsing Strategy
+
+### 4.1 Reducto AI Workflow (Primary)
+
+1. **API Integration:** Submit documents to Reducto AI via REST API. Reducto handles multi-format parsing (PDF, DOCX, XLSX, images) with state-of-the-art accuracy.
+2. **Structured Extraction:** Reducto returns:
+   - Full text with hierarchical structure (headings, paragraphs, tables)
+   - Bounding box coordinates for every text element (enables precise citation highlighting)
+   - Extracted tables in structured JSON format
+   - Confidence scores per element
+3. **Metadata Enrichment:** Reducto automatically extracts document metadata (title, author, creation date, page count).
+4. **Error Handling:** On API failure or unsupported format, fall back to Tesseract.js workflow below.
+
+**Environment Variables:**
+- `REDUCTO_API_KEY` - API authentication
+- `REDUCTO_API_URL` - API endpoint (default: `https://api.reducto.ai`)
+
+### 4.2 Tesseract.js Workflow (Fallback)
 
 1. **Preprocessing:** Convert PDFs into images (using PDF.js) and normalise for OCR (deskew, de‑noise). For images embedded in Office documents, extract images using appropriate parsers.
 2. **OCR Execution:** Call Tesseract.js with appropriate language packs. Use the `HOCR` output format to capture bounding boxes for each word so citations can highlight the exact location of a fact in the document.

@@ -1,0 +1,44 @@
+{
+  "name": "@trato-hive/semantic-layer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
+    "clean": "rm -rf dist coverage .turbo"
+  },
+  "dependencies": {
+    "@pinecone-database/pinecone": "^5.0.2",
+    "@langchain/pinecone": "^1.0.0",
+    "langchain": "^0.3.11",
+    "@langchain/core": "^1.0.4",
+    "@langchain/openai": "^0.3.12",
+    "neo4j-driver": "^5.26.0",
+    "zod": "^3.23.8",
+    "@trato-hive/db": "workspace:*",
+    "@trato-hive/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "tsup": "^8.3.5",
+    "vitest": "^2.1.8",
+    "@types/node": "^22.10.2",
+    "eslint": "^8.57.0",
+    "typescript": "^5.6.3"
+  }
+}

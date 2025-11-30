@@ -1,0 +1,402 @@
+// Prisma Schema for Trato Hive
+// This is the authoritative schema for the entire application
+// All database models must be defined here
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =============================================================================
+// USERS & AUTHENTICATION (Layer 6: Governance)
+// =============================================================================
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  emailVerified DateTime?
+  name          String?
+  image         String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  accounts      Account[]
+  sessions      Session[]
+  organizations OrganizationMember[]
+  documents     Document[]
+  activities    Activity[]
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// =============================================================================
+// ORGANIZATIONS (Multi-tenancy)
+// =============================================================================
+
+model Organization {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  image       String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  members   OrganizationMember[]
+  deals     Deal[]
+  companies Company[]
+  documents Document[]
+
+  @@map("organizations")
+}
+
+enum OrganizationRole {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
+model OrganizationMember {
+  id             String           @id @default(cuid())
+  organizationId String
+  userId         String
+  role           OrganizationRole @default(MEMBER)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+  @@map("organization_members")
+}
+
+// =============================================================================
+// COMPANIES (Module 2: Discovery)
+// =============================================================================
+
+enum CompanyStatus {
+  PROSPECT
+  RESEARCHING
+  ENGAGED
+  PIPELINE
+  ARCHIVED
+}
+
+model Company {
+  id             String        @id @default(cuid())
+  organizationId String
+
+  name           String
+  domain         String?
+  description    String?       @db.Text
+  industry       String?
+  sector         String?
+  founded        Int?
+  employees      Int?
+  revenue        Decimal?      @db.Decimal(15, 2)
+  location       String?
+  website        String?
+  linkedin       String?
+
+  status         CompanyStatus @default(PROSPECT)
+
+  // AI-generated metadata
+  aiSummary      String?       @db.Text
+  aiScore        Float?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Relations
+  deals     Deal[]
+  documents Document[]
+  facts     Fact[]
+
+  @@index([organizationId])
+  @@index([status])
+  @@map("companies")
+}
+
+// =============================================================================
+// DEALS (Module 3: Deals Pipeline)
+// =============================================================================
+
+enum DealStage {
+  SOURCING
+  INITIAL_REVIEW
+  PRELIMINARY_DUE_DILIGENCE
+  DEEP_DUE_DILIGENCE
+  NEGOTIATION
+  CLOSING
+  CLOSED_WON
+  CLOSED_LOST
+}
+
+enum DealType {
+  ACQUISITION
+  INVESTMENT
+  PARTNERSHIP
+  OTHER
+}
+
+model Deal {
+  id             String    @id @default(cuid())
+  organizationId String
+  companyId      String?
+
+  name           String
+  type           DealType
+  stage          DealStage @default(SOURCING)
+  value          Decimal?  @db.Decimal(15, 2)
+  currency       String    @default("USD")
+  probability    Int?      // 0-100
+
+  expectedCloseDate DateTime?
+  actualCloseDate   DateTime?
+
+  description    String?   @db.Text
+  notes          String?   @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  company      Company?     @relation(fields: [companyId], references: [id], onDelete: SetNull)
+
+  // Relations
+  documents Document[]
+  activities Activity[]
+
+  @@index([organizationId])
+  @@index([stage])
+  @@index([companyId])
+  @@map("deals")
+}
+
+// =============================================================================
+// DOCUMENTS (Module 4: Diligence Room - Layer 1: Data Plane)
+// =============================================================================
+
+enum DocumentType {
+  FINANCIAL_STATEMENT
+  CONTRACT
+  PRESENTATION
+  MEMORANDUM
+  LEGAL_DOCUMENT
+  TECHNICAL_DOCUMENT
+  OTHER
+}
+
+enum DocumentStatus {
+  UPLOADING
+  PROCESSING
+  PARSED
+  INDEXED
+  FAILED
+}
+
+model Document {
+  id             String         @id @default(cuid())
+  organizationId String
+  companyId      String?
+  dealId         String?
+  uploadedById   String
+
+  name           String
+  type           DocumentType   @default(OTHER)
+  status         DocumentStatus @default(UPLOADING)
+
+  // File metadata
+  fileSize       Int            // bytes
+  mimeType       String
+  fileUrl        String         // S3 or storage URL
+
+  // Processing metadata
+  parsedAt       DateTime?
+  indexedAt      DateTime?
+  errorMessage   String?        @db.Text
+
+  // Reducto AI metadata
+  reductoJobId   String?
+  reductoData    Json?          // Structured data from Reducto
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  company      Company?     @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  deal         Deal?        @relation(fields: [dealId], references: [id], onDelete: SetNull)
+  uploadedBy   User         @relation(fields: [uploadedById], references: [id])
+
+  // Relations
+  chunks DocumentChunk[]
+  facts  Fact[]
+
+  @@index([organizationId])
+  @@index([companyId])
+  @@index([dealId])
+  @@index([status])
+  @@map("documents")
+}
+
+// =============================================================================
+// DOCUMENT CHUNKS (Layer 2: Semantic Layer)
+// =============================================================================
+
+model DocumentChunk {
+  id         String   @id @default(cuid())
+  documentId String
+
+  content    String   @db.Text
+  pageNumber Int?
+  chunkIndex Int
+
+  // Bounding box for citations (from Reducto)
+  boundingBox Json?
+
+  // Vector embedding reference (stored in Pinecone)
+  vectorId    String?  @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([documentId])
+  @@index([vectorId])
+  @@map("document_chunks")
+}
+
+// =============================================================================
+// FACTS (Layer 2: Semantic Layer - Knowledge Graph)
+// =============================================================================
+
+enum FactType {
+  FINANCIAL_METRIC
+  KEY_PERSON
+  PRODUCT
+  CUSTOMER
+  RISK
+  OPPORTUNITY
+  OTHER
+}
+
+model Fact {
+  id         String   @id @default(cuid())
+  documentId String?
+  companyId  String?
+
+  type       FactType
+  subject    String
+  predicate  String
+  object     String   @db.Text
+
+  confidence Float    @default(0.0) // 0.0 - 1.0
+
+  // Source citation
+  sourceChunkId String?
+  sourceText    String? @db.Text
+
+  // AI metadata
+  extractedBy   String  // e.g., "claude-sonnet-4.5", "gpt-4"
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  document Document? @relation(fields: [documentId], references: [id], onDelete: SetNull)
+  company  Company?  @relation(fields: [companyId], references: [id], onDelete: SetNull)
+
+  @@index([documentId])
+  @@index([companyId])
+  @@index([type])
+  @@map("facts")
+}
+
+// =============================================================================
+// ACTIVITIES & AUDIT LOG (Layer 6: Governance)
+// =============================================================================
+
+enum ActivityType {
+  DOCUMENT_UPLOADED
+  DOCUMENT_PROCESSED
+  DEAL_CREATED
+  DEAL_STAGE_CHANGED
+  COMPANY_ADDED
+  AI_QUERY
+  USER_ACTION
+}
+
+model Activity {
+  id             String       @id @default(cuid())
+  userId         String?
+  dealId         String?
+
+  type           ActivityType
+  description    String       @db.Text
+  metadata       Json?
+
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  deal Deal? @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([dealId])
+  @@index([type])
+  @@index([createdAt])
+  @@map("activities")
+}

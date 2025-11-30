@@ -2,15 +2,50 @@
 
 Purpose: Authoritative global rules for the Trato Hive project. **Agents must read this file first** before any task.
 
+---
+
+## 🚨 CRITICAL: Update PROJECT_STATUS.md After Every Task
+
+**MANDATORY REQUIREMENT:**
+After completing ANY task (feature, fix, refactor, test), you MUST update `/PROJECT_STATUS.md`:
+
+1. **Mark completed tasks** with ✅ checkboxes
+2. **Update progress percentages** for the relevant phase
+3. **Update "Last Updated" timestamp** at the top and bottom
+4. **Add notes** if the task revealed new requirements or blockers
+
+**Why This Matters:**
+- PROJECT_STATUS.md is the single source of truth for project progress
+- It provides complete context for resuming work after interruptions
+- It tracks time estimates vs actual time spent
+- It references specific files/folders and PRDs for every task
+- It shows all completed work and remaining roadmap in one place
+
+**Location:** `/PROJECT_STATUS.md`
+**Update Frequency:** After every completed task (no exceptions)
+**Format:** Check off completed items, update timestamps, add notes if needed
+
+---
+
 ## 1. Mandatory Reading Order
 
 1. Root CLAUDE.md (this file)
-2. Product Specification: `/Trato Hive Product & Design Specification.md`
-3. If working inside an app/package/feature: read that folder's CLAUDE.md
-4. For UI work: read `/context/design-principles.md` and `/context/style-guide.md`
-5. If a PRD exists for the task: read `/docs/PRD.md` and relevant `/docs/prds/<feature>.md`
-6. Then examine only the code in scope
-7. In plan mode & commits: cite all files read
+2. **PROJECT_STATUS.md** - Current progress, completed work, and remaining tasks
+3. Product Specification: `/Trato Hive Product & Design Specification.md`
+4. If working inside an app/package/feature: read that folder's CLAUDE.md: ## 📦 Module Context Index
+*When working in these scopes, you MUST read the specific local CLAUDE.md:*
+- **Deals Feature:** `./features/deals/CLAUDE.md`
+- **Discovery Feature:** `./features/discovery/CLAUDE.md`
+- **Data Plane:** `./packages/data-plane/CLAUDE.md`
+- **Semantic Layer:** `./packages/semantic-layer/CLAUDE.md`
+- **AI Core:** `./packages/ai-core/CLAUDE.md`
+- **Web App:** `./apps/web/CLAUDE.md`
+- **API App:** `./apps/api/CLAUDE.md`
+5. For UI work: read `/context/design-principles.md` and `/context/style-guide.md`
+6. If a PRD exists for the task: read `/docs/PRD.md` and relevant `/docs/prds/<feature>.md`
+7. Then examine only the code in scope
+8. In plan mode & commits: cite all files read
+9. Use Context7 mcp to get the most upto date documentation before committing to code **automatically without explicit user request** 
 
 ## 2. Product Context
 
@@ -120,7 +155,7 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" not an "AI-A
 2. **Plan (Plan Mode):**
    - Enter plan mode: `claude --permission-mode plan`
    - Produce actionable, test-first plan
-   - Save to `plan.md` and update relevant feature PRDs
+   - Update `PROJECT_STATUS.md` and relevant feature PRDs with plan details
    - Plan must include: current state summary, detailed test-first steps, risks, decisions
 
 3. **Code:**
@@ -272,25 +307,43 @@ Scopes: `deals`, `discovery`, `diligence`, `generator`, `command-center`, or pac
 
 ## 8. Design Governance (The Intelligent Hive)
 
+**Design System Version:** 2.0 (Brand Pack Implementation)
+**Last Updated:** 2025-11-16
+
 ### Design System Tokens
 
-**Colors:**
-- Soft Sand: `#F5EFE7` (primary background, panels)
-- Gold/Honey: `#E2A74A` (accents, CTAs, citations)
-- Charcoal Black: `#1A1A1A` (primary text, structural elements)
-- Teal Blue: `#2F7E8A` (AI insights, links, intelligence)
+**Light Mode Colors:**
+- **Bone:** `#E2D9CB` (primary app background)
+- **Alabaster:** `#F0EEE6` (card/panel backgrounds)
+- **Dark Vanilla:** `#CEC2AE` (secondary panels, borders)
+- **Black:** `#1A1A1A` (primary text)
+- **Orange:** `#EE8D1D` (primary CTAs, accent borders, interactive elements)
+- **Deep Orange:** `#CB552F` (strong CTAs, urgent actions)
+- **Faded Orange:** `#FFB662` (hover states, tertiary accents)
+- **Teal Blue:** `#2F7E8A` (**CITATIONS ONLY** - verifiable fact links)
+
+**Dark Mode Colors:**
+- **Deep Grey:** `#313131` (primary app background)
+- **Panel Dark:** `#3A3A3A` (card/panel backgrounds)
+- **Panel Darker:** `#424242` (elevated surfaces)
+- **Cultured White:** `#F7F7F7` (primary text)
+- **Orange:** `#EE8D1D` (primary CTAs, accent borders)
+- **Faded Orange:** `#FFB662` (links, hover states - softer for dark mode)
+- **Teal Blue:** `#2F7E8A` (**CITATIONS ONLY** - consistent across modes)
 
 **Typography:**
-- Headings (H1, H2, H3): Modern Serif (Lora or Playfair Display)
-- Body/Labels/Buttons: Modern Sans Serif (Inter or Public Sans)
+- **All Text:** Inter (Google Fonts) - Modern Sans Serif
+- **Weights:** 400 (Regular), 500 (Medium), 600 (Semibold), 700 (Bold)
+- **No Serif Fonts:** Previous versions used Lora for headings—removed in v2.0
 
 **UI Principles:**
-- Rounded edges on all components (8px border-radius minimum)
-- Hexagonal patterns for abstract backgrounds and data viz
-- Soft gradient panels for depth
-- Gold accent lines to separate key sections
-- Citation links always in Teal Blue with [cite] notation
-- All numbers in verifiable contexts must be hyperlinked
+- **Rounded corners** for interactive components (8px border-radius minimum)
+- **Hexagonal patterns** for branding, decorative elements, and data visualization
+- **Orange accent lines** for prominent cards (4px border-top on Deal cards)
+- **Citation links** always in Teal Blue `#2F7E8A` with underline (NEVER use Teal for general links/buttons)
+- **Citation modals** have Orange `#EE8D1D` borders and must load in <200ms
+- All numbers in verifiable contexts must be hyperlinked to sources
+- **Dark mode support** with smooth 300ms transitions between themes
 
 ### Visual Development Protocol
 
@@ -299,13 +352,26 @@ Scopes: `deals`, `discovery`, `diligence`, `generator`, `command-center`, or pac
 2. Navigate affected pages via Playwright browser control
 3. Verify design compliance: check `/context/design-principles.md` & `/context/style-guide.md`
 4. Validate feature intent: ensure change fulfills acceptance criteria
-5. Capture evidence: full-page screenshot at 1440px desktop viewport
-6. Check errors: run console messages check and fix issues
-7. Log: attach screenshots to PR; update CHANGELOG if user-visible
+5. **Test both light AND dark modes** - toggle theme and verify colors, contrast, readability
+6. Capture evidence: full-page screenshot at 1440px desktop viewport (both modes if applicable)
+7. Check errors: run console messages check and fix issues
+8. **Verify color accessibility:** Check `/context/color-accessibility.md` for approved combinations
+9. Log: attach screenshots to PR; update CHANGELOG if user-visible
 
 **Comprehensive Design Review (before PR merge of significant UI/UX):**
 - Invoke `@agent-design-review` for accessibility, responsiveness, token usage checks
 - Require Green decision (or resolved Yellow items) before merge
+- Must include dark mode testing and WCAG 2.1 AA compliance verification
+
+**Design Compliance Checklist:**
+- [ ] Bone `#E2D9CB` background in light mode, Deep Grey `#313131` in dark mode
+- [ ] Orange family (`#EE8D1D`, `#CB552F`, `#FFB662`) used for CTAs and accents
+- [ ] Teal Blue `#2F7E8A` used ONLY for citations
+- [ ] Inter font used for all text (no Lora serif)
+- [ ] Hexagons used for decorative/branding only (not buttons/inputs)
+- [ ] All text meets WCAG 2.1 AA contrast ratios (4.5:1 normal, 3:1 large)
+- [ ] Dark mode variant implemented and tested
+- [ ] Citation modal has Orange border and loads in <200ms
 
 **Slash Commands:**
 - `/design:quick-check {scope}`: Run Quick Visual Check on {scope}
@@ -334,20 +400,43 @@ Scopes: `deals`, `discovery`, `diligence`, `generator`, `command-center`, or pac
 - `docker-compose up`: Start local services (Postgres, Redis, Vector DB)
 - `docker-compose down`: Stop local services
 
-## 10. Non-Negotiables
+**Context7 MCP Integration:**
 
-1. **Investigate before answering:** Never hallucinate code or facts
-2. **Respect reading order:** Root CLAUDE.md → local CLAUDE.md → PRDs → code
-3. **Citation-first principle:** All AI-generated facts must link to sources
-4. **Test-first development:** No production code without tests
-5. **Respect logging obligations:** Update logs per Section 7 rules
-6. **Security first:** No shortcuts on auth, validation, or encryption
-7. **Design compliance:** All UI changes must follow The Intelligent Hive system
-8. **Plan mode for complexity:** Use plan mode for non-trivial changes
-9. **Small diffs:** Keep PRs focused and reviewable (<500 lines ideal)
-10. **Always cite sources:** In plan mode and PRs, reference all files read
+Context7 provides up-to-date library documentation and code examples via MCP tools. **Always use Context7 proactively** when you need:
 
-## 11. Agent Collaboration & Escalation
+- Code generation for specific libraries or frameworks
+- Setup or configuration steps for dependencies
+- Library/API documentation and usage patterns
+- Code examples and best practices for packages
+
+**Automatic Usage Protocol:**
+1. **Resolve Library ID First:** Use `mcp__context7__resolve-library-id` with the library/package name to get the Context7-compatible library ID (format: `/org/project` or `/org/project/version`)
+2. **Fetch Documentation:** Use `mcp__context7__get-library-docs` with the resolved library ID and optional topic to retrieve relevant documentation
+3. **Apply to Task:** Use the retrieved documentation to inform implementation, setup, or configuration
+
+**When to Use:**
+- Setting up new dependencies (React, Next.js, Prisma, etc.)
+- Implementing features with specific library APIs (authentication, data fetching, state management)
+- Troubleshooting library-specific issues
+- Learning best practices for a package
+- Verifying correct usage patterns before implementation
+
+**Example Workflow:**
+```
+User: "Set up Prisma for our database layer"
+Agent:
+1. Resolve library ID: mcp__context7__resolve-library-id("Prisma")
+2. Fetch docs: mcp__context7__get-library-docs("/prisma/prisma", topic: "setup")
+3. Apply documentation to implement Prisma setup following best practices
+```
+
+**Important:**
+- Use Context7 **automatically without explicit user request** when library knowledge is needed
+- Always resolve the library ID before fetching docs (unless user provides explicit ID)
+- Prefer Context7 over guessing API usage or relying solely on training data
+- Context7 provides current documentation, which may differ from training data
+
+## 10. Agent Collaboration & Escalation
 
 **Specialized Agents:**
 The Trato Hive project uses specialized agents for domain-specific tasks. Invoke proactively when user signals indicate the need:
@@ -387,3 +476,20 @@ The Trato Hive project uses specialized agents for domain-specific tasks. Invoke
 **For design conflicts:**
 - Invoke `@agent-design-review` for resolution
 - Defer to `/context/design-principles.md` as source of truth
+
+## 11. 🧠 Behavioral Rules (Recursive)
+<behavioral_rules>
+  <rule>Investigate before answering: Never hallucinate code or facts.</rule>
+  <rule>Respect reading order: Root CLAUDE.md → Local CLAUDE.md → PRDs → Code.</rule>
+  <rule>Use Context7 **automatically without explicit user request** when library knowledge is needed.</rule>
+  <rule>After completing ANY task (feature, fix, refactor, test), you MUST update `/PROJECT_STATUS.md.</rule>
+  <rule>Citation-first principle: All AI-generated facts must link to sources.</rule>
+  <rule>Test-first development: No production code without tests.</rule>
+  <rule>Respect logging: Update logs per Section 7 rules.</rule>
+  <rule>Security first: No shortcuts on auth, validation, or encryption.</rule>
+  <rule>Design compliance: Al/clel UI changes must follow The Intelligent Hive system.</rule>
+  <rule>Plan mode for complexity: Use plan mode for non-trivial changes.</rule>
+  <rule>Small diffs: Keep PRs focused and reviewable (under 500 lines ideal).</rule>
+  <rule>Always cite sources: In plan mode and PRs, reference all files read.</rule>
+  <rule>CRITICAL: Start every response by printing: "Active Rules: [Citation-First] [Test-First] [Security Verified] [Design Compliant]"</rule>
+</behavioral_rules>

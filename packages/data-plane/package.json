@@ -1,0 +1,42 @@
+{
+  "name": "@trato-hive/data-plane",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
+    "clean": "rm -rf dist coverage .turbo"
+  },
+  "dependencies": {
+    "axios": "^1.7.9",
+    "bullmq": "^5.28.1",
+    "ioredis": "^5.4.2",
+    "reducto": "^1.0.0",
+    "zod": "^3.23.8",
+    "@trato-hive/db": "workspace:*",
+    "@trato-hive/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "tsup": "^8.3.5",
+    "vitest": "^2.1.8",
+    "@types/node": "^22.10.2",
+    "eslint": "^8.57.0",
+    "typescript": "^5.6.3"
+  }
+}
