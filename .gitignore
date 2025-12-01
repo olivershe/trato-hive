@@ -16,6 +16,9 @@ out/
 .env.production
 .env.development
 
+# MCP Configuration (contains API tokens)
+.mcp.json
+
 # Testing
 coverage/
 .nyc_output/
