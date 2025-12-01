@@ -487,7 +487,7 @@ The Trato Hive project uses specialized agents for domain-specific tasks. Invoke
   <rule>Test-first development: No production code without tests.</rule>
   <rule>Respect logging: Update logs per Section 7 rules.</rule>
   <rule>Security first: No shortcuts on auth, validation, or encryption.</rule>
-  <rule>Design compliance: Al/clel UI changes must follow The Intelligent Hive system.</rule>
+  <rule>Design compliance: All UI changes must follow The Intelligent Hive system.</rule>
   <rule>Plan mode for complexity: Use plan mode for non-trivial changes.</rule>
   <rule>Small diffs: Keep PRs focused and reviewable (under 500 lines ideal).</rule>
   <rule>Always cite sources: In plan mode and PRs, reference all files read.</rule>
