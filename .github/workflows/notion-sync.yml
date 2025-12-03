@@ -1,0 +1,110 @@
+name: Notion Sync
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    types: [closed]
+  schedule:
+    - cron: '0 12 * * *'  # Daily at 12:00 UTC
+
+jobs:
+  sync-commits:
+    name: Sync Commits to Notion
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Notion client
+        run: npm install @notionhq/client
+
+      - name: Sync commit to Notion
+        env:
+          NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+          NOTION_TASKS_DB_ID: ${{ secrets.NOTION_TASKS_DB_ID }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+          COMMIT_URL: ${{ github.event.head_commit.url }}
+          COMMIT_AUTHOR: ${{ github.event.head_commit.author.name }}
+        run: node .github/scripts/update-notion.js update
+
+  mark-done:
+    name: Mark Task Done on PR Merge
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.event.pull_request.merged == true
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Notion client
+        run: npm install @notionhq/client
+
+      - name: Mark task done in Notion
+        env:
+          NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+          NOTION_TASKS_DB_ID: ${{ secrets.NOTION_TASKS_DB_ID }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: node .github/scripts/update-notion.js done
+
+      - name: Update PROJECT_STATUS.md
+        env:
+          NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+          NOTION_TASKS_DB_ID: ${{ secrets.NOTION_TASKS_DB_ID }}
+        run: node .github/scripts/sync-project-status.js
+
+      - name: Commit PROJECT_STATUS.md changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add PROJECT_STATUS.md
+          git diff --quiet && git diff --staged --quiet || git commit -m "chore(infra): update PROJECT_STATUS.md [skip ci]"
+          git push
+
+  bidirectional-sync:
+    name: Bidirectional Notion ↔ PROJECT_STATUS Sync
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Notion client
+        run: npm install @notionhq/client
+
+      - name: Run bidirectional sync
+        env:
+          NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+          NOTION_TASKS_DB_ID: ${{ secrets.NOTION_TASKS_DB_ID }}
+        run: node .github/scripts/sync-project-status.js
+
+      - name: Commit changes if any
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add PROJECT_STATUS.md
+          git diff --quiet && git diff --staged --quiet || git commit -m "chore(infra): sync PROJECT_STATUS from Notion [skip ci]"
+          git push

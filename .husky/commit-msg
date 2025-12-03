@@ -1,0 +1,14 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo "📝 Validating commit message..."
+
+npx --no-install commitlint --edit "$1"
+
+COMMIT_MSG=$(cat "$1")
+
+if ! echo "$COMMIT_MSG" | grep -q '\[TASK-[0-9]\{3\}\]'; then
+  echo "⚠️  Warning: No [TASK-XXX] tag. This commit won't sync to Notion."
+fi
+
+echo "✅ Commit message valid!"
