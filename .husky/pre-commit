@@ -1,0 +1,20 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo "🔍 Running pre-commit checks..."
+
+# Secret detection
+echo "🔐 Scanning for secrets..."
+if ! node scripts/check-secrets.js; then
+  echo "❌ Secret detection failed!"
+  exit 1
+fi
+
+# Lint staged files
+echo "🧹 Linting..."
+if ! npx lint-staged; then
+  echo "❌ Lint failed!"
+  exit 1
+fi
+
+echo "✅ Pre-commit checks passed!"
