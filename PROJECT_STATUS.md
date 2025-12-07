@@ -999,12 +999,12 @@ Before implementing actual code, all CLAUDE.md files must be expanded from templ
   - [x] src/validators/document.ts - uploadDocumentSchema
   - [x] src/validators/index.ts - Export all validators
 
-- [ ] **[TASK-003] Utilities Implementation** (3 hours)
-  - [ ] src/utils/date.ts - formatDate, formatRelativeTime, parseDate
-  - [ ] src/utils/currency.ts - formatCurrency (locale support)
-  - [ ] src/utils/string.ts - slugify, truncate, capitalize
-  - [ ] src/utils/number.ts - formatNumber, parseNumber
-  - [ ] src/utils/index.ts - Export all utilities
+- [x] **[TASK-003] Utilities Implementation** (3 hours)
+  - [x] src/utils/date.ts - formatDate, formatRelativeTime, parseDate
+  - [x] src/utils/currency.ts - formatCurrency (locale support)
+  - [x] src/utils/string.ts - slugify, truncate, capitalize
+  - [x] src/utils/number.ts - formatNumber, parseNumber
+  - [x] src/utils/index.ts - Export all utilities
 
 - [ ] **[TASK-004] Constants Implementation** (1 hour)
   - [ ] src/constants/pipeline.ts - PipelineStage enum
