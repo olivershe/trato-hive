@@ -12,6 +12,7 @@
 Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 7-Layer Architecture with 5 Core Modules. This document tracks all completed work and provides a comprehensive roadmap for remaining implementation.
 
 **Project Status:**
+
 - ✅ Foundation & Documentation Complete (100%)
 - ✅ Package Configuration & Implementation Complete (100%)
 - ✅ **CLAUDE.md Documentation Expansion (100% - ALL 15 files complete!)**
@@ -41,6 +42,7 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 **Time Invested:** ~18 hours
 
 #### 1.1: Project Structure ✅
+
 **Location:** Root directory structure
 **Reference:** Root CLAUDE.md Section 3
 
@@ -52,6 +54,7 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 - ✅ Configured ESLint and Prettier
 
 #### 1.2: Claude Code Governance ✅
+
 **Location:** `.claude/` and root `CLAUDE.md`
 **Reference:** Root CLAUDE.md Section 1
 
@@ -66,6 +69,7 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
   - architecture-review.md
 
 #### 1.3: Design System ✅ **UPDATED November 16, 2025**
+
 **Location:** `context/`
 **Reference:** Root CLAUDE.md Section 8
 
@@ -86,6 +90,7 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
   - Approved/disallowed pairings
 
 #### 1.4: Product Requirements Documentation ✅
+
 **Location:** `docs/PRD.md` and `docs/prds/`
 **Reference:** Root CLAUDE.md Section 2
 
@@ -97,6 +102,7 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 - ✅ docs/prds/generator.md - Module 5: Auditable Material Creation
 
 #### 1.5: Architecture Documentation ✅
+
 **Location:** `docs/architecture/`
 **Reference:** Root CLAUDE.md Section 3
 
@@ -128,14 +134,17 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 **Time Invested:** ~6 hours
 
 #### 3.1: Package Configuration ✅
+
 **Location:** All `package.json` files
 **Reference:** Root CLAUDE.md Section 9
 
 **Apps (2 files):**
+
 - ✅ apps/web/package.json - Next.js 15 frontend with tRPC client
 - ✅ apps/api/package.json - Fastify backend with tRPC server
 
 **Packages (8 files):**
+
 - ✅ packages/shared/package.json - Zod validators, types, utilities
 - ✅ packages/ui/package.json - React components, Tailwind, Storybook
 - ✅ packages/db/package.json - Prisma ORM, PostgreSQL
@@ -146,16 +155,19 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 - ✅ packages/agents/package.json - Agentic orchestration
 
 **TypeScript Configs (10 files):**
+
 - ✅ Root tsconfig.json - moduleResolution: "bundler", strict mode
 - ✅ apps/web/tsconfig.json - Next.js specific settings
 - ✅ apps/api/tsconfig.json - Node.js/Fastify settings
-- ✅ 8x packages/*/tsconfig.json - Declaration generation, dual CJS/ESM output
+- ✅ 8x packages/\*/tsconfig.json - Declaration generation, dual CJS/ESM output
 
 #### 3.2: Database Schema Implementation ✅
+
 **Location:** `packages/db/prisma/schema.prisma`
 **Reference:** docs/architecture/governance-layer.md
 
 **Prisma Schema (7 models):**
+
 - ✅ User - Authentication, roles (Admin, Manager, Analyst, Viewer)
 - ✅ Firm - Multi-tenancy organization model
 - ✅ Deal - Core CRM entity with pipeline stages
@@ -165,27 +177,33 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 - ✅ AuditLog - Immutable audit trail
 
 **Schema Features:**
+
 - ✅ Multi-tenancy: firmId on all relevant tables
 - ✅ Citation support: sourceDocumentId and pageNumber fields
 - ✅ Prisma client generated successfully
 
 #### 3.3: Placeholder Implementations ✅
+
 **Location:** All `packages/*/src/` directories
 **Reference:** Individual package CLAUDE.md files
 
 **packages/shared:**
+
 - ✅ src/index.ts - Placeholder exports for types, validators, utils, constants
 
 **packages/ui:**
+
 - ✅ src/index.ts - Placeholder component exports
 - ✅ src/components/ - Button, Input, Card placeholders
 - ✅ src/hooks/ - Custom hooks placeholders
 - ✅ src/tokens/ - Design token placeholders
 
 **packages/db:**
+
 - ✅ src/index.ts - Prisma client export
 
 **packages/auth:**
+
 - ✅ src/index.ts - Entry point
 - ✅ src/auth.ts - NextAuth 5 configuration with Prisma adapter
 - ✅ src/providers/saml.ts - SAML provider placeholder (low priority)
@@ -193,34 +211,40 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 - ✅ src/utils.ts - RBAC utility placeholders
 
 **packages/ai-core:**
+
 - ✅ src/index.ts - Entry point
 - ✅ src/llm.ts - LLM service (Claude, OpenAI, LangChain)
 - ✅ src/streaming.ts - Vercel AI SDK streaming placeholder
 
 **packages/semantic-layer:**
+
 - ✅ src/index.ts - Entry point
 - ✅ src/vector-store.ts - Pinecone integration placeholder
 - ✅ src/facts.ts - Fact extraction placeholder
 
 **packages/data-plane:**
+
 - ✅ src/index.ts - Entry point
 - ✅ src/reducto.ts - Reducto AI client placeholder
 - ✅ src/storage.ts - S3 storage client placeholder
 - ✅ src/queue.ts - BullMQ queue client placeholder
 
 **packages/agents:**
+
 - ✅ src/index.ts - Entry point
 - ✅ src/document-agent.ts - Document processing agent placeholder
 - ✅ src/diligence-agent.ts - Diligence agent placeholder
 - ✅ src/workers.ts - Worker orchestration placeholder
 
 **Placeholder Conventions:**
-- ✅ Underscore-prefixed unused parameters (_config, _prompt)
+
+- ✅ Underscore-prefixed unused parameters (\_config, \_prompt)
 - ✅ TODO comments marking future implementation
 - ✅ Descriptive error messages
 - ✅ Proper TypeScript interfaces exported
 
 #### 3.4: Build Verification ✅
+
 **Commands:** `pnpm build`
 
 - ✅ All 8 packages compile without TypeScript errors
@@ -254,6 +278,7 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 **Reference:** Root CLAUDE.md Section 9, docs/architecture/governance-layer.md
 
 **Documentation Complete:**
+
 - [x] .env.example enhanced with all required variables
   - [x] Node Environment (NODE_ENV, PORT, API_URL, WEB_URL)
   - [x] Database (DATABASE_URL, DATABASE_URL_TEST)
@@ -271,6 +296,7 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
   - [x] OAuth Providers (GOOGLE, AZURE AD - optional, commented out)
 
 **Execution Steps:**
+
 - [x] Copy .env.example to .env: `cp .env.example .env` ✅ **COMPLETED**
 - [x] Generate secrets: `openssl rand -base64 32` (3x for NEXTAUTH, JWT, REFRESH) ✅ **COMPLETED**
   - NEXTAUTH_SECRET: Generated and added
@@ -285,6 +311,7 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 **Status:** Docker Compose config verified and ready
 
 **Documentation Complete:**
+
 - [x] docker-compose.yml exists with all 3 services configured
   - [x] PostgreSQL 16 Alpine (port 5432)
   - [x] Redis 7 Alpine (port 6379)
@@ -294,6 +321,7 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 - [x] Network bridge configured
 
 **Execution Steps:**
+
 - [x] Install Docker Desktop: https://www.docker.com/products/docker-desktop/ ✅ **COMPLETED**
 - [x] Verify Docker installed: `docker --version` and `docker compose version` ✅ **COMPLETED**
   - Docker version 29.0.1
@@ -315,6 +343,7 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 **Status:** Prisma schema ready (7 models defined)
 
 **Prisma Schema Verified:**
+
 - [x] Schema exists at packages/db/prisma/schema.prisma
 - [x] 7 models defined: User, Firm, Deal, Company, Document, Fact, AuditLog
 - [x] Multi-tenancy (firmId) on all relevant models
@@ -322,6 +351,7 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 - [x] Audit trail (AuditLog immutable records)
 
 **Execution Steps:**
+
 - [x] Install dependencies: `pnpm install` ✅ **COMPLETED**
   - 934 packages resolved
   - 45 packages added
@@ -339,6 +369,7 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 **Complete Setup Guide Created:** `/SETUP_GUIDE.md` (500+ lines)
 
 This comprehensive guide includes:
+
 - [x] Step-by-step instructions for all 3 setup tasks
 - [x] Troubleshooting section for common issues
 - [x] Verification checklist
@@ -373,6 +404,7 @@ This comprehensive guide includes:
   - Executable: `chmod +x scripts/verify-phase4.sh`
 
 **Execution:**
+
 ```bash
 # Option 1: Automated setup (interactive)
 ./scripts/setup-phase4.sh
@@ -395,6 +427,7 @@ This comprehensive guide includes:
 ### Why This Phase Is Critical
 
 Before implementing actual code, all CLAUDE.md files must be expanded from templates to comprehensive guides. These files serve as:
+
 1. **Package contracts** - Define what each package owns and exposes
 2. **Implementation guides** - Provide specific tech stack details and patterns
 3. **Integration documentation** - Show how packages interact with each other
@@ -403,11 +436,13 @@ Before implementing actual code, all CLAUDE.md files must be expanded from templ
 ### 5.1: App CLAUDE.md Files (2 files, 2 hours)
 
 #### apps/web/CLAUDE.md ✅ **COMPLETED November 16, 2025**
+
 **Status:** Comprehensive 830-line guide
 **Time Actual:** 1 hour
 **Reference:** docs/architecture/experience-layer.md, docs/prds/deals.md
 
 **Completed:**
+
 - ✅ **Purpose:** Next.js 15 frontend for all 5 modules
 - ✅ **Tech Stack:**
   - Next.js 15.1.8 App Router
@@ -419,7 +454,7 @@ Before implementing actual code, all CLAUDE.md files must be expanded from templ
   - Playwright for E2E testing
 - ✅ **Directory Structure:** Complete app/, components/, lib/, styles/ breakdown
 - ✅ **Component Guidelines:** Server vs Client Components, Citation patterns, Form validation
-- ✅ **Import Aliases:** @/components, @/lib, @/app, @/styles, @trato-hive/*
+- ✅ **Import Aliases:** @/components, @/lib, @/app, @/styles, @trato-hive/\*
 - ✅ **Design System Integration:**
   - **NEW Brand Pack:** Bone, Orange, Deep Grey, Teal Blue (citations only)
   - 4 required config file templates (tailwind.config.js, postcss.config.js, globals.css, layout.tsx)
@@ -433,11 +468,13 @@ Before implementing actual code, all CLAUDE.md files must be expanded from templ
 - ✅ **Deployment Checklist:** Pre-deployment verification steps
 
 #### apps/api/CLAUDE.md ✅ **COMPLETED November 16, 2025**
+
 **Status:** Comprehensive 2,317-line guide (exceeds target!)
 **Time Actual:** 1 hour
 **Reference:** docs/architecture/api-layer.md, docs/architecture/experience-layer.md
 
 **Completed:**
+
 - ✅ **Purpose:** Fastify tRPC API server for all 5 modules (Layer 7)
 - ✅ **Tech Stack:**
   - Node.js 20 LTS
@@ -471,12 +508,14 @@ Before implementing actual code, all CLAUDE.md files must be expanded from templ
 ### 5.2: Package CLAUDE.md Files (8 files, 5 hours remaining)
 
 #### packages/shared/CLAUDE.md ✅
+
 **Time Estimate:** 30 minutes | **Actual:** 30 minutes
 **Reference:** docs/architecture/7-layer-architecture.md
 **Status:** COMPLETE (2025-11-18)
 **Character Count:** 16,179
 
 **Completed:**
+
 - [x] **Purpose:** Shared types, constants, validators, utilities (used by all packages)
 - [x] **Ownership:** All teams (changes require approval from multiple teams)
 - [x] **Tech Stack:** TypeScript 5.6.3, Zod 3.23.8
@@ -501,11 +540,13 @@ Before implementing actual code, all CLAUDE.md files must be expanded from templ
   - String helpers (slugify, truncate, capitalize)
 
 #### packages/ui/CLAUDE.md ✅ **COMPLETED November 16, 2025**
+
 **Status:** Comprehensive 670-line guide
 **Time Actual:** 45 minutes
 **Reference:** context/style-guide.md, context/design-principles.md
 
 **Completed:**
+
 - ✅ **Purpose:** Shared React component library implementing The Intelligent Hive v2.0 design system
 - ✅ **Ownership:** Frontend team (semantic versioning required for breaking changes)
 - ✅ **Tech Stack:** React 19, TypeScript 5.6.3, Tailwind CSS 4.0, class-variance-authority
@@ -529,7 +570,7 @@ Before implementing actual code, all CLAUDE.md files must be expanded from templ
   - Complete Button component example with CVA (class-variance-authority)
   - Component development checklist (design, accessibility, dark mode, testing, TypeScript)
 - ✅ **Testing Requirements:**
-  - >80% test coverage (Vitest + React Testing Library)
+  - > 80% test coverage (Vitest + React Testing Library)
   - Accessibility tests (WCAG 2.1 AA)
   - Visual regression tests (Storybook)
 - ✅ **Common Patterns:** cn() utility, CVA variants, forwardRef
@@ -537,12 +578,14 @@ Before implementing actual code, all CLAUDE.md files must be expanded from templ
 - ✅ **Build & Distribution:** tsup config, dual CJS/ESM output
 
 #### packages/db/CLAUDE.md ✅
+
 **Time Estimate:** 30 minutes | **Actual:** 30 minutes
 **Reference:** docs/architecture/governance-layer.md, packages/db/prisma/schema.prisma
 **Status:** COMPLETE (2025-11-18)
 **Character Count:** 19,186
 
 **Completed:**
+
 - [x] **Purpose:** Database schemas (Prisma), migrations, seed scripts
 - [x] **Ownership:** Backend team
 - [x] **Tech Stack:** Prisma 6, PostgreSQL 15+
@@ -570,12 +613,14 @@ Before implementing actual code, all CLAUDE.md files must be expanded from templ
   - All schema types available via `import type { User, Deal, ... } from '@prisma/client'`
 
 #### packages/auth/CLAUDE.md ✅
+
 **Time Estimate:** 30 minutes | **Actual:** 30 minutes
 **Reference:** docs/architecture/governance-layer.md
 **Status:** COMPLETE (2025-11-13)
 **Character Count:** 15,141
 
 **Completed:**
+
 - [x] **Purpose:** Authentication & authorization (NextAuth 5, OAuth, SAML, RBAC)
 - [x] **Ownership:** Backend team (security-reviewed, changes require security approval)
 - [x] **Tech Stack:** NextAuth 5.0.0-beta.25, @auth/prisma-adapter 2.7.4, Prisma for database sessions, bcrypt for password hashing
@@ -608,12 +653,14 @@ Before implementing actual code, all CLAUDE.md files must be expanded from templ
   - CSRF protection built into NextAuth
 
 #### packages/ai-core/CLAUDE.md ✅
+
 **Time Estimate:** 45 minutes | **Actual:** 45 minutes
 **Reference:** docs/architecture/tic-core.md
 **Status:** COMPLETE (2025-11-18)
 **Character Count:** 27,843 (optimized for context window)
 
 **Completed:**
+
 - [x] **Purpose:** TIC (Trato Intelligence Core) - LLM orchestration, embeddings, streaming, citation extraction
 - [x] **Ownership:** AI/ML Engineering Team
 - [x] **Tech Stack:**
@@ -658,12 +705,14 @@ Before implementing actual code, all CLAUDE.md files must be expanded from templ
 - [x] **Troubleshooting:** API keys, rate limits, token limits, streaming
 
 #### packages/semantic-layer/CLAUDE.md ✅
+
 **Time Estimate:** 45 minutes | **Actual:** 45 minutes
 **Reference:** docs/architecture/semantic-layer.md
 **Status:** COMPLETE (2025-11-18)
 **Character Count:** 26,112 (optimized for context window)
 
 **Completed:**
+
 - [x] **Purpose:** Verifiable Fact Layer & Knowledge Graph
 - [x] **Ownership:** Knowledge Engineering Team
 - [x] **Tech Stack:**
@@ -695,12 +744,14 @@ Before implementing actual code, all CLAUDE.md files must be expanded from templ
 - [x] **Troubleshooting:** Pinecone, Neo4j, fact extraction quality
 
 #### packages/data-plane/CLAUDE.md ✅
+
 **Time Estimate:** 30 minutes | **Actual:** 30 minutes
 **Reference:** docs/architecture/data-plane.md
 **Status:** COMPLETE (2025-11-18)
 **Character Count:** 20,804
 
 **Completed:**
+
 - [x] **Purpose:** Document ingestion, OCR, storage (S3), job queues
 - [x] **Ownership:** Backend team
 - [x] **Tech Stack:**
@@ -735,12 +786,14 @@ Before implementing actual code, all CLAUDE.md files must be expanded from templ
   - `queueJob(jobType, jobData)` - Add job to queue
 
 #### packages/agents/CLAUDE.md ✅
+
 **Time Estimate:** 45 minutes | **Actual:** 45 minutes
 **Reference:** docs/architecture/agentic-layer.md
 **Status:** COMPLETE (2025-11-18)
 **Character Count:** 28,920 (optimized for context window)
 
 **Completed:**
+
 - [x] **Purpose:** Layer 4 - Agentic Orchestration - Multi-step AI workflows with BullMQ
 - [x] **Ownership:** AI Engineering & Backend Team
 - [x] **Tech Stack:**
@@ -781,11 +834,13 @@ Before implementing actual code, all CLAUDE.md files must be expanded from templ
 ### 5.3: Feature CLAUDE.md Files (5 files, 3 hours) ✅ **COMPLETED November 28, 2025**
 
 #### features/deals/CLAUDE.md ✅
+
 **Time Estimate:** 45 minutes (CRITICAL - implement first)
 **Time Actual:** User indicated already complete
 **Reference:** docs/prds/deals.md, docs/architecture/experience-layer.md
 
 **Completed:**
+
 - [x] **Purpose:** Module 3 - Interactive Pipeline OS & Deal 360°
 - [ ] **Boundaries:** Owns all deal data, pipeline stages, verifiable fact sheet
 - [ ] **Uses:**
@@ -823,12 +878,14 @@ Before implementing actual code, all CLAUDE.md files must be expanded from templ
   - Fact Sheet load time: <3 seconds
 
 #### features/command-center/CLAUDE.md ✅
+
 **Time Estimate:** 30 minutes
 **Time Actual:** 30 minutes
 **Status:** 351 lines - Comprehensive guide
 **Reference:** docs/prds/command-center.md
 
 **Completed:**
+
 - [x] **Purpose:** Module 1 - Hive Command Center (dynamic dashboard, AI query bar, unified task inbox)
 - [x] **Ownership:** Product & Frontend Teams with cross-module dependencies
 - [x] **Technology Stack:** React 19, Next.js 15, SSE/WebSocket, Recharts/D3.js, TIC Core, Pipeline OS Agent
@@ -843,12 +900,14 @@ Before implementing actual code, all CLAUDE.md files must be expanded from templ
 - [x] **Non-Negotiables:** 8 critical rules (no hallucination, firmId filtering, SSE required)
 
 #### features/discovery/CLAUDE.md ✅
+
 **Time Estimate:** 30 minutes
 **Time Actual:** 30 minutes
 **Status:** 332 lines - Comprehensive guide
 **Reference:** docs/prds/discovery.md
 
 **Completed:**
+
 - [x] **Purpose:** Module 2 - AI-Native Sourcing (natural language search, lookalike matching, market maps)
 - [x] **Ownership:** Product & AI Engineering Teams
 - [x] **Technology Stack:** React 19, D3.js hexagonal maps, Sourcing Agent, Pinecone, Neo4j (NO external APIs)
@@ -863,12 +922,14 @@ Before implementing actual code, all CLAUDE.md files must be expanded from templ
 - [x] **Non-Negotiables:** 8 critical rules (NO external APIs, vector similarity, hexagons)
 
 #### features/diligence/CLAUDE.md ✅
+
 **Time Estimate:** 45 minutes
 **Time Actual:** 45 minutes
 **Status:** 332 lines - Comprehensive guide
 **Reference:** docs/prds/diligence.md
 
 **Completed:**
+
 - [x] **Purpose:** Module 4 - AI-Native VDR (smart Q&A, citations, risk analysis)
 - [x] **Ownership:** Diligence & AI Engineering Teams
 - [x] **Technology Stack:** React 19, react-dropzone, Diligence Agent RAG, Reducto AI OCR, Pinecone
@@ -883,12 +944,14 @@ Before implementing actual code, all CLAUDE.md files must be expanded from templ
 - [x] **Non-Negotiables:** 8 critical rules (all answers need citations, <200ms modals, human review)
 
 #### features/generator/CLAUDE.md ✅
+
 **Time Estimate:** 45 minutes
 **Time Actual:** 45 minutes
 **Status:** 329 lines - Comprehensive guide
 **Reference:** docs/prds/generator.md
 
 **Completed:**
+
 - [x] **Purpose:** Module 5 - Auditable Material Creation (IC decks, LOIs, memos with golden citations)
 - [x] **Ownership:** Product & Document Engineering Teams
 - [x] **Technology Stack:** React 19, Tiptap/Lexical editor, Generator Agent, pptxgenjs, docx library
@@ -909,10 +972,12 @@ Before implementing actual code, all CLAUDE.md files must be expanded from templ
 ### Phase 6: Foundation Packages (Week 1-2, ~40 hours)
 
 #### 6.1: packages/shared Implementation
+
 **Location:** `packages/shared/src/`
 **Reference:** packages/shared/CLAUDE.md, docs/architecture/7-layer-architecture.md
 
 **Tasks:**
+
 - [x] **[TASK-001] Types Implementation** (4 hours) ✅ **COMPLETED**
   - [x] src/types/user.ts - User, Organization, OrganizationMember interfaces
   - [x] src/types/deal.ts - Deal, DealWithCompany, DealWithFacts interfaces
@@ -927,12 +992,12 @@ Before implementing actual code, all CLAUDE.md files must be expanded from templ
   - **Commit:** abd1aff
   - **Branch:** feature/task-001-types-implementation (merged)
 
-- [ ] **[TASK-002] Validators Implementation** (4 hours)
-  - [ ] src/validators/deal.ts - createDealSchema, updateDealSchema
-  - [ ] src/validators/user.ts - createUserSchema, loginSchema
-  - [ ] src/validators/company.ts - createCompanySchema
-  - [ ] src/validators/document.ts - uploadDocumentSchema
-  - [ ] src/validators/index.ts - Export all validators
+- [x] **[TASK-002] Validators Implementation** (4 hours)
+  - [x] src/validators/deal.ts - createDealSchema, updateDealSchema
+  - [x] src/validators/user.ts - createUserSchema, loginSchema
+  - [x] src/validators/company.ts - createCompanySchema
+  - [x] src/validators/document.ts - uploadDocumentSchema
+  - [x] src/validators/index.ts - Export all validators
 
 - [ ] **[TASK-003] Utilities Implementation** (3 hours)
   - [ ] src/utils/date.ts - formatDate, formatRelativeTime, parseDate
@@ -954,10 +1019,12 @@ Before implementing actual code, all CLAUDE.md files must be expanded from templ
   - [ ] Achieve >80% coverage
 
 #### 6.2: packages/db Implementation
+
 **Location:** `packages/db/prisma/`
 **Reference:** packages/db/CLAUDE.md, docs/architecture/governance-layer.md
 
 **Tasks:**
+
 - [ ] **[TASK-006] Database Migrations** (2 hours)
   - [ ] Run initial migration: `pnpm --filter @trato-hive/db prisma:migrate dev --name init`
   - [ ] Verify all 7 tables created
@@ -974,10 +1041,12 @@ Before implementing actual code, all CLAUDE.md files must be expanded from templ
   - [ ] Test: `pnpm --filter @trato-hive/db prisma:seed`
 
 #### 6.3: packages/auth Implementation
+
 **Location:** `packages/auth/src/`
 **Reference:** packages/auth/CLAUDE.md, docs/architecture/governance-layer.md
 
 **Tasks:**
+
 - [ ] **[TASK-008] NextAuth Configuration** (4 hours)
   - [ ] src/auth.ts - NextAuth 5 config with Prisma adapter
   - [ ] Configure credentials provider (email/password with bcrypt)
@@ -1021,10 +1090,12 @@ Before implementing actual code, all CLAUDE.md files must be expanded from templ
 ### Phase 7: Frontend (Week 3, ~35 hours)
 
 #### 7.1: packages/ui Implementation
+
 **Location:** `packages/ui/src/`
 **Reference:** packages/ui/CLAUDE.md, context/style-guide.md
 
 **Tasks:**
+
 - [ ] **[TASK-014] Design Tokens** (2 hours)
   - [ ] src/tokens/colors.ts - Bone, Orange, Deep Grey, Teal Blue
   - [ ] src/tokens/typography.ts - Inter font stacks
@@ -1065,10 +1136,12 @@ Before implementing actual code, all CLAUDE.md files must be expanded from templ
   - [ ] Achieve >90% coverage
 
 #### 7.2: apps/web Implementation
+
 **Location:** `apps/web/`
 **Reference:** apps/web/CLAUDE.md, docs/prds/deals.md
 
 **Tasks:**
+
 - [ ] **[TASK-021] App Router Setup** (6 hours)
   - [ ] app/layout.tsx - Global layout with nav, Tailwind (1h)
   - [ ] app/page.tsx - Dashboard/command center (1h)
@@ -1091,10 +1164,12 @@ Before implementing actual code, all CLAUDE.md files must be expanded from templ
 ### Phase 8: Backend (Week 4-5, ~30 hours)
 
 #### 8.1: apps/api Implementation
+
 **Location:** `apps/api/src/`
 **Reference:** apps/api/CLAUDE.md, docs/architecture/api-layer.md
 
 **Tasks:**
+
 - [ ] **[TASK-024] Fastify Server Setup** (4 hours)
   - [ ] src/index.ts - Fastify server with tRPC adapter
   - [ ] Add Fastify plugins: @fastify/helmet, @fastify/cors, @fastify/rate-limit
@@ -1142,10 +1217,12 @@ Before implementing actual code, all CLAUDE.md files must be expanded from templ
 ### Phase 9: AI Stack (Week 6-8, ~70 hours)
 
 #### 9.1: packages/ai-core Implementation
+
 **Location:** `packages/ai-core/src/`
 **Reference:** packages/ai-core/CLAUDE.md, docs/architecture/tic-core.md
 
 **Tasks:**
+
 - [ ] **[TASK-031] LLM Service (Claude Sonnet 4.5)** (8 hours)
   - [ ] src/llm.ts - Replace placeholder with actual Claude Sonnet 4.5 API
   - [ ] Add Gemini fallback (flexible provider pattern)
@@ -1175,10 +1252,12 @@ Before implementing actual code, all CLAUDE.md files must be expanded from templ
   - [ ] Achieve >80% coverage
 
 #### 9.2: packages/semantic-layer Implementation
+
 **Location:** `packages/semantic-layer/src/`
 **Reference:** packages/semantic-layer/CLAUDE.md, docs/architecture/semantic-layer.md
 
 **Tasks:**
+
 - [ ] **[TASK-036] Vector Store (Pinecone)** (6 hours)
   - [ ] src/vector-store.ts - Implement Pinecone integration
   - [ ] Create index with 3,072 dimensions
@@ -1205,10 +1284,12 @@ Before implementing actual code, all CLAUDE.md files must be expanded from templ
   - [ ] Achieve >80% coverage
 
 #### 9.3: packages/data-plane Implementation
+
 **Location:** `packages/data-plane/src/`
 **Reference:** packages/data-plane/CLAUDE.md, docs/architecture/data-plane.md
 
 **Tasks:**
+
 - [ ] **[TASK-040] Reducto AI Integration** (6 hours)
   - [ ] src/reducto.ts - Implement actual Reducto AI API calls
   - [ ] Parse API response (text, metadata, bounding boxes)
@@ -1236,10 +1317,12 @@ Before implementing actual code, all CLAUDE.md files must be expanded from templ
   - [ ] Achieve >80% coverage
 
 #### 9.4: packages/agents Implementation
+
 **Location:** `packages/agents/src/`
 **Reference:** packages/agents/CLAUDE.md, docs/architecture/agentic-layer.md
 
 **Tasks:**
+
 - [ ] **[TASK-044] Document Agent** (10 hours)
   - [ ] src/document-agent.ts - Implement full workflow
   - [ ] Fetch document from database
@@ -1272,10 +1355,12 @@ Before implementing actual code, all CLAUDE.md files must be expanded from templ
 #### Priority Order: Deals → Command Center → Diligence → Generator → Discovery
 
 #### 10.1: features/deals Implementation (Week 9, 15 hours)
+
 **Location:** `features/deals/`
 **Reference:** features/deals/CLAUDE.md, docs/prds/deals.md
 
 **Backend Tasks:**
+
 - [ ] **[TASK-047] Deal Service Backend** (4 hours)
   - [ ] backend/services/deal-service.ts
   - [ ] CRUD operations for deals
@@ -1293,6 +1378,7 @@ Before implementing actual code, all CLAUDE.md files must be expanded from templ
   - [ ] Citation linking for verifiable facts
 
 **Frontend Tasks:**
+
 - [ ] **[TASK-050] DealCard Component** (1 hour)
   - [ ] frontend/components/DealCard.tsx
   - [ ] Orange accent border, rounded edges
@@ -1319,16 +1405,19 @@ Before implementing actual code, all CLAUDE.md files must be expanded from templ
   - [ ] Teal Blue links to source documents
 
 **Testing:**
+
 - [ ] **[TASK-055] Deals E2E Testing** (2 hours)
   - [ ] E2E tests for drag-and-drop pipeline
   - [ ] Deal 360° navigation tests
   - [ ] Fact Sheet citation modal tests
 
 #### 10.2: features/command-center Implementation (Week 10, 12 hours)
+
 **Location:** `features/command-center/`
 **Reference:** features/command-center/CLAUDE.md, docs/prds/command-center.md
 
 **Backend Tasks:**
+
 - [ ] **[TASK-056] Dashboard Service** (3 hours)
   - [ ] backend/services/dashboard-service.ts
   - [ ] Aggregate stats from all modules
@@ -1341,6 +1430,7 @@ Before implementing actual code, all CLAUDE.md files must be expanded from templ
   - [ ] SSE endpoint for real-time updates
 
 **Frontend Tasks:**
+
 - [ ] **[TASK-058] Dashboard & AIQueryBar Components** (4 hours)
   - [ ] frontend/components/Dashboard.tsx (2h)
   - [ ] KPI cards, pipeline health widget
@@ -1355,10 +1445,12 @@ Before implementing actual code, all CLAUDE.md files must be expanded from templ
   - [ ] Real-time pipeline health visualization
 
 #### 10.3: features/diligence Implementation (Week 11, 15 hours)
+
 **Location:** `features/diligence/`
 **Reference:** features/diligence/CLAUDE.md, docs/prds/diligence.md
 
 **Backend Tasks:**
+
 - [ ] **[TASK-060] VDR Service** (4 hours)
   - [ ] backend/services/vdr-service.ts
   - [ ] Document upload handling
@@ -1377,6 +1469,7 @@ Before implementing actual code, all CLAUDE.md files must be expanded from templ
   - [ ] File upload handling with multipart
 
 **Frontend Tasks:**
+
 - [ ] **[TASK-063] VDRUploader Component** (2 hours)
   - [ ] frontend/components/VDRUploader.tsx
   - [ ] Drag-and-drop file upload (react-dropzone)
@@ -1396,10 +1489,12 @@ Before implementing actual code, all CLAUDE.md files must be expanded from templ
   - [ ] Display source excerpt with highlighted text
 
 #### 10.4: features/generator Implementation (Week 11-12, 12 hours)
+
 **Location:** `features/generator/`
 **Reference:** features/generator/CLAUDE.md, docs/prds/generator.md
 
 **Backend Tasks:**
+
 - [ ] **[TASK-066] Generator Service** (5 hours)
   - [ ] backend/services/generator-service.ts
   - [ ] IC deck generation with pptxgenjs
@@ -1414,6 +1509,7 @@ Before implementing actual code, all CLAUDE.md files must be expanded from templ
   - [ ] Export to PPTX/DOCX formats
 
 **Frontend Tasks:**
+
 - [ ] **[TASK-068] TemplateSelector Component** (2 hours)
   - [ ] frontend/components/TemplateSelector.tsx
   - [ ] Template gallery (IC Deck, LOI, Memo, CIM)
@@ -1431,10 +1527,12 @@ Before implementing actual code, all CLAUDE.md files must be expanded from templ
   - [ ] Export button
 
 #### 10.5: features/discovery Implementation (Week 12, 10 hours)
+
 **Location:** `features/discovery/`
 **Reference:** features/discovery/CLAUDE.md, docs/prds/discovery.md
 
 **Backend Tasks:**
+
 - [ ] **[TASK-071] Sourcing Service** (4 hours)
   - [ ] backend/services/sourcing-service.ts
   - [ ] Natural language search with semantic search
@@ -1448,6 +1546,7 @@ Before implementing actual code, all CLAUDE.md files must be expanded from templ
   - [ ] CRUD operations for target lists
 
 **Frontend Tasks:**
+
 - [ ] **[TASK-073] SearchBar Component** (1 hour)
   - [ ] frontend/components/SearchBar.tsx
   - [ ] Natural language search input
@@ -1472,6 +1571,7 @@ Before implementing actual code, all CLAUDE.md files must be expanded from templ
 ### Summary Statistics
 
 **By Phase:**
+
 - Phase 1: Foundation & Documentation - ✅ 100% (18 hours) + **Brand Pack Update (6 hours - Nov 16)**
 - Phase 2: Docker & Infrastructure - ✅ 100% (1 hour)
 - Phase 3: Package Configuration - ✅ 100% (6 hours)
@@ -1487,6 +1587,7 @@ Before implementing actual code, all CLAUDE.md files must be expanded from templ
 - Phase 10: Features - ⏸️ 0% (60 hours)
 
 **Total Time:**
+
 - Completed: 44.5 hours (25 + 6 brand pack + 12.5 CLAUDE.md + 1 Phase 4 automation)
 - Remaining: 236 hours (awaiting Phase 4 execution + implementation)
 - Total: 280.5 hours (~7 weeks full-time)
@@ -1494,6 +1595,7 @@ Before implementing actual code, all CLAUDE.md files must be expanded from templ
 **Overall Progress: 95% setup complete, 15.9% total project**
 
 **Phase 4 Status:**
+
 - ✅ Documentation: 100% (SETUP_GUIDE.md, enhanced .env.example)
 - ✅ Automation: 100% (setup-phase4.sh, verify-phase4.sh)
 - ⏸️ Execution: 0% (requires Docker install, API keys, running scripts)
@@ -1503,18 +1605,21 @@ Before implementing actual code, all CLAUDE.md files must be expanded from templ
 ## 📍 Current Status: Phase 4 DOCUMENTED! ✅ Ready for Execution
 
 **Completed November 30, 2025:**
+
 - ✅ Created `/scripts/setup-phase4.sh` - Interactive automated setup script
 - ✅ Created `/scripts/verify-phase4.sh` - Comprehensive verification script
 - ✅ Updated PROJECT_STATUS.md Phase 4 section with automation documentation
 - ✅ Both scripts made executable with `chmod +x`
 
 **Previously Completed November 28, 2025:**
+
 - ✅ features/diligence/CLAUDE.md (332 lines - AI-Native VDR with Q&A and citations)
 - ✅ features/generator/CLAUDE.md (329 lines - IC decks, LOIs, memos with golden citations)
 - ✅ features/command-center/CLAUDE.md (351 lines - Dashboard, AI query bar, task inbox)
 - ✅ features/discovery/CLAUDE.md (332 lines - NL search, lookalike matching, market maps)
 
 **Completed November 18, 2025:**
+
 - ✅ packages/shared/CLAUDE.md (16,179 chars - Shared types, validators, utilities)
 - ✅ packages/db/CLAUDE.md (19,186 chars - Prisma schemas & migrations)
 - ✅ packages/data-plane/CLAUDE.md (20,804 chars - Layer 1 Document ingestion & S3)
@@ -1523,6 +1628,7 @@ Before implementing actual code, all CLAUDE.md files must be expanded from templ
 - ✅ packages/agents/CLAUDE.md (28,920 chars - Layer 4 Agentic Orchestration with BullMQ)
 
 **Completed November 16, 2025:**
+
 - ✅ Brand Pack v2.0 implementation across all design documentation
 - ✅ apps/web/CLAUDE.md (830 lines - comprehensive frontend guide)
 - ✅ apps/api/CLAUDE.md (2,317 lines - comprehensive API guide)
@@ -1533,9 +1639,11 @@ Before implementing actual code, all CLAUDE.md files must be expanded from templ
 - ✅ context/color-accessibility.md (NEW - 670 lines WCAG compliance guide)
 
 **Completed November 13, 2025:**
+
 - ✅ packages/auth/CLAUDE.md (15,141 chars - NextAuth 5 authentication & RBAC)
 
 **Package CLAUDE.md Status (8/8 complete):**
+
 1. ✅ packages/shared/CLAUDE.md (16,179 chars - Nov 18)
 2. ✅ packages/ui/CLAUDE.md (670 lines - Nov 16)
 3. ✅ packages/db/CLAUDE.md (19,186 chars - Nov 18)
@@ -1546,6 +1654,7 @@ Before implementing actual code, all CLAUDE.md files must be expanded from templ
 8. ✅ packages/agents/CLAUDE.md (28,920 chars - Nov 18)
 
 **Feature CLAUDE.md Status (5/5 complete):**
+
 1. ✅ features/deals/CLAUDE.md (user indicated already complete)
 2. ✅ features/diligence/CLAUDE.md (332 lines - Nov 28)
 3. ✅ features/generator/CLAUDE.md (329 lines - Nov 28)
@@ -1555,6 +1664,7 @@ Before implementing actual code, all CLAUDE.md files must be expanded from templ
 **ALL 15 CLAUDE.md FILES COMPLETE! 🎉**
 
 **Next Actions:**
+
 1. ✅ **Phase 5 COMPLETE!** All CLAUDE.md files documented (15 files total: 2 apps + 8 packages + 5 features)
 2. ✅ **Phase 4 DOCUMENTED!** Setup automation scripts and comprehensive guide created
 3. **Execute Phase 4: Environment Setup** (requires user action)
@@ -1569,6 +1679,7 @@ Before implementing actual code, all CLAUDE.md files must be expanded from templ
 4. **After Phase 4 execution:** Begin Phase 6: Foundation Packages implementation (40 hours)
 
 **After Each Completed Task:**
+
 - ✅ Update this file (PROJECT_STATUS.md) with completed checkboxes
 - ✅ Update CHANGELOG.md if user-visible changes
 - ✅ Update ERROR_LOG.md if errors discovered
