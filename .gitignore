@@ -79,6 +79,7 @@ credentials/
 .cache/
 .parcel-cache/
 .turbo/
+.eslintcache
 
 # Editor directories
 .vscode-test/
