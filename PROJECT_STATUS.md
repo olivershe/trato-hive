@@ -1006,12 +1006,12 @@ Before implementing actual code, all CLAUDE.md files must be expanded from templ
   - [x] src/utils/number.ts - formatNumber, parseNumber
   - [x] src/utils/index.ts - Export all utilities
 
-- [ ] **[TASK-004] Constants Implementation** (1 hour)
-  - [ ] src/constants/pipeline.ts - PipelineStage enum
-  - [ ] src/constants/fact.ts - FactType enum
-  - [ ] src/constants/user.ts - UserRole enum
-  - [ ] src/constants/api.ts - API error codes
-  - [ ] src/constants/index.ts - Export all constants
+- [x] **[TASK-004] Constants Implementation** (1 hour)
+  - [x] src/constants/pipeline.ts - PipelineStage enum
+  - [x] src/constants/fact.ts - FactType enum
+  - [x] src/constants/user.ts - UserRole enum
+  - [x] src/constants/api.ts - API error codes
+  - [x] src/constants/index.ts - Export all constants
 
 - [ ] **[TASK-005] Shared Package Testing** (2 hours)
   - [ ] Unit tests for all validators
