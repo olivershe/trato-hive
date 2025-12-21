@@ -8,8 +8,9 @@ Use this workflow to begin working on a new task from `PROJECT_STATUS.md`.
 
 ## 1. Identify Task
 
-1.  Read `PROJECT_STATUS.md` to find the next `[TASK-###]`.
-2.  Confirm the task scope and requirements.
+1.  Read `PROJECT_STATUS.md` to find the next `[TASK-###]` (active/future work only).
+2.  Reference `COMPLETED_WORK.md` for historical context if needed.
+3.  Confirm the task scope and requirements.
 
 ## 2. Load Context
 

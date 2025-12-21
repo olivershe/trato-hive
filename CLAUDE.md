@@ -2,10 +2,10 @@
 **Core Principle:** System of Reasoning (Verifiable, Unified, Agentic).
 
 # 🚨 CRITICAL: Project Status & Workflow
-**Source of Truth:** `/PROJECT_STATUS.md`
+**Source of Truth:** `/PROJECT_STATUS.md` (active work) + `/COMPLETED_WORK.md` (archive)
 1. **Task IDs:** ALL items must use format `[TASK-###] Description` (e.g., `[TASK-001] Fix login`).
 2. **The Workflow Loop:**
-   - **Pick:** Select `[TASK-###]` from PROJECT_STATUS.md
+   - **Pick:** Select `[TASK-###]` from PROJECT_STATUS.md (active/future tasks only)
    - **Read:** Read local `CLAUDE.md` in relevant scope (apps/packages/features)
    - **Branch:** Invoke `@git-workflow-manager` to create `feature/TASK-###`
    - **Plan:** Use TodoWrite tool for tracking (required for >1 file or complex tasks)
@@ -16,7 +16,7 @@
    - **Update:** After merge, tick ✅ `[TASK-###]` in PROJECT_STATUS.md
 
 # 📚 Context Loading (Read Order)
-1. **Status:** `PROJECT_STATUS.md` (Check for next `TASK-###`)
+1. **Status:** `PROJECT_STATUS.md` (active/future tasks) or `COMPLETED_WORK.md` (historical reference)
 2. **Product:** `Trato Hive Product & Design Specification.md`
 3. **Local Scope:** Read the `CLAUDE.md` in your specific `apps/` or `packages/` folder.
 4. **Design:** For UI tasks, strictly follow `context/design-principles.md`.

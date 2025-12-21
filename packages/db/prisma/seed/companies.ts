@@ -1,0 +1,353 @@
+/**
+ * Seed script: Companies
+ * Creates 20 target companies across varied industries
+ */
+
+import { PrismaClient, Organization, CompanyStatus } from '@prisma/client';
+
+const prisma = new PrismaClient();
+
+export async function seedCompanies(firms: Organization[]) {
+  console.log('🏭 Seeding companies...');
+
+  if (firms.length < 3) {
+    throw new Error('Need at least 3 firms to seed companies');
+  }
+
+  const [acme, summit, peak] = firms;
+
+  const companiesData = [
+    // SaaS Companies (8)
+    {
+      name: 'CloudSync Technologies',
+      domain: 'cloudsync.io',
+      description: 'Enterprise data synchronization platform for distributed teams',
+      industry: 'SaaS',
+      sector: 'Enterprise Software',
+      founded: 2018,
+      employees: 85,
+      revenue: 12500000,
+      location: 'San Francisco, CA',
+      website: 'https://cloudsync.io',
+      linkedin: 'https://linkedin.com/company/cloudsync',
+      status: CompanyStatus.PIPELINE,
+      organizationId: acme.id,
+    },
+    {
+      name: 'DataVault Security',
+      domain: 'datavault.com',
+      description: 'AI-powered data protection and compliance automation',
+      industry: 'SaaS',
+      sector: 'Cybersecurity',
+      founded: 2019,
+      employees: 120,
+      revenue: 18300000,
+      location: 'Austin, TX',
+      website: 'https://datavault.com',
+      linkedin: 'https://linkedin.com/company/datavault',
+      status: CompanyStatus.ENGAGED,
+      organizationId: summit.id,
+    },
+    {
+      name: 'WorkFlow AI',
+      domain: 'workflow.ai',
+      description: 'Intelligent workflow automation for modern businesses',
+      industry: 'SaaS',
+      sector: 'Productivity',
+      founded: 2020,
+      employees: 45,
+      revenue: 5200000,
+      location: 'Seattle, WA',
+      website: 'https://workflow.ai',
+      linkedin: 'https://linkedin.com/company/workflow-ai',
+      status: CompanyStatus.RESEARCHING,
+      organizationId: peak.id,
+    },
+    {
+      name: 'AnalyticsHub Pro',
+      domain: 'analyticshub.pro',
+      description: 'Real-time business intelligence and data analytics platform',
+      industry: 'SaaS',
+      sector: 'Analytics',
+      founded: 2017,
+      employees: 95,
+      revenue: 14800000,
+      location: 'Boston, MA',
+      website: 'https://analyticshub.pro',
+      linkedin: 'https://linkedin.com/company/analyticshub',
+      status: CompanyStatus.PIPELINE,
+      organizationId: acme.id,
+    },
+    {
+      name: 'CustomerOS',
+      domain: 'customeros.com',
+      description: 'All-in-one customer success and support platform',
+      industry: 'SaaS',
+      sector: 'Customer Success',
+      founded: 2019,
+      employees: 110,
+      revenue: 16700000,
+      location: 'Denver, CO',
+      website: 'https://customeros.com',
+      linkedin: 'https://linkedin.com/company/customeros',
+      status: CompanyStatus.ENGAGED,
+      organizationId: summit.id,
+    },
+    {
+      name: 'DevOps Central',
+      domain: 'devopscentral.io',
+      description: 'Unified DevOps platform for CI/CD and infrastructure management',
+      industry: 'SaaS',
+      sector: 'Developer Tools',
+      founded: 2018,
+      employees: 130,
+      revenue: 22400000,
+      location: 'New York, NY',
+      website: 'https://devopscentral.io',
+      linkedin: 'https://linkedin.com/company/devopscentral',
+      status: CompanyStatus.PIPELINE,
+      organizationId: peak.id,
+    },
+    {
+      name: 'SalesBoost CRM',
+      domain: 'salesboost.io',
+      description: 'AI-driven CRM with predictive sales analytics',
+      industry: 'SaaS',
+      sector: 'Sales Tech',
+      founded: 2020,
+      employees: 65,
+      revenue: 8900000,
+      location: 'Chicago, IL',
+      website: 'https://salesboost.io',
+      linkedin: 'https://linkedin.com/company/salesboost',
+      status: CompanyStatus.PROSPECT,
+      organizationId: acme.id,
+    },
+    {
+      name: 'CloudDocs Platform',
+      domain: 'clouddocs.com',
+      description: 'Secure document management and collaboration suite',
+      industry: 'SaaS',
+      sector: 'Document Management',
+      founded: 2017,
+      employees: 150,
+      revenue: 28500000,
+      location: 'Portland, OR',
+      website: 'https://clouddocs.com',
+      linkedin: 'https://linkedin.com/company/clouddocs',
+      status: CompanyStatus.PIPELINE,
+      organizationId: summit.id,
+    },
+
+    // Fintech Companies (5)
+    {
+      name: 'PaymentFlow',
+      domain: 'paymentflow.com',
+      description: 'B2B payment processing and invoice automation platform',
+      industry: 'Fintech',
+      sector: 'Payments',
+      founded: 2018,
+      employees: 180,
+      revenue: 35200000,
+      location: 'San Francisco, CA',
+      website: 'https://paymentflow.com',
+      linkedin: 'https://linkedin.com/company/paymentflow',
+      status: CompanyStatus.PIPELINE,
+      organizationId: acme.id,
+    },
+    {
+      name: 'LendingBridge',
+      domain: 'lendingbridge.io',
+      description: 'Digital lending platform for small business loans',
+      industry: 'Fintech',
+      sector: 'Lending',
+      founded: 2019,
+      employees: 95,
+      revenue: 19800000,
+      location: 'Charlotte, NC',
+      website: 'https://lendingbridge.io',
+      linkedin: 'https://linkedin.com/company/lendingbridge',
+      status: CompanyStatus.ENGAGED,
+      organizationId: summit.id,
+    },
+    {
+      name: 'WealthWise',
+      domain: 'wealthwise.app',
+      description: 'Robo-advisor and automated wealth management',
+      industry: 'Fintech',
+      sector: 'Wealth Management',
+      founded: 2020,
+      employees: 55,
+      revenue: 7600000,
+      location: 'Miami, FL',
+      website: 'https://wealthwise.app',
+      linkedin: 'https://linkedin.com/company/wealthwise',
+      status: CompanyStatus.RESEARCHING,
+      organizationId: peak.id,
+    },
+    {
+      name: 'InsureTech Pro',
+      domain: 'insuretech.pro',
+      description: 'AI-powered insurance underwriting and claims processing',
+      industry: 'Fintech',
+      sector: 'Insurtech',
+      founded: 2018,
+      employees: 125,
+      revenue: 21400000,
+      location: 'Hartford, CT',
+      website: 'https://insuretech.pro',
+      linkedin: 'https://linkedin.com/company/insuretech',
+      status: CompanyStatus.PIPELINE,
+      organizationId: acme.id,
+    },
+    {
+      name: 'CryptoSettle',
+      domain: 'cryptosettle.io',
+      description: 'Enterprise blockchain settlement and treasury management',
+      industry: 'Fintech',
+      sector: 'Blockchain',
+      founded: 2019,
+      employees: 70,
+      revenue: 11200000,
+      location: 'Austin, TX',
+      website: 'https://cryptosettle.io',
+      linkedin: 'https://linkedin.com/company/cryptosettle',
+      status: CompanyStatus.PROSPECT,
+      organizationId: summit.id,
+    },
+
+    // Healthcare Companies (4)
+    {
+      name: 'HealthTrack Systems',
+      domain: 'healthtrack.io',
+      description: 'Patient engagement and remote monitoring platform',
+      industry: 'Healthcare',
+      sector: 'HealthTech',
+      founded: 2017,
+      employees: 140,
+      revenue: 24500000,
+      location: 'Minneapolis, MN',
+      website: 'https://healthtrack.io',
+      linkedin: 'https://linkedin.com/company/healthtrack',
+      status: CompanyStatus.PIPELINE,
+      organizationId: summit.id,
+    },
+    {
+      name: 'MedAI Diagnostics',
+      domain: 'medai.com',
+      description: 'AI-powered medical imaging and diagnostics',
+      industry: 'Healthcare',
+      sector: 'Medical Devices',
+      founded: 2019,
+      employees: 85,
+      revenue: 15300000,
+      location: 'Boston, MA',
+      website: 'https://medai.com',
+      linkedin: 'https://linkedin.com/company/medai',
+      status: CompanyStatus.ENGAGED,
+      organizationId: peak.id,
+    },
+    {
+      name: 'PharmaTrack',
+      domain: 'pharmatrack.com',
+      description: 'Supply chain visibility for pharmaceutical logistics',
+      industry: 'Healthcare',
+      sector: 'Logistics',
+      founded: 2018,
+      employees: 110,
+      revenue: 18900000,
+      location: 'Philadelphia, PA',
+      website: 'https://pharmatrack.com',
+      linkedin: 'https://linkedin.com/company/pharmatrack',
+      status: CompanyStatus.RESEARCHING,
+      organizationId: acme.id,
+    },
+    {
+      name: 'TeleHealth Connect',
+      domain: 'telehealth.co',
+      description: 'Telemedicine platform with integrated EHR',
+      industry: 'Healthcare',
+      sector: 'Telemedicine',
+      founded: 2020,
+      employees: 95,
+      revenue: 13700000,
+      location: 'Nashville, TN',
+      website: 'https://telehealth.co',
+      linkedin: 'https://linkedin.com/company/telehealth-connect',
+      status: CompanyStatus.PIPELINE,
+      organizationId: summit.id,
+    },
+
+    // E-commerce & MarTech (3)
+    {
+      name: 'ShopifyPro Solutions',
+      domain: 'shopifypro.io',
+      description: 'E-commerce optimization and conversion rate tools',
+      industry: 'E-commerce',
+      sector: 'Retail Tech',
+      founded: 2019,
+      employees: 75,
+      revenue: 10200000,
+      location: 'Los Angeles, CA',
+      website: 'https://shopifypro.io',
+      linkedin: 'https://linkedin.com/company/shopifypro',
+      status: CompanyStatus.PROSPECT,
+      organizationId: peak.id,
+    },
+    {
+      name: 'MarketingOS',
+      domain: 'marketingos.com',
+      description: 'All-in-one marketing automation and attribution platform',
+      industry: 'MarTech',
+      sector: 'Marketing Software',
+      founded: 2018,
+      employees: 100,
+      revenue: 17600000,
+      location: 'Atlanta, GA',
+      website: 'https://marketingos.com',
+      linkedin: 'https://linkedin.com/company/marketingos',
+      status: CompanyStatus.ENGAGED,
+      organizationId: acme.id,
+    },
+    {
+      name: 'AdTech Insights',
+      domain: 'adtechinsights.io',
+      description: 'Programmatic advertising analytics and optimization',
+      industry: 'MarTech',
+      sector: 'Ad Tech',
+      founded: 2019,
+      employees: 60,
+      revenue: 9400000,
+      location: 'San Diego, CA',
+      website: 'https://adtechinsights.io',
+      linkedin: 'https://linkedin.com/company/adtech-insights',
+      status: CompanyStatus.RESEARCHING,
+      organizationId: summit.id,
+    },
+  ];
+
+  const createdCompanies = [];
+
+  for (const companyData of companiesData) {
+    // Idempotent: Check if company already exists
+    const existing = await prisma.company.findFirst({
+      where: {
+        name: companyData.name,
+        organizationId: companyData.organizationId,
+      },
+    });
+
+    if (existing) {
+      console.log(`  ↓ Company "${companyData.name}" already exists (${existing.id})`);
+      createdCompanies.push(existing);
+    } else {
+      const company = await prisma.company.create({
+        data: companyData,
+      });
+      console.log(`  ✓ Created company "${company.name}" (${company.id})`);
+      createdCompanies.push(company);
+    }
+  }
+
+  return createdCompanies;
+}

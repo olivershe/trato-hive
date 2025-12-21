@@ -31,6 +31,7 @@ Use this workflow to complete a task and prepare it for merging.
 1.  Edit `PROJECT_STATUS.md`:
     - Mark `[TASK-###]` as `[x]` or `✅`.
     - Update "Latest Commit" and "Overall Progress".
+    - Note: Completed tasks are periodically archived to `COMPLETED_WORK.md`.
 
 ## 4. Documentation
 

@@ -1,0 +1,79 @@
+Database Implementation Plan: Migrations & Seeding
+This plan outlines the steps to initialize the database schema and populate it with realistic seed data for the Trato Hive application.
+
+User Review Required
+NOTE
+
+This plan assumes the database connection string is already set in the environment variables (DATABASE_URL).
+
+Proposed Changes
+Database Migrations
+Run the initial migration to create the schema in the database.
+
+[MODIFY] 
+
+packages/db/prisma/migrations
+Initialize the migration history.
+Apply the current 
+
+schema.prisma
+ to the database.
+Database Seeding
+Create a robust seeding strategy to populate the database with sample data for development and testing.
+
+[NEW] 
+
+packages/db/prisma/seed
+Create a new directory for seed scripts.
+
+[NEW] 
+
+packages/db/prisma/seed/firms.ts
+Seed 3 Private Equity firms (Organizations) with different roles and settings.
+Use idempotent upsert operations.
+[NEW] 
+
+packages/db/prisma/seed/users.ts
+Seed 10 users across the different firms.
+Roles: Owner, Admin, Member, Viewer.
+Include "
+
+admin@trato.ai
+" for testing.
+[NEW] 
+
+packages/db/prisma/seed/companies.ts
+Seed 20 target companies with varying statuses (Prospect, Engaged, Pipeline).
+Include rich metadata (industry, revenue, founded year).
+[NEW] 
+
+packages/db/prisma/seed/deals.ts
+Seed 15 deals associated with the companies and firms.
+Distribute across stages (Sourcing -> Closed Won).
+Link to specific deal leads (users).
+[NEW] 
+
+packages/db/prisma/seed/documents.ts
+Seed 30 sample documents (PDFs, Excel) linked to deals and companies.
+Simulate different processing states (Uploaded, Parsed, Indexed).
+[NEW] 
+
+packages/db/prisma/seed/facts.ts
+Seed 50 verifiable facts derived from the documents.
+Include citations (source text) and confidence scores.
+[NEW] 
+
+packages/db/prisma/seed.ts
+Main entry point that orchestrates the execution of all individual seed scripts.
+Handles cleanup (optional) and sequential execution to respect foreign key constraints.
+Verification Plan
+Automated Tests
+Run Migration: pnpm --filter @trato-hive/db db:migrate
+Verify command exits with success code (0).
+Run Seeding: pnpm --filter @trato-hive/db db:seed
+Verify command exits with success code (0).
+Verify output logs show counts of created records.
+Manual Verification
+Prisma Studio:
+Run pnpm --filter @trato-hive/db db:studio.
+Manually browse the tables (User, Organization, Deal, etc.) to ensure data relationships are correct (e.g., a Deal belongs to an Organization).
