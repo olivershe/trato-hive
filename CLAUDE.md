@@ -24,6 +24,7 @@
 
 # 🛠 Tech Stack & Standards
 - **Stack:** Monorepo, TypeScript (Strict), Next.js 14, Supabase.
+- **Block Protocol:** All dynamic content MUST represent as Blocks (JSON). No static page layouts.
 - **Testing:** Red → Green → Refactor. Unit (Jest), E2E (Playwright).
 - **Security:** No secrets in code. Zod validation for inputs.
 - **Plan Mode:** MANDATORY for >1 file change.

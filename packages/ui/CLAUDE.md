@@ -14,6 +14,8 @@ Shared component library (Layer 5) implementing "The Intelligent Hive v2.0".
 - **Citation:** Teal Blue link opening verification modal.
 - **Button:** Primary (Orange), Secondary, Tertiary.
 - **Card:** Standard, Deal, Fact variants.
+- **Block Editor:** Tiptap-based "Notion-like" editor.
+- **Block Renderer:** Recursive component for rendering page trees.
 
 ## Common Patterns
 

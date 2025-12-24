@@ -57,7 +57,15 @@ Located in `packages/data-plane/`, this package is divided into several modules:
 
 1. **Preprocessing:** Convert PDFs into images (using PDF.js) and normalise for OCR (deskew, de‑noise). For images embedded in Office documents, extract images using appropriate parsers.
 2. **OCR Execution:** Call Tesseract.js with appropriate language packs. Use the `HOCR` output format to capture bounding boxes for each word so citations can highlight the exact location of a fact in the document.
-3. **Post‑processing:** Clean OCR output (remove artefacts, normalise whitespace) and assign a confidence score. Flag low‑confidence pages for manual review. Store both raw OCR and cleaned text for future reference.
+3. **Post-processing:** Clean OCR output (remove artefacts, normalise whitespace) and assign a confidence score. Flag low-confidence pages for manual review. Store both raw OCR and cleaned text for future reference.
+
+### 4.3 Block Protocol Asset Management
+
+In addition to full document ingestion, the Data Plane handles assets for the "Notion-like" Block Protocol:
+
+1.  **Block Assets:** When a user uploads an image or file to a page block (`ImageBlock`, `FileBlock`), it is processed via the `ingestDocument` pipeline but tagged with `type: BLOCK_ASSET`.
+2.  **Versioning:** Assets attached to blocks retain history. If a user updates an image block, the previous version is kept in S3 (managed by versioning) to ensure the "Audit Log" can reconstruct the page state at any point in time.
+3.  **Permissions:** Access to block assets is inherited from the `Page` they belong to (checked via the Governance Layer before generating a presigned URL).
 
 ## 5. Error Handling & Retry Logic
 

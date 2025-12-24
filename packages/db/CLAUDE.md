@@ -14,6 +14,7 @@ Type-safe database client (Prisma/PostgreSQL) with multi-tenancy enforcement.
 
 - **Core:** `User`, `Organization`, `OrganizationMember`
 - **Modules:** `Deal`, `Company`, `Document`, `Fact`, `Activity`
+- **Block Protocol:** `Block`, `Page` (recursive structure)
 - **Enums:** Match `@trato-hive/shared` exactly.
 
 ## Common Patterns

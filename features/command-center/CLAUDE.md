@@ -6,9 +6,10 @@ Central hub (Layer 5) aggregating real-time activity, AI queries, and unified ta
 
 ## Tech Stack
 
-- **Frontend:** Next.js 15, Recharts (Charts), SSE (Real-time)
+- **Frontend:** Next.js 15, Block Renderer, AI Query Block
 - **Backend:** Fastify, Redis (Caching), BullMQ
 - **AI:** TIC Core (Query parsing), Agents (Task generation)
+- **Architecture:** Dashboard is a **Dynamic Page** composed of Query/Chart Blocks.
 
 ## Data Model
 

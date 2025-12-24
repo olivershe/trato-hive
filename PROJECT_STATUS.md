@@ -117,83 +117,75 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
   - [ ] Unit tests for tRPC middleware
   - [ ] Achieve >80% coverage
 
+### 6.4: Block Protocol Foundation 🆕 **NEW**
+
+**Location:** `packages/db/prisma/`
+**Reference:** packages/db/CLAUDE.md
+
+**Pending Tasks:**
+
+- [ ] **[TASK-013a] Block Protocol Schema** (3 hours)
+  - [ ] Define `Block` model (recursive parent/child relation)
+  - [ ] Define `Page` model (container for blocks)
+  - [ ] Add JSON `content` field to Block for storing text/data
+  - [ ] Add polymorphic relations to `Deal` and `Company` (Each has a `Page`)
+  - [ ] Migration: `block_protocol_init`
+
 ---
 
 ## 📅 Future Phases
 
 ### Phase 7: Frontend (Week 3, ~35 hours)
 
-#### 7.1: packages/ui Implementation
+#### 7.1: packages/ui Implementation (Block Protocol)
 
-**Location:** `packages/ui/src/`  
-**Reference:** packages/ui/CLAUDE.md, context/style-guide.md
+**Location:** `packages/ui/src/`
+**Reference:** packages/ui/CLAUDE.md, docs/architecture/7-layer-architecture.md
 
 **Tasks:**
 
 - [ ] **[TASK-014] Design Tokens** (2 hours)
   - [ ] src/tokens/colors.ts - Bone, Orange, Deep Grey, Teal Blue
-  - [ ] src/tokens/typography.ts - Inter font stacks
-  - [ ] src/tokens/spacing.ts - 4px base unit system
-  - [ ] src/tokens/borderRadius.ts - 8px minimum
   - [ ] Configure Tailwind config with tokens
 
-- [ ] **[TASK-015] Core Components - Button, Input, Card** (4.5 hours)
-  - [ ] src/components/Button.tsx - Primary, secondary, ghost variants (1.5h)
-  - [ ] src/components/Input.tsx - Text, email, number inputs (1.5h)
-  - [ ] src/components/Card.tsx - Rounded, shadowed container (1h)
-  - [ ] src/lib/cn.ts - Utility function for class names (0.5h)
+- [ ] **[TASK-015] Block Editor Core** (8 hours) 🆕
+  - [ ] Setup Tiptap (or similar) headless editor
+  - [ ] Create `BlockEditor` component
+  - [ ] Implement Base Blocks: Paragraph, Heading, List, Image
+  - [ ] Implement "Slash Command" menu for inserting blocks
 
-- [ ] **[TASK-016] Core Components - Modal, Tabs** (2.5 hours)
-  - [ ] src/components/Modal.tsx - Overlay modal with close (1.5h)
-  - [ ] src/components/Tabs.tsx - Navigation tabs (1h)
+- [ ] **[TASK-016] Block Renderer System** (6 hours) 🆕
+  - [ ] Create `BlockRenderer` recursive component
+  - [ ] Implement read-only view for all block types
+  - [ ] Optimize tree rendering performance
 
-- [ ] **[TASK-017] Citation Component** (2 hours) - **CRITICAL**
-  - [ ] src/components/Citation.tsx - Teal blue underline, source modal
-  - [ ] src/components/VerifiableNumber.tsx - Number + citation link
-  - [ ] <200ms load requirement
-  - [ ] Lazy loading and prefetch on hover
+- [ ] **[TASK-017] Custom CRM Blocks** (6 hours) 🆕
+  - [ ] `CitationBlock`: Teal blue link with verification modal
+  - [ ] `DealHeaderBlock`: Displays dynamic deal status/value
+  - [ ] `EmbedBlock`: Safe iframe for external content
 
-- [ ] **[TASK-018] Navigation & Pattern Components** (2.5 hours)
-  - [ ] src/components/HexagonPattern.tsx - Background pattern (1h)
-  - [ ] src/components/Navigation.tsx - Header, sidebar (1.5h)
+- [ ] **[TASK-018] Navigation & Layout** (3 hours)
+  - [ ] `AppShell`: Sidebar + Topbar
+  - [ ] `PageCanvas`: The main container for rendering a Page
 
-- [ ] **[TASK-019] Storybook Setup** (4 hours)
-  - [ ] Initialize Storybook: `npx storybook@latest init`
-  - [ ] Create stories for all components
-  - [ ] Document design tokens
-  - [ ] Add accessibility addon
-  - [ ] Run: `pnpm --filter @trato-hive/ui storybook`
+- [ ] **[TASK-019] Storybook & Testing** (4 hours)
+  - [ ] Stories for all Block components
+  - [ ] Interaction tests for Editor
 
-- [ ] **[TASK-020] UI Package Testing** (3 hours)
-  - [ ] Unit tests for all components (Vitest + React Testing Library)
-  - [ ] Accessibility tests (WCAG 2.1 AA)
-  - [ ] Achieve >90% coverage
+#### 7.2: apps/web Implementation (Editor Integration)
 
-#### 7.2: apps/web Implementation
-
-**Location:** `apps/web/`  
-**Reference:** apps/web/CLAUDE.md, docs/prds/deals.md
+**Location:** `apps/web/`
 
 **Tasks:**
 
-- [ ] **[TASK-021] App Router Setup** (6 hours)
-  - [ ] app/layout.tsx - Global layout with nav, Tailwind (1h)
-  - [ ] app/page.tsx - Dashboard/command center (1h)
-  - [ ] app/(auth)/login/page.tsx - Login form (1h)
-  - [ ] app/(auth)/signup/page.tsx - Signup form (1h)
-  - [ ] app/deals/page.tsx - Pipeline view (Kanban + List) (1h)
-  - [ ] app/deals/[id]/page.tsx - Deal 360° tabs (1h)
+- [ ] **[TASK-020] Page Logic** (5 hours)
+  - [ ] `usePage` hook: Fetch page tree + block updates
+  - [ ] Block mutations (move, delete, insert) via tRPC
+  - [ ] Optimistic UI updates for block operations
 
-- [ ] **[TASK-022] API Client & React Query** (3 hours)
-  - [ ] lib/api-client.ts - Fetch wrapper with auth headers
-  - [ ] lib/hooks/useDeals.ts - React Query hooks
-  - [ ] Implement: getDeals, getDeal, createDeal, updateDeal
-  - [ ] Error handling
-
-- [ ] **[TASK-023] Web App Testing** (3 hours)
-  - [ ] Unit tests for API client
-  - [ ] E2E tests with Playwright (login flow, create deal)
-  - [ ] Visual regression tests
+- [ ] **[TASK-021] App Router Pages** (4 hours)
+  - [ ] `app/deals/[id]/page.tsx` -> Renders a dynamic Deal Page
+  - [ ] `app/dashboard/page.tsx` -> Renders a dynamic Dashboard Page
 
 ---
 
@@ -304,219 +296,64 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 
 ---
 
-### Phase 10: Features (Week 9-12, ~60 hours)
+### Phase 10: Features (Templates & Blocks)
 
-**Priority Order:** Deals → Command Center → Diligence → Generator → Discovery
+**Strategy:** Instead of building static pages, we build "Page Templates" composed of Blocks.
 
-#### 10.1: features/deals Implementation (Week 9, 15 hours)
+#### 10.1: features/deals Template (Week 9)
 
-**Location:** `features/deals/`  
-**Reference:** features/deals/CLAUDE.md, docs/prds/deals.md
-
-**Backend Tasks:**
+**Tasks:**
 
 - [ ] **[TASK-047] Deal Service Backend** (4 hours)
   - [ ] backend/services/deal-service.ts
-  - [ ] CRUD operations for deals
-  - [ ] Multi-tenancy enforcement (firmId)
-  - [ ] Stage transition logic
+  - [ ] CRUD operations for Deals (Entity)
 
-- [ ] **[TASK-048] Deal Routes Backend** (2 hours)
-  - [ ] backend/routes/deals.ts
-  - [ ] API endpoints: list, get, create, update, delete
-  - [ ] Integration with apps/api tRPC router
+- [ ] **[TASK-048] Deal Template (Block Config)** (4 hours) 🆕
+  - [ ] Define `DealTemplate`: A JSON structure defining the default blocks for a new deal
+  - [ ] `DealHeaderBlock`: Custom block displaying stage/value
+  - [ ] `PipelineBlock`: Kanban view as a block type
 
-- [ ] **[TASK-049] Fact Sheet Integration** (2 hours)
-  - [ ] getFactSheet endpoint
-  - [ ] Integration with @trato-hive/semantic-layer
-  - [ ] Citation linking for verifiable facts
+#### 10.2: features/command-center Template (Week 10)
 
-**Frontend Tasks:**
-
-- [ ] **[TASK-050] DealCard Component** (1 hour)
-  - [ ] frontend/components/DealCard.tsx
-  - [ ] Orange accent border, rounded edges
-  - [ ] Display deal name, company, stage, value
-
-- [ ] **[TASK-051] DealKanban Component** (2 hours)
-  - [ ] frontend/components/DealKanban.tsx
-  - [ ] Drag-and-drop pipeline view
-  - [ ] 6 stages: Sourcing, Outreach, Meeting, Diligence, IC, Closing
-
-- [ ] **[TASK-052] DealList Component** (1 hour)
-  - [ ] frontend/components/DealList.tsx
-  - [ ] Sortable, filterable table view
-  - [ ] Pagination support
-
-- [ ] **[TASK-053] Deal360 Component** (2 hours)
-  - [ ] frontend/components/Deal360.tsx
-  - [ ] Tabbed interface (Overview, Fact Sheet, Diligence, Generator)
-  - [ ] Navigation between modules
-
-- [ ] **[TASK-054] FactSheet Component** (1 hour)
-  - [ ] frontend/components/FactSheet.tsx
-  - [ ] Display verifiable facts with Citation components
-  - [ ] Teal Blue links to source documents
-
-**Testing:**
-
-- [ ] **[TASK-055] Deals E2E Testing** (2 hours)
-  - [ ] E2E tests for drag-and-drop pipeline
-  - [ ] Deal 360° navigation tests
-  - [ ] Fact Sheet citation modal tests
-
-#### 10.2: features/command-center Implementation (Week 10, 12 hours)
-
-**Location:** `features/command-center/`  
-**Reference:** features/command-center/CLAUDE.md, docs/prds/command-center.md
-
-**Backend Tasks:**
+**Tasks:**
 
 - [ ] **[TASK-056] Dashboard Service** (3 hours)
-  - [ ] backend/services/dashboard-service.ts
-  - [ ] Aggregate stats from all modules
-  - [ ] Pipeline health metrics
-  - [ ] Activity feed (SSE integration)
+  - [ ] Backend aggregation services
 
-- [ ] **[TASK-057] Command Center Routes** (2 hours)
-  - [ ] backend/routes/command-center.ts
-  - [ ] API endpoints: dashboard, tasks, activity, query
-  - [ ] SSE endpoint for real-time updates
+- [ ] **[TASK-058] Command Center Template** (4 hours) 🆕
+  - [ ] `QueryBlock`: AI Query bar that inserts results as new blocks
+  - [ ] `InboxBlock`: Task list as a block
+  - [ ] `PipelineHealthBlock`: Chart as a block
 
-**Frontend Tasks:**
+#### 10.3: features/diligence Template (Week 11)
 
-- [ ] **[TASK-058] Dashboard & AIQueryBar Components** (4 hours)
-  - [ ] frontend/components/Dashboard.tsx (2h)
-  - [ ] KPI cards, pipeline health widget
-  - [ ] frontend/components/AIQueryBar.tsx (2h)
-  - [ ] Natural language query interface
-  - [ ] Integration with TIC Core
-
-- [ ] **[TASK-059] MyTasks & PipelineHealth Components** (3 hours)
-  - [ ] frontend/components/MyTasksInbox.tsx (2h)
-  - [ ] Unified task inbox from all modules
-  - [ ] frontend/components/PipelineHealthWidget.tsx (1h)
-  - [ ] Real-time pipeline health visualization
-
-#### 10.3: features/diligence Implementation (Week 11, 15 hours)
-
-**Location:** `features/diligence/`  
-**Reference:** features/diligence/CLAUDE.md, docs/prds/diligence.md
-
-**Backend Tasks:**
+**Tasks:**
 
 - [ ] **[TASK-060] VDR Service** (4 hours)
-  - [ ] backend/services/vdr-service.ts
-  - [ ] Document upload handling
-  - [ ] Integration with @trato-hive/data-plane for OCR
-  - [ ] Queue document processing jobs
+  - [ ] Backend file processing
 
-- [ ] **[TASK-061] QA Service** (4 hours)
-  - [ ] backend/services/qa-service.ts
-  - [ ] Q&A endpoint with RAG workflow
-  - [ ] Integration with Diligence Agent
-  - [ ] Citation extraction and linking
+- [ ] **[TASK-063] Diligence Template** (4 hours) 🆕
+  - [ ] `VDRBlock`: File explorer block
+  - [ ] `QABlock`: Chat interface block
 
-- [ ] **[TASK-062] Diligence Routes** (2 hours)
-  - [ ] backend/routes/diligence.ts
-  - [ ] API endpoints: upload, qa, risk-analysis, summaries
-  - [ ] File upload handling with multipart
+#### 10.4: features/generator Integration (Week 11-12)
 
-**Frontend Tasks:**
-
-- [ ] **[TASK-063] VDRUploader Component** (2 hours)
-  - [ ] frontend/components/VDRUploader.tsx
-  - [ ] Drag-and-drop file upload (react-dropzone)
-  - [ ] Upload progress tracking
-  - [ ] Support PDF, XLSX, email formats
-
-- [ ] **[TASK-064] QAInterface Component** (2 hours)
-  - [ ] frontend/components/QAInterface.tsx
-  - [ ] Chat-style Q&A interface
-  - [ ] Display answers with citations
-  - [ ] Citation modal integration
-
-- [ ] **[TASK-065] CitationModal Component** (1 hour)
-  - [ ] frontend/components/CitationModal.tsx
-  - [ ] Orange (#EE8D1D) border modal
-  - [ ] <200ms load requirement (CRITICAL)
-  - [ ] Display source excerpt with highlighted text
-
-#### 10.4: features/generator Implementation (Week 11-12, 12 hours)
-
-**Location:** `features/generator/`  
-**Reference:** features/generator/CLAUDE.md, docs/prds/generator.md
-
-**Backend Tasks:**
+**Tasks:**
 
 - [ ] **[TASK-066] Generator Service** (5 hours)
-  - [ ] backend/services/generator-service.ts
-  - [ ] IC deck generation with pptxgenjs
-  - [ ] LOI/memo generation with docx library
-  - [ ] Integration with Generator Agent
-  - [ ] Citation embedding in generated documents
+  - [ ] Generate PPTX/DOCX from *Page content* (parse Blocks -> Slides) 🆕
 
-- [ ] **[TASK-067] Generator Routes** (2 hours)
-  - [ ] backend/routes/generator.ts
-  - [ ] API endpoints: templates, generate, preview, export
-  - [ ] Async generation with job queues
-  - [ ] Export to PPTX/DOCX formats
+#### 10.5: features/discovery Integration
 
-**Frontend Tasks:**
-
-- [ ] **[TASK-068] TemplateSelector Component** (2 hours)
-  - [ ] frontend/components/TemplateSelector.tsx
-  - [ ] Template gallery (IC Deck, LOI, Memo, CIM)
-  - [ ] Template preview and selection
-
-- [ ] **[TASK-069] GenerationProgress Component** (2 hours)
-  - [ ] frontend/components/GenerationProgress.tsx
-  - [ ] Real-time progress updates (SSE/WebSocket)
-  - [ ] Step-by-step generation visualization
-
-- [ ] **[TASK-070] Preview Component** (1 hour)
-  - [ ] frontend/components/Preview.tsx
-  - [ ] Document preview with citations
-  - [ ] Edit mode with Tiptap/Lexical
-  - [ ] Export button
-
-#### 10.5: features/discovery Implementation (Week 12, 10 hours)
-
-**Location:** `features/discovery/`  
-**Reference:** features/discovery/CLAUDE.md, docs/prds/discovery.md
-
-**Backend Tasks:**
+**Tasks:**
 
 - [ ] **[TASK-071] Sourcing Service** (4 hours)
-  - [ ] backend/services/sourcing-service.ts
-  - [ ] Natural language search with semantic search
-  - [ ] Lookalike matching with vector similarity
-  - [ ] Market map data generation
-  - [ ] Integration with Sourcing Agent
+  - [ ] Backend search
 
-- [ ] **[TASK-072] Discovery Routes** (2 hours)
-  - [ ] backend/routes/discovery.ts
-  - [ ] API endpoints: search, lookalike, market-map, target-lists
-  - [ ] CRUD operations for target lists
+- [ ] **[TASK-073] Discovery Template** (3 hours) 🆕
+  - [ ] `SearchBlock`: Natural language search input
+  - [ ] `ResultsBlock`: List of companies (addable to pipeline)
 
-**Frontend Tasks:**
-
-- [ ] **[TASK-073] SearchBar Component** (1 hour)
-  - [ ] frontend/components/SearchBar.tsx
-  - [ ] Natural language search input
-  - [ ] Search suggestions and autocomplete
-
-- [ ] **[TASK-074] TargetList Component** (2 hours)
-  - [ ] frontend/components/TargetList.tsx
-  - [ ] Company cards with key metrics
-  - [ ] Add to deal pipeline functionality
-  - [ ] Save to target lists
-
-- [ ] **[TASK-075] MarketMap Component** (1 hour)
-  - [ ] frontend/components/MarketMap.tsx
-  - [ ] Hexagonal market visualization (D3.js)
-  - [ ] Interactive company clusters
-  - [ ] Zoom and pan controls
 
 ---
 

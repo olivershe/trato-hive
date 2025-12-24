@@ -6,9 +6,10 @@ Core CRM module (Layer 5) for pipeline management, Deal 360° Hub, and Verifiabl
 
 ## Tech Stack
 
-- **Frontend:** Next.js 15, `@dnd-kit` (Kanban), TanStack Table (List)
-- **Backend:** tRPC, Prisma, Socket.io (Real-time updates)
+- **Frontend:** Next.js 15, Block Editor (Tiptap), Page Renderer
+- **Backend:** tRPC, Prisma, Block Service
 - **AI:** Pipeline OS Agent (Next steps), Semantic Layer (Facts)
+- **Architecture:** "Deal 360" is a **Page Template**, not a static component.
 
 ## Data Model
 

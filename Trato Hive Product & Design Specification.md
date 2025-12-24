@@ -116,22 +116,27 @@ Replaces standalone sourcing tools by integrating Grata-style sourcing.
 This is the core of the CRM, merging DealCloud's pipeline strength with AI-Native intelligence.
 
 * **UI Flow:**
-    * User clicks **"Deals"** tab.
-    * User sees the **Classic Interactive Pipeline View** (a key user requirement). This can be toggled between:
-        * **Kanban View:** Draggable cards (`Soft Sand`) on a `Charcoal Black` stage-based background.
-        * **List View:** A dense, spreadsheet-like view for power users.
-    * User clicks a deal ("Project Sky") $\rightarrow$ **Deal 360° View**.
-* **Key Features (Deal 360° View):**
-    * **Description:** The central hub for a single deal. It's a tabbed interface.
-    1.  **"Overview" Tab:**
-        * **Content:** Key deal info, status, team, AI-suggested "Next Steps."
-        * **"Verifiable Fact Sheet" Widget:** A widget (with a `Gold` border) showing critical KPIs (EBITDA, Revenue, etc.) auto-extracted from the latest documents. **Each number is a `Teal Blue` hyperlink.**
+    *   User clicks **"Deals"** tab.
+    *   User sees the **Classic Interactive Pipeline View** (a key user requirement).
+    *   User clicks a deal ("Project Sky") $\rightarrow$ **Deal 360° View**.
+    *   **CRITICAL CHANGE:** The Deal 360° View is no longer a static layout. It is a **Page** composed of **Blocks**.
+    *   The "Default Template" creates the standard tabbed interface, but users can add/remove blocks (e.g., add a "Notion-like" notes block, drag in a "Deal Team" block).
+*   **Key Features (Deal 360° View):**
+    *   **Description:** A dynamic `Page` associated with the Deal entity.
+    *   **Block Protocol:**
+        *   **Standard Blocks:** Text, Headers, Lists, Images, Dividers (like Notion).
+        *   **CRM Blocks:** "Deal Details" key-value block, "Pipeline Stage" stepper block, "Team" face-pile block.
+    *   **Default "Page Template" Structure:**
+        1.  **"Overview" Tab:** composed of:
+            *   `[CRM Block]` Header (Name, Stage, Value)
+            *   `[CRM Block]` "Verifiable Fact Sheet" Widget (with citations)
+            *   `[Standard Block]` User notes area (rich text)
+            *   `[Standard Block]` Embedded tasks list
         * **UI Flow (Citation):** User clicks the hyperlinked EBITDA number $\rightarrow$ A modal pops up, showing the exact snippet from the source document (CIM, Q&A, etc.) with the text highlighted. This is the **"citation-first" principle in action**.
     2.  **"Diligence" Tab:**
         * **Content:** Launches the "Diligence Room" (see Module 4). Shows high-level status: "82% of VDR reviewed," "15 open Q&A items," "3 High-Risk items flagged."
     3.  **"Documents" Tab:**
         * **Content:** A file explorer for all documents ingested for this deal, with AI-generated tags.
-    4.  **"Activity" Tab:**
         * **Content:** A filtered log of all emails, meetings, notes, and tasks for this deal.
 
 ---

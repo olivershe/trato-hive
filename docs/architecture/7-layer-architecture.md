@@ -89,13 +89,13 @@ This layer defines **agents** – orchestrated workflows that accomplish complex
 - **Diligence Agent** (Module 4): Answers diligence questions by searching VDR documents, summarising findings and highlighting risks.
 - **Generator Agent** (Module 5): Creates IC decks and LOIs with golden citations.
 
-### 4.5 Layer 5: Experience Layer
+### 4.5 Layer 5: Experience Layer
 
-The Experience Layer comprises the user interface (React/Next.js) and backend API routes. It handles server‑side rendering, client‑side interactivity and forms. The frontend uses the **Intelligent Hive** design system (Soft Sand backgrounds, Gold accents, Charcoal Black text and Teal Blue citations)【861078381458516†L172-L213】. The backend (Express) defines controllers and services that call agents and the TIC Core. This layer must implement state management, input validation with Zod and error handling. It should avoid embedding business logic (which belongs in lower layers) to maintain separation of concerns.
+The Experience Layer comprises the user interface (React/Next.js) and backend API routes. The frontend is built on a **Block Protocol**, allowing for dynamic, Notion-like pages (e.g., Deal 360 views) rather than static templates. It uses a **Block Editor** (based on Tiptap/ProseMirror) for content creation and a **Block Renderer** for displaying hierarchical data. The design system, **Intelligent Hive**, provides the visual components (Soft Sand backgrounds, Gold accents). The backend (Express) defines controllers that fetch "Page Trees" (nested blocks) efficiently. This layer must implement state management, input validation with Zod and error handling.
 
-### 4.6 Layer 6: Governance Layer
+### 4.6 Layer 6: Governance Layer
 
-Provides cross‑cutting concerns for security and compliance. It implements authentication (JWT, OAuth), authorization (role‑based and row‑level), audit logging (immutable logs of user actions with timestamps and firmIds), encryption (AES‑256 at rest, TLS 1.3 in transit) and SOC2/GDPR compliance checks. It ensures multi‑tenant isolation and prevents data leakage across firms. Security scanning and secret management (e.g., using Vault) also reside here.
+Provides cross-cutting concerns for security and compliance. It maintains the core data schema, including the recursive **Block** and **Page** models that power the experience layer. It implements authentication (JWT/OAuth), authorization (role-based and row-level), audit logging (immutable logs), encryption (AES-256), and SOC2/GDPR compliance checks. It ensures multi-tenant isolation and prevents data leakage across firms. Security scanning and secret management (e.g., using Vault) also reside here.
 
 ### 4.7 Layer 7: API Layer
 
