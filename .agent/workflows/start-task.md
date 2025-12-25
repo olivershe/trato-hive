@@ -31,6 +31,7 @@ Use this workflow to begin working on a new task from `PROJECT_STATUS.md`.
     - Goal
     - Proposed Changes
     - Verification Plan
+    - Use web search for most upto date code research (Decemmber 2025)
 2.  Create `task.md` with:
     - Step-by-step checklist
     - `[ ]` items for tracking
