@@ -31,6 +31,7 @@ model User {
   organizations OrganizationMember[]
   documents     Document[]
   activities    Activity[]
+  createdBlocks Block[]
 
   @@map("users")
 }
@@ -164,6 +165,7 @@ model Company {
   deals     Deal[]
   documents Document[]
   facts     Fact[]
+  page      Page?
 
   @@index([organizationId])
   @@index([status])
@@ -219,6 +221,7 @@ model Deal {
   // Relations
   documents Document[]
   activities Activity[]
+  page      Page?
 
   @@index([organizationId])
   @@index([stage])
@@ -398,4 +401,62 @@ model Activity {
   @@index([type])
   @@index([createdAt])
   @@map("activities")
+}
+
+// =============================================================================
+// BLOCK PROTOCOL (Experience Layer - Dynamic Content)
+// =============================================================================
+
+model Page {
+  id          String   @id @default(cuid())
+  title       String?  // Optional title for page context
+
+  // Polymorphic Relations (Nullable Foreign Keys)
+  // A Page can belong to ONE entity (enforced by app logic)
+  dealId      String?  @unique
+  deal        Deal?    @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  companyId   String?  @unique
+  company     Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  // Children
+  blocks      Block[]  @relation("PageBlocks")
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("pages")
+}
+
+model Block {
+  id          String   @id @default(cuid())
+  type        String   // "paragraph", "heading", "image", "task_list", "deal_card", etc.
+
+  // Content storage - Flexible JSONB
+  // Example: { "text": "Hello world", "level": 1, "checked": true, "url": "https://example.com" }
+  properties  Json     @db.JsonB
+
+  // Tree Structure (Adjacency List)
+  parentId    String?
+  parent      Block?   @relation("BlockHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children    Block[]  @relation("BlockHierarchy")
+
+  // Ordering
+  order       Int      @default(0) // Rank for sorting siblings
+
+  // Context
+  pageId      String
+  page        Page     @relation("PageBlocks", fields: [pageId], references: [id], onDelete: Cascade)
+
+  // Metadata
+  createdBy   String
+  creator     User     @relation(fields: [createdBy], references: [id])
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([pageId])
+  @@index([parentId])
+  @@index([pageId, order])
+  @@map("blocks")
 }

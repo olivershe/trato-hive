@@ -11,6 +11,7 @@ import { seedCompanies } from './seed/companies';
 import { seedDeals } from './seed/deals';
 import { seedDocuments } from './seed/documents';
 import { seedFacts } from './seed/facts';
+import { seedPages } from './seed/pages';
 
 const prisma = new PrismaClient();
 
@@ -48,6 +49,11 @@ async function main() {
     const facts = await seedFacts(documents);
     console.log(`✓ Facts: ${facts.length} facts ready\n`);
 
+    // Step 7: Seed Pages & Blocks
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    const { pages, blocks } = await seedPages(deals, users);
+    console.log(`✓ Pages & Blocks: ${pages.length} pages, ${blocks.length} blocks ready\n`);
+
     // Summary
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     console.log('🎉 Database seed completed successfully!\n');
@@ -58,6 +64,8 @@ async function main() {
     console.log(`   • ${deals.length} Deals (across all pipeline stages)`);
     console.log(`   • ${documents.length} Documents (VDR documents with metadata)`);
     console.log(`   • ${facts.length} Facts (verifiable facts with citations)`);
+    console.log(`   • ${pages.length} Pages (Block Protocol foundation)`);
+    console.log(`   • ${blocks.length} Blocks (hierarchical content structure)`);
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 
     // Sample queries to verify data
@@ -95,6 +103,31 @@ async function main() {
       console.log(`   Confidence: ${(sampleFact.confidence * 100).toFixed(0)}%`);
       console.log(`   Source: ${sampleFact.document?.name || 'N/A'}`);
       console.log(`   Extracted by: ${sampleFact.extractedBy}`);
+    }
+
+    const samplePage = await prisma.page.findFirst({
+      where: { dealId: { not: null } },
+      include: {
+        deal: true,
+        blocks: {
+          include: {
+            children: true,
+          },
+          orderBy: { order: 'asc' },
+        },
+      },
+    });
+
+    if (samplePage) {
+      console.log(`\n   Page: "${samplePage.title}"`);
+      console.log(`   Deal: ${samplePage.deal?.name || 'N/A'}`);
+      console.log(`   Root Blocks: ${samplePage.blocks.filter(b => !b.parentId).length}`);
+      console.log(`   Total Blocks: ${samplePage.blocks.length}`);
+      const rootBlocks = samplePage.blocks.filter(b => !b.parentId);
+      if (rootBlocks.length > 0) {
+        console.log(`   First Block: ${rootBlocks[0].type} - "${(rootBlocks[0].properties as any).text}"`);
+        console.log(`   Children: ${rootBlocks[0].children.length} child blocks`);
+      }
     }
 
     console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
