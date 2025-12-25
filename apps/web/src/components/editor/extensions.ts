@@ -21,6 +21,7 @@ import { ActivityTimelineBlock } from "./extensions/ActivityTimelineBlock";
 import { DealDatabaseBlock } from "./extensions/DealDatabaseBlock";
 import GlobalDragHandle from "tiptap-extension-global-drag-handle";
 import AutoJoiner from "tiptap-extension-auto-joiner";
+import Focus from "@tiptap/extension-focus";
 
 // @ts-ignore
 const uniqueId = UniqueID.configure({
@@ -154,5 +155,9 @@ export const defaultExtensions = [
     }),
     AutoJoiner.configure({
         elementsToJoin: ["bulletList", "orderedList"], // Join lists when adjacent
+    }),
+    Focus.configure({
+        className: "is-focused",
+        mode: "all", // Highlight longest node (or shallowest)
     }),
 ];

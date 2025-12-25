@@ -63,6 +63,7 @@
     "tippy.js": "^6.3.7",
     "tiptap-extension-auto-joiner": "^0.1.3",
     "tiptap-extension-global-drag-handle": "^0.1.18",
+    "@tiptap/extension-focus": "^2.10.3",
     "use-debounce": "^10.0.6",
     "zod": "^3.23.8",
     "zustand": "^5.0.2"
