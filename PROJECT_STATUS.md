@@ -165,9 +165,9 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 - [x] **[TASK-017] Custom M&A Blocks I: Citations** (5 hours) ✅
   - [x] Build `CitationBlock` extension (verifiable facts from Layer 2)
   - [x] Implement hover-previews for source document snippets
-- [ ] **[TASK-018] Custom M&A Blocks II: Deal Snapshot** (5 hours)
-  - [ ] Build `DealHeaderBlock` (dynamic value, stage, owner status)
-  - [ ] Build `ActivityTimelineBlock` logic
+- [x] **[TASK-018] Custom M&A Blocks II: Deal Snapshot** (5 hours) ✅
+  - [x] Build `DealHeaderBlock` (dynamic value, stage, owner status)
+  - [x] Build `ActivityTimelineBlock` logic
 - [ ] **[TASK-018b] M&A Intelligence Views** (10 hours) 🆕
   - [ ] Build **Kanban View**: Pipeline-specific (Sourcing, Diligence, Closing)
   - [ ] Build **Timeline View**: Critical for Exclusivity/LOI windows and Closing paths
