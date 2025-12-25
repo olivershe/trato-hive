@@ -18,6 +18,7 @@ Next.js 15+ frontend application (Layer 7) implementing "The Intelligent Hive v2
 - **State:** Zustand (Client), TanStack Query (Server), tRPC (API)
 - **Auth:** NextAuth.js v5 (Client)
 - **AI:** Vercel AI SDK
+- **Editor:** Novel + Tiptap
 
 ## Architecture
 
@@ -77,3 +78,5 @@ export function CreateDealBtn() {
 - **Components:** Prefer `@trato-hive/ui` over custom implementations.
 - **Accessibility:** WCAG 2.1 AA (contrast, keyboard nav).
 - **Type Safety:** Strict TypeScript.
+- **Novel Integration:** Do not use Novel's default UI for toolbars; custom-style everything to match **The Intelligent Hive**.
+- **Block Sync:** All editor changes MUST sync to the recursive `Block` database records via tRPC.

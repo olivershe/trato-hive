@@ -62,7 +62,18 @@ EBITDA: $12.5M [linked to source document, page 23]
 - Deal 360° Overview (secondary): Full details, tabs for diligence/docs/activity
 - Verifiable Fact Sheet (tertiary): Expandable widget within Overview with **prominent Orange border**
 
-### 4. Speed & Responsiveness (Performance as a Feature)
+### 4. Block-Based Content (Dynamic Experience)
+
+**Principle:** User-generated content should be granular, recursive, and agent-ready.
+
+**Implementation:**
+- Use a **Page -> Block** model for all complex entities (Deals, Companies)
+- Blocks are the atomic unit of work: Paragraph, Heading, Citation, DealCard
+- Support drag-and-drop reordering for logical structuring
+- AI Agents operate at the **Block level** (e.g., "Summarize this block")
+- Use **Novel/Tiptap** for a consistent, Notion-like writing experience
+
+### 5. Speed & Responsiveness (Performance as a Feature)
 
 **Principle:** The system must feel fast and responsive, even during heavy AI operations.
 

@@ -79,7 +79,7 @@ Extracts structured facts from ingested documents using NLP and stores them in a
 
 ### 4.3 Layer 3: TIC Core
 
-The Trato Intelligence Core orchestrates generative AI. It receives natural language queries, retrieves relevant facts from the Semantic Layer, constructs prompts and invokes LLMs (OpenAI GPT‑4, Anthropic Claude) to generate responses with citations. It also generates embeddings for documents and queries (using `generateEmbedding()`) and extracts citations from LLM outputs via post‑processing. The TIC Core implements prompt engineering patterns and fallback strategies to ensure deterministic behaviour and to manage token and cost budgets. Open‑source or commodity LLMs are preferred over expensive, proprietary AI tools when feasible.
+The Trato Intelligence Core orchestrates generative AI. It receives natural language queries, retrieves relevant facts from the Semantic Layer, constructs prompts and invokes LLMs (OpenAI GPT‑5.2, Anthropic Claude) to generate responses with citations. It also generates embeddings for documents and queries (using `generateEmbedding()`) and extracts citations from LLM outputs via post‑processing. The TIC Core implements prompt engineering patterns and fallback strategies to ensure deterministic behaviour and to manage token and cost budgets. Open‑source or commodity LLMs are preferred over expensive, proprietary AI tools when feasible.
 
 ### 4.4 Layer 4: Agentic Layer
 

@@ -9,32 +9,32 @@ The **Experience Layer** presents Trato Hive to users and orchestrates interact
 
 ## 1. Responsibilities
 
-1. **User Interface:** Implement responsive, accessible interfaces using Next.js 14 with the App Router and React server components. Render pages for Command Center, Discovery, Deals, Diligence, Generator and Settings.
-2. **API Routes:** Define server actions and API routes in `apps/api/` that act as controllers. Validate requests, enforce authentication/authorization and call services/agents. Avoid embedding business logic in the controllers.
-3. **State Management:** Manage client‑side state with React hooks and server state with caching strategies (e.g., React Query or SWR). Persist minimal data on the client; fetch data on demand from the API to ensure freshness and security.
+1. **User Interface:** Implement responsive, accessible interfaces using **Next.js 15** with the App Router and **React 19** server components. Render pages for Command Center, Discovery, Deals, Diligence, Generator and Settings.
+2. **API Routes:** Define **tRPC** procedures and API routes (Fastify) that act as controllers. Validate requests with Zod, enforce authentication/authorization and call services/agents. Avoid embedding business logic in the controllers.
+3. **State Management:** Manage client-side state with **Zustand** and server state with **TanStack Query** (via tRPC). Persist minimal data on the client; fetch data on demand from the API to ensure freshness and security.
 4. **Form Validation:** Use Zod schemas to validate form inputs on both the client and server. Provide meaningful error messages and highlight invalid fields.
-5. **Design System Integration:** Implement UIs according to The Intelligent Hive design system【861078381458516†L172-L213】. Use the provided components from `packages/ui/` (Buttons, Inputs, Cards, Modals, Tables) and adhere to color palette, typography and spacing.
+5. **Design System Integration:** Implement UIs according to **The Intelligent Hive** design system. Use components from `packages/ui/` (Buttons, Inputs, Cards, Modals, Tables) and adhere to color palette, typography and spacing.
 6. **Error Handling & Feedback:** Provide immediate feedback for loading, success and error states. Use skeleton loaders, toast notifications and inline validations. Ensure that errors from backend services propagate to the UI gracefully.
 
 ## 2. Frontend Architecture
 
-- **Next.js 14 App Router:** Use file‑based routing with Server and Client components. Pages that require data fetching (e.g., Deal 360° view) are implemented as server components, while interactive elements (e.g., Kanban drag‑and‑drop) are client components.
-- **Server Components:** Fetch data from internal APIs (via `getServerSideProps` or server actions) and render HTML on the server. This reduces client bundle sizes and improves performance.
-- **Client Components:** Handle interactions such as drag‑and‑drop in the pipeline, adjusting similarity sliders in lookalike discovery and controlling modals. These components import hooks from `packages/ui/` and manage local state.
-- **Layout:** Implement a top‑level `Layout` component that includes navigation (left sidebar, top bar), global modals and theme context. Use dynamic imports for heavy components to improve initial load times.
+- **Next.js 15 App Router:** Use file-based routing with Server and Client components. Pages that require data fetching (e.g., Deal 360° view) are implemented as server components, while interactive elements (e.g., Kanban drag-and-drop, **Novel Block Editor**) are client components.
+- **Server Components:** Fetch data from internal APIs (via tRPC or direct service calls) and render HTML on the server. This reduces client bundle sizes and improves performance.
+- **Client Components:** Handle interactions such as drag-and-drop in the pipeline, adjusting similarity sliders in lookalike discovery and controlling the **Novel-based Block Editor**. These components import hooks from `packages/ui/` and manage local state.
+- **Layout:** Implement a top-level `Layout` component that includes navigation (left sidebar, top bar), global modals and theme context. Use dynamic imports for heavy components to improve initial load times.
 
 ## 3. Backend Architecture (API Routes)
 
-- **Express Controllers:** In `apps/api/`, define route handlers that perform request validation (Zod), authentication (JWT), authorization (RBAC) and call services/agents. For example, `POST /api/v1/deals` invokes the Deals service to create a deal.
-- **Services:** Business logic resides in service classes that orchestrate calls to the Data Plane, Semantic Layer, TIC Core and agents. Services return plain objects; they do not know about HTTP contexts.
-- **Middleware:** Use middleware for common concerns (error handling, logging, rate limiting). Implement firmId filtering at this layer to enforce row‑level security.
+- **Fastify & tRPC Procedures:** In `apps/api/`, define route handlers and procedures that perform request validation (Zod), authentication (Auth.js), authorization (RBAC) and call services/agents.
+- **Services:** Business logic resides in service classes that orchestrate calls to the Data Plane, Semantic Layer, TIC Core and agents. Services return plain objects; they do not know about HTTP contexts.
+- **Middleware:** Use tRPC middleware for common concerns (error handling, logging, rate limiting). Implement `firmId` filtering at this layer to enforce row-level security.
 
 ## 4. Intelligent Hive Design System
 
-- **Colors:** Adhere to the palette – Soft Sand backgrounds, Gold/Honey accents for CTAs and highlights, Charcoal Black for primary text and Teal Blue for AI‑generated content and citations.
-- **Typography:** Use Lora for headings and Inter for body text. Ensure type scale follows the design guidelines.
-- **Components:** Use `packages/ui/Button` for primary and secondary actions, `packages/ui/Card` for data display, `packages/ui/Modal` for overlays (e.g., citation modal), `packages/ui/Table` for listing items. Avoid custom styling unless extending the design system.
-- **Spacing & Radius:** Use an 8 px base grid for spacing and at least 8 px border radius on all components. Ensure adequate contrast and accessible color combinations.
+- **Colors:** Adhere to the palette – Bone backgrounds, Orange accents for CTAs and highlights, Deep Grey for primary text and Teal Blue for AI-generated content and citations.
+- **Typography:** Use **Inter** for all text (headings and body). Ensure type scale follows the design guidelines.
+- **Components:** Use `packages/ui/Button` for primary and secondary actions, `packages/ui/Card` for data display, `packages/ui/Modal` for overlays (e.g., citation modal), and **Novel/Tiptap** for dynamic "Block-based" content creation.
+- **Spacing & Radius:** Use an 8 px base grid for spacing and at least 8 px border radius on all components. Ensure adequate contrast and accessible color combinations.
 
 ## 5. State Management Patterns
 

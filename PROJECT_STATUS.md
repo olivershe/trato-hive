@@ -147,57 +147,47 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 
 ## 📅 Future Phases
 
-### Phase 7: Frontend (Week 3, ~35 hours)
+### Phase 7: Frontend (Block Protocol & Editor) 🔄 IN PROGRESS
 
-#### 7.1: packages/ui Implementation (Block Protocol)
-
-**Location:** `packages/ui/src/`
-**Reference:** packages/ui/CLAUDE.md, docs/architecture/7-layer-architecture.md
+**Focus:** Building a premium, AI-native Experience Layer using **Novel** and **Tiptap**.
 
 **Tasks:**
 
-- [ ] **[TASK-014] Design Tokens** (2 hours)
-  - [ ] src/tokens/colors.ts - Bone, Orange, Deep Grey, Teal Blue
-  - [ ] Configure Tailwind config with tokens
-
-- [ ] **[TASK-015] Block Editor Core** (8 hours) 🆕
-  - [ ] Setup Tiptap (or similar) headless editor
-  - [ ] Create `BlockEditor` component
-  - [ ] Implement Base Blocks: Paragraph, Heading, List, Image
-  - [ ] Implement "Slash Command" menu for inserting blocks
-
-- [ ] **[TASK-016] Block Renderer System** (6 hours) 🆕
-  - [ ] Create `BlockRenderer` recursive component
-  - [ ] Implement read-only view for all block types
-  - [ ] Optimize tree rendering performance
-
-- [ ] **[TASK-017] Custom CRM Blocks** (6 hours) 🆕
-  - [ ] `CitationBlock`: Teal blue link with verification modal
-  - [ ] `DealHeaderBlock`: Displays dynamic deal status/value
-  - [ ] `EmbedBlock`: Safe iframe for external content
-
-- [ ] **[TASK-018] Navigation & Layout** (3 hours)
-  - [ ] `AppShell`: Sidebar + Topbar
-  - [ ] `PageCanvas`: The main container for rendering a Page
-
-- [ ] **[TASK-019] Storybook & Testing** (4 hours)
-  - [ ] Stories for all Block components
-  - [ ] Interaction tests for Editor
-
-#### 7.2: apps/web Implementation (Editor Integration)
-
-**Location:** `apps/web/`
-
-**Tasks:**
-
-- [ ] **[TASK-020] Page Logic** (5 hours)
-  - [ ] `usePage` hook: Fetch page tree + block updates
-  - [ ] Block mutations (move, delete, insert) via tRPC
-  - [ ] Optimistic UI updates for block operations
-
-- [ ] **[TASK-021] App Router Pages** (4 hours)
-  - [ ] `app/deals/[id]/page.tsx` -> Renders a dynamic Deal Page
-  - [ ] `app/dashboard/page.tsx` -> Renders a dynamic Dashboard Page
+- [ ] **[TASK-014] Editor Setup & Design Tokens** (3 hours)
+  - [ ] Initialize `apps/web` with `novel` and `@tiptap/react`
+  - [ ] Configure Tailwind 4.0 tokens (Soft Sand, Gold, Bone) in `packages/ui`
+- [ ] **[TASK-015] Block Editor Core** (6 hours)
+  - [ ] Build `BlockEditor.tsx` headless wrapper
+  - [ ] Implement custom Slash Command menu (`/`) for M&A blocks
+- [ ] **[TASK-016] Content Persistence Sync** (4 hours)
+  - [ ] Connect Tiptap JSON output to tRPC `updateBlock` mutations
+  - [ ] Implement debounced auto-save to Phase 6.4 schema
+- [ ] **[TASK-017] Custom M&A Blocks I: Citations** (5 hours)
+  - [ ] Build `CitationBlock` extension (verifiable facts from Layer 2)
+  - [ ] Implement hover-previews for source document snippets
+- [ ] **[TASK-018] Custom M&A Blocks II: Deal Snapshot** (5 hours)
+  - [ ] Build `DealHeaderBlock` (dynamic value, stage, owner status)
+  - [ ] Build `ActivityTimelineBlock` logic
+- [ ] **[TASK-018b] M&A Intelligence Views** (10 hours) 🆕
+  - [ ] Build **Kanban View**: Pipeline-specific (Sourcing, Diligence, Closing)
+  - [ ] Build **Timeline View**: Critical for Exclusivity/LOI windows and Closing paths
+  - [ ] Build **Calendar View**: Manage Site Visits, Management Presentations, and Deadlines
+  - [ ] Build **Table & Gallery Views**: For financial logs and "Logo" target lists
+  - [ ] Build **Analytics Chart View**: (Simple Bar/Pie) for pipeline value concentration
+  - [ ] Implementation: Cross-block filtering and query state persistence in JSONB
+- [ ] **[TASK-019] Block Protocol Renderer** (4 hours)
+  - [ ] Create read-only recursive React renderer for shared "Deal 360" views
+  - [ ] Optimize for Server-Side Rendering (SSR) in Next.js 15
+- [ ] **[TASK-020] UI Polish: The Intelligent Hive** (6 hours)
+  - [ ] Custom-style toolbars and drag-handles using `packages/ui`
+  - [ ] Add `framer-motion` micro-animations for block reordering
+- [ ] **[TASK-021] Collaboration Foundation** (5 hours)
+  - [ ] POC setup for `Yjs` or Liveblocks for real-time editing
+  - [ ] Implement "User Presence" indicators
+- [ ] **[TASK-022] Mobile Experience** (4 hours)
+  - [ ] Optimize editor for tablet and mobile touch interactions
+- [ ] **[TASK-023] Frontend Verification Suite** (4 hours)
+  - [ ] Playwright E2E tests for core editor interactions and auto-save
 
 ---
 
