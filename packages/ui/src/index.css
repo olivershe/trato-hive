@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+@theme {
+  /* Brand & Accents */
+  --color-orange: #EE8D1D;
+  --color-gold: #D4AF37;
+  
+  /* Backgrounds */
+  --color-bone: #E2D9CB;
+  --color-alabaster: #F7F7F7;
+  --color-deep-grey: #313131;
+  --color-surface-dark: #3A3A3A;
+  
+  /* Typography */
+  --color-charcoal: #1A1A1A;
+  --color-cultured-white: #F7F7F7;
+  
+  /* M&A Specialized */
+  --color-citation: #2F7E8A;
+  --color-citation-hover: #4A9DAB;
+  
+  /* Typography Settings */
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  
+  /* Geometry */
+  --radius-honeycomb: 4px;
+  --radius-deal-card: 12px;
+}
+
+/* Base Styles */
+@layer base {
+  body {
+    @apply bg-bone text-charcoal font-sans antialiased;
+  }
+  
+  .dark body {
+    @apply bg-deep-grey text-cultured-white;
+  }
+}

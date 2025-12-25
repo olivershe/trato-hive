@@ -1,0 +1,16 @@
+@import "@trato-hive/ui/index.css" source(workspace);
+
+/* Additional app-specific styles */
+:root {
+    --app-max-width: 1440px;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+}

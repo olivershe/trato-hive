@@ -8,6 +8,9 @@
 // Utility exports
 export * from './lib/utils';
 
+// Design Tokens
+export * from './tokens/colors';
+
 // Component exports (to be added as components are built)
 // export * from './components/button';
 // export * from './components/card';
