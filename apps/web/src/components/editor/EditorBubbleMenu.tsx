@@ -1,18 +1,18 @@
 
 "use client";
 
-import { BubbleMenu, BubbleMenuProps, isNodeSelection } from "@tiptap/react";
+import { BubbleMenu } from "@tiptap/react";
 import { type Editor } from "@tiptap/core";
 import { Bold, Italic, Strikethrough, Code, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { HexagonSpinner } from "../ui/HexagonSpinner";
 
-interface EditorBubbleMenuProps extends Omit<BubbleMenuProps, "editor"> {
+interface EditorBubbleMenuProps {
     editor: Editor;
 }
 
-export function EditorBubbleMenu({ editor, ...props }: EditorBubbleMenuProps) {
+export function EditorBubbleMenu({ editor }: EditorBubbleMenuProps) {
     const [isAIActive, setIsAIActive] = useState(false);
 
     if (!editor) return null;
@@ -30,8 +30,7 @@ export function EditorBubbleMenu({ editor, ...props }: EditorBubbleMenuProps) {
                 animation: 'shift-away',
                 zIndex: 99999,
             }}
-            shouldShow={({ editor, view, state, from, to }) => {
-                const { doc, selection } = state;
+            shouldShow={({ selection }) => {
                 const { empty } = selection;
 
                 // Don't show on empty selection
@@ -66,26 +65,30 @@ export function EditorBubbleMenu({ editor, ...props }: EditorBubbleMenuProps) {
 
                         <div className="mx-1 h-4 w-px bg-charcoal/10 dark:bg-white/10" />
 
-                        <MenuButton
+                        <BubbleButton
+                            onClick={() => (editor.chain().focus() as any).toggleBold().run()}
                             isActive={editor.isActive("bold")}
-                            onClick={() => editor.chain().focus().toggleBold().run()}
-                            icon={<Bold className="h-3 w-3" />}
-                        />
-                        <MenuButton
+                        >
+                            <Bold className="w-4 h-4" />
+                        </BubbleButton>
+                        <BubbleButton
+                            onClick={() => (editor.chain().focus() as any).toggleItalic().run()}
                             isActive={editor.isActive("italic")}
-                            onClick={() => editor.chain().focus().toggleItalic().run()}
-                            icon={<Italic className="h-3 w-3" />}
-                        />
-                        <MenuButton
+                        >
+                            <Italic className="w-4 h-4" />
+                        </BubbleButton>
+                        <BubbleButton
+                            onClick={() => (editor.chain().focus() as any).toggleStrike().run()}
                             isActive={editor.isActive("strike")}
-                            onClick={() => editor.chain().focus().toggleStrike().run()}
-                            icon={<Strikethrough className="h-3 w-3" />}
-                        />
-                        <MenuButton
-                            isActive={editor.isActive("code")}
+                        >
+                            <Strikethrough className="w-4 h-4" />
+                        </BubbleButton>
+                        <BubbleButton
                             onClick={() => (editor.chain().focus() as any).toggleCode().run()}
-                            icon={<Code className="h-3 w-3" />}
-                        />
+                            isActive={editor.isActive("code")}
+                        >
+                            <Code className="w-4 h-4" />
+                        </BubbleButton>
                     </motion.div>
                 ) : (
                     <motion.div
@@ -121,14 +124,14 @@ export function EditorBubbleMenu({ editor, ...props }: EditorBubbleMenuProps) {
     );
 }
 
-function MenuButton({
+function BubbleButton({
     isActive,
     onClick,
-    icon,
+    children,
 }: {
     isActive: boolean;
     onClick: () => void;
-    icon: React.ReactNode;
+    children: React.ReactNode;
 }) {
     return (
         <button
@@ -138,7 +141,7 @@ function MenuButton({
                 : "text-charcoal hover:bg-gold/10 dark:text-cultured-white dark:hover:bg-white/10"
                 }`}
         >
-            {icon}
+            {children}
         </button>
     );
 }

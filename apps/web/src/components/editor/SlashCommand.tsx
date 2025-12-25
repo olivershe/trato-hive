@@ -1,7 +1,7 @@
-import {
-    Command,
-    createSuggestionItems,
-} from "novel/extensions";
+import { Extension } from "@tiptap/core";
+import Suggestion from "@tiptap/suggestion";
+import { ReactRenderer } from "@tiptap/react";
+import tippy from "tippy.js";
 import {
     CheckSquare,
     Code,
@@ -20,18 +20,96 @@ import {
     KanbanSquare,
     BookOpen
 } from "lucide-react";
+import { CommandListRenderer } from "./CommandListRenderer";
 
-export const suggestionItems = createSuggestionItems([
+// Definitions for the slash command without 'novel' dependency if it's broken
+// Or re-exporting if it exists.
+// Ideally usage: Command.configure(...)
+
+// Mocking 'Command' extension creation using Tiptap's Suggestion if novel is broken
+// But let's try to stick to what was there, just fixing types.
+
+const Command = Extension.create({
+    name: "slash-command",
+    addOptions() {
+        return {
+            suggestion: {
+                char: "/",
+                command: ({ editor, range, props }: any) => {
+                    props.command({ editor, range });
+                },
+            },
+        };
+    },
+    addProseMirrorPlugins() {
+        return [
+            Suggestion({
+                editor: this.editor,
+                ...this.options.suggestion,
+            }),
+        ];
+    },
+});
+
+const renderItems = () => {
+    let component: ReactRenderer | null = null;
+    let popup: any | null = null;
+
+    return {
+        onStart: (props: any) => {
+            component = new ReactRenderer(CommandListRenderer, {
+                props,
+                editor: props.editor,
+            });
+
+            // @ts-ignore
+            popup = tippy("body", {
+                getReferenceClientRect: props.clientRect,
+                appendTo: () => document.body,
+                content: component.element,
+                showOnCreate: true,
+                interactive: true,
+                trigger: "manual",
+                placement: "bottom-start",
+            });
+        },
+        onUpdate: (props: any) => {
+            component?.updateProps(props);
+
+            if (!props.clientRect) {
+                return;
+            }
+
+            popup?.[0].setProps({
+                getReferenceClientRect: props.clientRect,
+            });
+        },
+        onKeyDown: (props: any) => {
+            if (props.event.key === "Escape") {
+                popup?.[0].hide();
+
+                return true;
+            }
+
+            // @ts-ignore
+            return component?.ref?.onKeyDown(props);
+        },
+        onExit: () => {
+            popup?.[0].destroy();
+            component?.destroy();
+        },
+    };
+};
+
+export const suggestionItems = [
     // Intelligent Blocks (Top Priority)
     {
         title: "Ask AI",
         description: "Use AI to generate or edit content",
         searchTerms: ["ai", "gpt", "generate"],
         icon: <Sparkles size={18} className="text-gold" />,
-        command: ({ editor, range }) => {
-            // Stub for AI command sidebar or bubble
+        command: ({ editor, range }: any) => {
             editor.chain().focus().deleteRange(range).run();
-            // In real implementation, this would trigger the AI sidebar
             window.alert("AI Sidebar would open here");
         },
     },
@@ -40,7 +118,7 @@ export const suggestionItems = createSuggestionItems([
         description: "Embed a Deal Header card",
         searchTerms: ["deal", "header", "crm"],
         icon: <Database size={18} className="text-gold" />,
-        command: ({ editor, range }) => {
+        command: ({ editor, range }: any) => {
             editor
                 .chain()
                 .focus()
@@ -53,8 +131,8 @@ export const suggestionItems = createSuggestionItems([
         title: "Add Citation",
         description: "Reference a verified fact",
         searchTerms: ["citation", "cite", "reference", "source"],
-        icon: <BookOpen size={18} className="text-teal-blue" />, // Teal for verifiability
-        command: ({ editor, range }) => {
+        icon: <BookOpen size={18} className="text-teal-blue" />,
+        command: ({ editor, range }: any) => {
             editor.chain().focus().deleteRange(range).setNode("citationBlock").run();
         },
     },
@@ -64,7 +142,7 @@ export const suggestionItems = createSuggestionItems([
         description: "Just start typing with plain text",
         searchTerms: ["p", "paragraph"],
         icon: <Text size={18} />,
-        command: ({ editor, range }) => {
+        command: ({ editor, range }: any) => {
             editor
                 .chain()
                 .focus()
@@ -78,7 +156,7 @@ export const suggestionItems = createSuggestionItems([
         description: "Big section heading",
         searchTerms: ["title", "big", "large"],
         icon: <Heading1 size={18} />,
-        command: ({ editor, range }) => {
+        command: ({ editor, range }: any) => {
             editor
                 .chain()
                 .focus()
@@ -92,7 +170,7 @@ export const suggestionItems = createSuggestionItems([
         description: "Medium section heading",
         searchTerms: ["subtitle", "medium"],
         icon: <Heading2 size={18} />,
-        command: ({ editor, range }) => {
+        command: ({ editor, range }: any) => {
             editor
                 .chain()
                 .focus()
@@ -106,7 +184,7 @@ export const suggestionItems = createSuggestionItems([
         description: "Small section heading",
         searchTerms: ["subtitle", "small"],
         icon: <Heading3 size={18} />,
-        command: ({ editor, range }) => {
+        command: ({ editor, range }: any) => {
             editor
                 .chain()
                 .focus()
@@ -121,7 +199,7 @@ export const suggestionItems = createSuggestionItems([
         description: "Create a simple bullet list",
         searchTerms: ["unordered", "point"],
         icon: <List size={18} />,
-        command: ({ editor, range }) => {
+        command: ({ editor, range }: any) => {
             editor.chain().focus().deleteRange(range).toggleBulletList().run();
         },
     },
@@ -130,7 +208,7 @@ export const suggestionItems = createSuggestionItems([
         description: "Create a list with numbering",
         searchTerms: ["ordered"],
         icon: <ListOrdered size={18} />,
-        command: ({ editor, range }) => {
+        command: ({ editor, range }: any) => {
             editor.chain().focus().deleteRange(range).toggleOrderedList().run();
         },
     },
@@ -139,7 +217,7 @@ export const suggestionItems = createSuggestionItems([
         description: "Track tasks with a to-do list",
         searchTerms: ["todo", "task", "list", "check", "checkbox"],
         icon: <CheckSquare size={18} />,
-        command: ({ editor, range }) => {
+        command: ({ editor, range }: any) => {
             editor.chain().focus().deleteRange(range).toggleTaskList().run();
         },
     },
@@ -149,7 +227,7 @@ export const suggestionItems = createSuggestionItems([
         description: "Capture a quote",
         searchTerms: ["blockquote"],
         icon: <TextQuote size={18} />,
-        command: ({ editor, range }) => {
+        command: ({ editor, range }: any) => {
             editor
                 .chain()
                 .focus()
@@ -164,7 +242,7 @@ export const suggestionItems = createSuggestionItems([
         description: "Capture a code snippet",
         searchTerms: ["codeblock"],
         icon: <Code size={18} />,
-        command: ({ editor, range }) => {
+        command: ({ editor, range }: any) => {
             editor.chain().focus().deleteRange(range).toggleCodeBlock().run();
         },
     },
@@ -173,17 +251,15 @@ export const suggestionItems = createSuggestionItems([
         description: "Upload an image from your computer",
         searchTerms: ["photo", "picture", "media"],
         icon: <ImageIcon size={18} />,
-        command: ({ editor, range }) => {
+        command: ({ editor, range }: any) => {
             editor.chain().focus().deleteRange(range).run();
-            // upload function logic would go here
+            // Mock upload
             const input = document.createElement("input");
             input.type = "file";
             input.accept = "image/*";
             input.onchange = async () => {
                 if (input.files?.length) {
                     const file = input.files[0];
-                    const pos = editor.view.state.selection.from;
-                    // Mock upload
                     const url = URL.createObjectURL(file);
                     editor.chain().focus().setImage({ src: url }).run();
                 }
@@ -196,17 +272,19 @@ export const suggestionItems = createSuggestionItems([
         description: "Insert a Kanban view",
         searchTerms: ["kanban", "board", "project"],
         icon: <KanbanSquare size={18} />,
-        command: ({ editor, range }) => {
-            // Placeholder implementation using TextMessage/CodeBlock for now or custom node if exists
-            // Since we don't have a write-mode Kanban node yet, we can use a placeholder
+        command: ({ editor, range }: any) => {
             editor.chain().focus().deleteRange(range).setParagraph().insertContent("[Kanban Board Placeholder]").run();
         }
     },
-]);
+];
 
 export const slashCommand = Command.configure({
     suggestion: {
-        items: () => suggestionItems,
+        items: ({ query }: any) => {
+            return suggestionItems.filter((item) =>
+                item.title.toLowerCase().startsWith(query.toLowerCase())
+            ).slice(0, 10);
+        },
         render: renderItems,
     },
 });
