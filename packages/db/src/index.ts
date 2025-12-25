@@ -24,3 +24,6 @@ if (process.env.NODE_ENV !== 'production') {
 
 // Export Prisma types
 export * from '@prisma/client';
+
+// Export Queries
+export * from './queries';
