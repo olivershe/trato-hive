@@ -2,8 +2,8 @@
 
 **Last Updated:** December 25, 2025
 **Current Phase:** Phase 7 - Frontend (Block Protocol & Editor) 🔄 IN PROGRESS
-**Latest Commit:** `ad0b9be` (feat(web): implement Block Editor core and M&A slash menu [TASK-015])
-**Overall Progress:** Phase 7: 2/11 tasks complete (18%)
+**Latest Commit:** `Pending` (feat(web): implement M&A Intelligence Views (Kanban, Calendar, Timeline) [TASK-018b])
+**Overall Progress:** Phase 7: 6/11 tasks complete (55%)
 **Completed Work Archive:** See [COMPLETED_WORK.md](./COMPLETED_WORK.md) for Phases 1-5 & completed tasks
 
 ---
@@ -168,13 +168,13 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 - [x] **[TASK-018] Custom M&A Blocks II: Deal Snapshot** (5 hours) ✅
   - [x] Build `DealHeaderBlock` (dynamic value, stage, owner status)
   - [x] Build `ActivityTimelineBlock` logic
-- [ ] **[TASK-018b] M&A Intelligence Views** (10 hours) 🆕
-  - [ ] Build **Kanban View**: Pipeline-specific (Sourcing, Diligence, Closing)
-  - [ ] Build **Timeline View**: Critical for Exclusivity/LOI windows and Closing paths
-  - [ ] Build **Calendar View**: Manage Site Visits, Management Presentations, and Deadlines
-  - [ ] Build **Table & Gallery Views**: For financial logs and "Logo" target lists
-  - [ ] Build **Analytics Chart View**: (Simple Bar/Pie) for pipeline value concentration
-  - [ ] Implementation: Cross-block filtering and query state persistence in JSONB
+- [x] **[TASK-018b] M&A Intelligence Views** (10 hours) ✅
+  - [x] Build **KanbanView**: Pipeline-specific (Sourcing, Diligence, Closing)
+  - [x] Build **TimelineView**: Critical for Exclusivity/LOI windows and Closing paths
+  - [x] Build **CalendarView**: Manage Site Visits, Management Presentations, and Deadlines
+  - [x] Build **Table & Gallery Views**: For financial logs and "Logo" target lists
+  - [x] Build **Analytics Chart View**: (Simple Bar/Pie) for pipeline value concentration
+  - [x] Implementation: Cross-block filtering and query state persistence in JSONB
 - [ ] **[TASK-019] Block Protocol Renderer** (4 hours)
   - [ ] Create read-only recursive React renderer for shared "Deal 360" views
   - [ ] Optimize for Server-Side Rendering (SSR) in Next.js 15
