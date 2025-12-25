@@ -183,13 +183,16 @@ export const suggestionItems = createSuggestionItems([
         searchTerms: ["mna", "deal", "summary", "snapshot"],
         icon: <LayoutDashboard className="w-4 text-orange" />,
         command: ({ editor, range }) => {
-            editor
-                .chain()
+            (editor.chain() as any)
                 .focus()
                 .deleteRange(range)
-                .insertContent({
-                    type: "paragraph",
-                    content: [{ type: "text", text: "[M&A Deal Snapshot Placeholder]" }]
+                .setDealHeaderBlock({
+                    dealName: "Project Falcon",
+                    stage: "DEEP_DUE_DILIGENCE",
+                    value: "850,000,000",
+                    currency: "USD",
+                    probability: 75,
+                    expectedCloseDate: "Dec 30, 2025"
                 })
                 .run();
         },
@@ -221,13 +224,16 @@ export const suggestionItems = createSuggestionItems([
         searchTerms: ["diligence", "vdr", "request"],
         icon: <FileText className="w-4 text-orange" />,
         command: ({ editor, range }) => {
-            editor
-                .chain()
+            (editor.chain() as any)
                 .focus()
                 .deleteRange(range)
-                .insertContent({
-                    type: "paragraph",
-                    content: [{ type: "text", text: "[Diligence Request List Placeholder]" }]
+                .setActivityTimelineBlock({
+                    activities: [
+                        { id: "1", type: "STAGE", description: "Moved to Deep Due Diligence", date: "2024-10-15", user: "Oliver Shewan" },
+                        { id: "2", type: "DOCUMENT", description: "Uploaded 'Q3 Financials.pdf'", date: "2024-10-14", user: "Finance Team" },
+                        { id: "3", type: "TASK", description: "Completed 'Legal Review'", date: "2024-10-12", user: "Legal Counsel" },
+                        { id: "4", type: "COMMENT", description: "Flagged IP risk in Section 4", date: "2024-10-10", user: "CTO" },
+                    ]
                 })
                 .run();
         },
