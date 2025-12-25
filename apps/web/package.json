@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@tanstack/react-query": "^5.59.20",
+    "@tiptap/core": "^3.14.0",
     "@tiptap/extension-character-count": "^3.14.0",
     "@tiptap/extension-color": "^3.14.0",
     "@tiptap/extension-heading": "^3.14.0",
@@ -29,6 +30,7 @@
     "@tiptap/extension-text-style": "^3.14.0",
     "@tiptap/extension-typography": "^3.14.0",
     "@tiptap/extension-underline": "^3.14.0",
+    "@tiptap/pm": "^3.14.0",
     "@tiptap/react": "^3.14.0",
     "@tiptap/starter-kit": "^3.14.0",
     "@trato-hive/shared": "workspace:*",
@@ -46,6 +48,7 @@
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.53.2",
     "tailwind-merge": "^2.5.5",
+    "tippy.js": "^6.3.7",
     "zod": "^3.23.8",
     "zustand": "^5.0.2"
   },

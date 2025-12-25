@@ -2,8 +2,8 @@
 
 **Last Updated:** December 25, 2025
 **Current Phase:** Phase 7 - Frontend (Block Protocol & Editor) 🔄 IN PROGRESS
-**Latest Commit:** `767b5d0` (feat: [TASK-014] initialize novel/tiptap)
-**Overall Progress:** Phase 7: 1/11 tasks complete (9%)
+**Latest Commit:** `ad0b9be` (feat(web): implement Block Editor core and M&A slash menu [TASK-015])
+**Overall Progress:** Phase 7: 2/11 tasks complete (18%)
 **Completed Work Archive:** See [COMPLETED_WORK.md](./COMPLETED_WORK.md) for Phases 1-5 & completed tasks
 
 ---
@@ -156,9 +156,9 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 - [x] **[TASK-014] Editor Setup & Design Tokens** (3 hours) ✅
   - [x] Initialize `apps/web` with `novel` and `@tiptap/react`
   - [x] Configure Tailwind 4.0 tokens (Soft Sand, Gold, Bone) in `packages/ui`
-- [ ] **[TASK-015] Block Editor Core** (6 hours)
-  - [ ] Build `BlockEditor.tsx` headless wrapper
-  - [ ] Implement custom Slash Command menu (`/`) for M&A blocks
+- [x] **[TASK-015] Block Editor Core** (6 hours) ✅
+  - [x] Build `BlockEditor.tsx` headless wrapper
+  - [x] Implement custom Slash Command menu (`/`) for M&A blocks
 - [ ] **[TASK-016] Content Persistence Sync** (4 hours)
   - [ ] Connect Tiptap JSON output to tRPC `updateBlock` mutations
   - [ ] Implement debounced auto-save to Phase 6.4 schema
