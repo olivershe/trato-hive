@@ -2,10 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { EditorRoot, EditorContent, JSONContent } from "novel";
+import { type Editor } from "@tiptap/core";
 import { defaultExtensions } from "./extensions";
 import { slashCommand } from "./SlashCommand";
 import { useBlockSync, type SaveStatus } from "../../hooks/useBlockSync";
 import { CheckCircle2, Cloud, AlertCircle, Loader2 } from "lucide-react";
+import "./drag-handle.css";
+import "./active-block.css";
+import { EditorBubbleMenu } from "./EditorBubbleMenu";
 
 const extensions = [...defaultExtensions, slashCommand];
 
@@ -25,6 +29,7 @@ export function BlockEditor({
     // Sync Hook
     const { content, updateContent, status } = useBlockSync(pageId, initialContent);
     const [editorContent, setEditorContent] = useState<JSONContent | undefined>(content);
+    const [editor, setEditor] = useState<Editor | null>(null);
 
     // Ensure local state updates if initial content loads later (though hooks usually handle this via effect, 
     // but since specific logic might be needed):
@@ -60,23 +65,72 @@ export function BlockEditor({
                         const json = editor.getJSON();
                         updateContent(json); // Notify hook
                     }}
+                    onCreate={({ editor }) => {
+                        setEditor(editor);
+                    }}
                     editable={editable}
                 >
+                    {editor && <EditorBubbleMenu editor={editor} />}
                 </EditorContent>
             </EditorRoot>
         </div>
     );
 }
 
+import { motion, AnimatePresence } from "framer-motion";
+import { HexagonSpinner } from "../ui/HexagonSpinner";
+
+// ... extensions imports ...
+// ... (keep existing imports)
+
+// Updated StatusIcon
 function StatusIcon({ status }: { status: SaveStatus }) {
-    switch (status) {
-        case "Saved":
-            return <CheckCircle2 className="w-3 h-3 text-green-500" />;
-        case "Saving...":
-            return <Loader2 className="w-3 h-3 animate-spin text-orange" />;
-        case "Error":
-            return <AlertCircle className="w-3 h-3 text-red-500" />;
-        case "Unsaved":
-            return <Cloud className="w-3 h-3 text-charcoal/50" />;
-    }
+    return (
+        <AnimatePresence mode="wait">
+            {status === "Saved" && (
+                <motion.div
+                    key="saved"
+                    initial={{ scale: 0.5, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.5, opacity: 0 }}
+                    className="flex items-center text-green-500"
+                >
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                </motion.div>
+            )}
+            {status === "Saving..." && (
+                <motion.div
+                    key="saving"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="flex items-center"
+                >
+                    <HexagonSpinner size={14} className="text-orange" />
+                </motion.div>
+            )}
+            {status === "Error" && (
+                <motion.div
+                    key="error"
+                    initial={{ scale: 0.5, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.5, opacity: 0 }}
+                    className="flex items-center text-red-500"
+                >
+                    <AlertCircle className="w-3.5 h-3.5" />
+                </motion.div>
+            )}
+            {status === "Unsaved" && (
+                <motion.div
+                    key="unsaved"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 0.5 }}
+                    exit={{ opacity: 0 }}
+                    className="flex items-center text-charcoal/50"
+                >
+                    <Cloud className="w-3.5 h-3.5" />
+                </motion.div>
+            )}
+        </AnimatePresence>
+    );
 }

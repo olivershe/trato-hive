@@ -19,6 +19,9 @@ import { CitationBlock } from "./extensions/CitationBlock";
 import { DealHeaderBlock } from "./extensions/DealHeaderBlock";
 import { ActivityTimelineBlock } from "./extensions/ActivityTimelineBlock";
 import { DealDatabaseBlock } from "./extensions/DealDatabaseBlock";
+import GlobalDragHandle from "tiptap-extension-global-drag-handle";
+import AutoJoiner from "tiptap-extension-auto-joiner";
+import Focus from "@tiptap/extension-focus";
 
 // @ts-ignore
 const uniqueId = UniqueID.configure({
@@ -30,7 +33,13 @@ const placeholder = Placeholder.configure({
         if (node.type.name === "heading") {
             return `Heading ${node.attrs.level}`;
         }
-        return "Press '/' for commands...";
+        if (node.type.name === "bulletList" || node.type.name === "orderedList") {
+            return "List item...";
+        }
+        if (node.type.name === "blockquote") {
+            return "Empty quote...";
+        }
+        return "Type '/' for commands or ask AI...";
     },
     includeChildren: true,
 });
@@ -139,4 +148,16 @@ export const defaultExtensions = [
     DealHeaderBlock,
     ActivityTimelineBlock,
     DealDatabaseBlock,
+    GlobalDragHandle.configure({
+        dragHandleWidth: 20, // Match CSS width
+        scrollTreshold: 100, // Auto scroll speed/threshold
+        // excludedTags: ['pre', 'code'], // Optional exclusions
+    }),
+    AutoJoiner.configure({
+        elementsToJoin: ["bulletList", "orderedList"], // Join lists when adjacent
+    }),
+    Focus.configure({
+        className: "is-focused",
+        mode: "all", // Highlight longest node (or shallowest)
+    }),
 ];

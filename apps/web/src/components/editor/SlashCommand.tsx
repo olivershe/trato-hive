@@ -1,90 +1,69 @@
 import {
+    Command,
+    createSuggestionItems,
+} from "novel/extensions";
+import {
     CheckSquare,
+    Code,
     Heading1,
     Heading2,
     Heading3,
+    ImageIcon,
     List,
     ListOrdered,
+    MessageSquarePlus,
     Text,
-    FileText,
-    Zap,
-    Quote,
-    LayoutDashboard,
+    TextQuote,
+    Sparkles,
+    Database,
+    Calendar,
+    KanbanSquare,
+    BookOpen
 } from "lucide-react";
-// @ts-ignore
-import { createSuggestionItems, Command } from "novel/extensions";
-import { CommandListRenderer, SuggestionItem } from "./CommandListRenderer";
-import { ReactRenderer } from "@tiptap/react";
-import { Editor, Range } from "@tiptap/core";
-import tippy, { Instance } from "tippy.js";
-
-interface CommandProps {
-    editor: Editor;
-    range: Range;
-    props: any;
-    clientRect?: () => DOMRect;
-}
-
-const renderItems = () => {
-    let component: ReactRenderer | null = null;
-    let popup: Instance[] | null = null;
-
-    return {
-        onStart: (props: CommandProps) => {
-            component = new ReactRenderer(CommandListRenderer as any, {
-                props,
-                editor: props.editor,
-            });
-
-            if (!props.clientRect) {
-                return;
-            }
-
-            popup = tippy("body", {
-                getReferenceClientRect: props.clientRect,
-                appendTo: () => document.body,
-                content: component.element,
-                showOnCreate: true,
-                interactive: true,
-                trigger: "manual",
-                placement: "bottom-start",
-            });
-        },
-
-        onUpdate: (props: CommandProps) => {
-            component?.updateProps(props);
-
-            if (!props.clientRect) {
-                return;
-            }
-
-            popup?.[0].setProps({
-                getReferenceClientRect: props.clientRect,
-            });
-        },
-
-        onKeyDown: (props: { event: KeyboardEvent }) => {
-            if (props.event.key === "Escape") {
-                popup?.[0].hide();
-                return true;
-            }
-
-            return (component?.ref as any)?.onKeyDown(props);
-        },
-
-        onExit: () => {
-            popup?.[0].destroy();
-            component?.destroy();
-        },
-    };
-};
 
 export const suggestionItems = createSuggestionItems([
+    // Intelligent Blocks (Top Priority)
+    {
+        title: "Ask AI",
+        description: "Use AI to generate or edit content",
+        searchTerms: ["ai", "gpt", "generate"],
+        icon: <Sparkles size={18} className="text-gold" />,
+        command: ({ editor, range }) => {
+            // Stub for AI command sidebar or bubble
+            editor.chain().focus().deleteRange(range).run();
+            // In real implementation, this would trigger the AI sidebar
+            window.alert("AI Sidebar would open here");
+        },
+    },
+    {
+        title: "New Deal",
+        description: "Embed a Deal Header card",
+        searchTerms: ["deal", "header", "crm"],
+        icon: <Database size={18} className="text-gold" />,
+        command: ({ editor, range }) => {
+            editor
+                .chain()
+                .focus()
+                .deleteRange(range)
+                .setNode("dealHeader", { dealName: "New Deal" })
+                .run();
+        },
+    },
+    {
+        title: "Add Citation",
+        description: "Reference a verified fact",
+        searchTerms: ["citation", "cite", "reference", "source"],
+        icon: <BookOpen size={18} className="text-teal-blue" />, // Teal for verifiability
+        command: ({ editor, range }) => {
+            editor.chain().focus().deleteRange(range).setNode("citationBlock").run();
+        },
+    },
+    // Basic Blocks
     {
         title: "Text",
-        description: "Just start typing with plain text.",
+        description: "Just start typing with plain text",
         searchTerms: ["p", "paragraph"],
-        icon: <Text className="w-4" />,
+        icon: <Text size={18} />,
         command: ({ editor, range }) => {
             editor
                 .chain()
@@ -95,19 +74,10 @@ export const suggestionItems = createSuggestionItems([
         },
     },
     {
-        title: "To-do List",
-        description: "Track tasks with a checklist.",
-        searchTerms: ["todo", "task", "list", "check", "checkbox"],
-        icon: <CheckSquare className="w-4" />,
-        command: ({ editor, range }) => {
-            (editor.chain() as any).focus().deleteRange(range).toggleTaskList().run();
-        },
-    },
-    {
         title: "Heading 1",
-        description: "Big section heading.",
+        description: "Big section heading",
         searchTerms: ["title", "big", "large"],
-        icon: <Heading1 className="w-4" />,
+        icon: <Heading1 size={18} />,
         command: ({ editor, range }) => {
             editor
                 .chain()
@@ -119,9 +89,9 @@ export const suggestionItems = createSuggestionItems([
     },
     {
         title: "Heading 2",
-        description: "Medium section heading.",
+        description: "Medium section heading",
         searchTerms: ["subtitle", "medium"],
-        icon: <Heading2 className="w-4" />,
+        icon: <Heading2 size={18} />,
         command: ({ editor, range }) => {
             editor
                 .chain()
@@ -133,9 +103,9 @@ export const suggestionItems = createSuggestionItems([
     },
     {
         title: "Heading 3",
-        description: "Small section heading.",
+        description: "Small section heading",
         searchTerms: ["subtitle", "small"],
-        icon: <Heading3 className="w-4" />,
+        icon: <Heading3 size={18} />,
         command: ({ editor, range }) => {
             editor
                 .chain()
@@ -145,117 +115,98 @@ export const suggestionItems = createSuggestionItems([
                 .run();
         },
     },
+    // Lists
     {
         title: "Bullet List",
-        description: "Create a simple bulleted list.",
+        description: "Create a simple bullet list",
         searchTerms: ["unordered", "point"],
-        icon: <List className="w-4" />,
+        icon: <List size={18} />,
         command: ({ editor, range }) => {
-            (editor.chain() as any).focus().deleteRange(range).toggleBulletList().run();
+            editor.chain().focus().deleteRange(range).toggleBulletList().run();
         },
     },
     {
         title: "Numbered List",
-        description: "Create a list with numbering.",
+        description: "Create a list with numbering",
         searchTerms: ["ordered"],
-        icon: <ListOrdered className="w-4" />,
+        icon: <ListOrdered size={18} />,
         command: ({ editor, range }) => {
-            (editor.chain() as any).focus().deleteRange(range).toggleOrderedList().run();
+            editor.chain().focus().deleteRange(range).toggleOrderedList().run();
         },
     },
     {
+        title: "To-do List",
+        description: "Track tasks with a to-do list",
+        searchTerms: ["todo", "task", "list", "check", "checkbox"],
+        icon: <CheckSquare size={18} />,
+        command: ({ editor, range }) => {
+            editor.chain().focus().deleteRange(range).toggleTaskList().run();
+        },
+    },
+    // Media & Advanced
+    {
         title: "Quote",
-        description: "Capture a quotation.",
+        description: "Capture a quote",
         searchTerms: ["blockquote"],
-        icon: <Quote className="w-4" />,
-        command: ({ editor, range }) =>
-            (editor.chain() as any)
+        icon: <TextQuote size={18} />,
+        command: ({ editor, range }) => {
+            editor
+                .chain()
                 .focus()
                 .deleteRange(range)
                 .toggleNode("paragraph", "paragraph")
                 .toggleBlockquote()
-                .run(),
-    },
-    // M&A SPECIFIC BLOCKS
-    {
-        title: "Deal Snapshot",
-        description: "Insert a live deal summary card.",
-        searchTerms: ["mna", "deal", "summary", "snapshot"],
-        icon: <LayoutDashboard className="w-4 text-orange" />,
-        command: ({ editor, range }) => {
-            (editor.chain() as any)
-                .focus()
-                .deleteRange(range)
-                .setDealHeaderBlock({
-                    dealName: "Project Falcon",
-                    stage: "DEEP_DUE_DILIGENCE",
-                    value: "850,000,000",
-                    currency: "USD",
-                    probability: 75,
-                    expectedCloseDate: "Dec 30, 2025"
-                })
                 .run();
         },
     },
     {
-        title: "Citation",
-        description: "Link a fact to a source document.",
-        searchTerms: ["fact", "cite", "source", "verify"],
-        icon: <Zap className="w-4 text-citation" />,
+        title: "Code",
+        description: "Capture a code snippet",
+        searchTerms: ["codeblock"],
+        icon: <Code size={18} />,
         command: ({ editor, range }) => {
-            (editor.chain() as any)
-                .focus()
-                .deleteRange(range)
-                .setCitationBlock({
-                    factId: crypto.randomUUID(),
-                    sourceText: "The target company, Acme Corp, reported a 15% YoY increase in revenue for Q3 2024, driven by strong enterprise sales.",
-                    confidence: 0.92,
-                    documentName: "Q3 2024 Financial Report.pdf",
-                    subject: "Acme Corp",
-                    predicate: "revenue increase",
-                    object: "15% YoY",
-                })
-                .run();
+            editor.chain().focus().deleteRange(range).toggleCodeBlock().run();
         },
     },
     {
-        title: "Diligence List",
-        description: "Insert a structured checklist of diligence items.",
-        searchTerms: ["diligence", "vdr", "request"],
-        icon: <FileText className="w-4 text-orange" />,
+        title: "Image",
+        description: "Upload an image from your computer",
+        searchTerms: ["photo", "picture", "media"],
+        icon: <ImageIcon size={18} />,
         command: ({ editor, range }) => {
-            (editor.chain() as any)
-                .focus()
-                .deleteRange(range)
-                .setActivityTimelineBlock({
-                    activities: [
-                        { id: "1", type: "STAGE", description: "Moved to Deep Due Diligence", date: "2024-10-15", user: "Oliver Shewan" },
-                        { id: "2", type: "DOCUMENT", description: "Uploaded 'Q3 Financials.pdf'", date: "2024-10-14", user: "Finance Team" },
-                        { id: "3", type: "TASK", description: "Completed 'Legal Review'", date: "2024-10-12", user: "Legal Counsel" },
-                        { id: "4", type: "COMMENT", description: "Flagged IP risk in Section 4", date: "2024-10-10", user: "CTO" },
-                    ]
-                })
-                .run();
+            editor.chain().focus().deleteRange(range).run();
+            // upload function logic would go here
+            const input = document.createElement("input");
+            input.type = "file";
+            input.accept = "image/*";
+            input.onchange = async () => {
+                if (input.files?.length) {
+                    const file = input.files[0];
+                    const pos = editor.view.state.selection.from;
+                    // Mock upload
+                    const url = URL.createObjectURL(file);
+                    editor.chain().focus().setImage({ src: url }).run();
+                }
+            };
+            input.click();
         },
     },
     {
-        title: "Deal Pipeline",
-        description: "Insert a full M&A database view (Kanban, Table, etc).",
-        searchTerms: ["pipeline", "kanban", "board", "table", "deals"],
-        icon: <LayoutDashboard className="w-4 text-gold" />,
+        title: "Kanban Board",
+        description: "Insert a Kanban view",
+        searchTerms: ["kanban", "board", "project"],
+        icon: <KanbanSquare size={18} />,
         command: ({ editor, range }) => {
-            (editor.chain() as any)
-                .focus()
-                .deleteRange(range)
-                .setDealDatabaseBlock()
-                .run();
-        },
+            // Placeholder implementation using TextMessage/CodeBlock for now or custom node if exists
+            // Since we don't have a write-mode Kanban node yet, we can use a placeholder
+            editor.chain().focus().deleteRange(range).setParagraph().insertContent("[Kanban Board Placeholder]").run();
+        }
     },
-] as SuggestionItem[]);
+]);
 
 export const slashCommand = Command.configure({
     suggestion: {
         items: () => suggestionItems,
-        render: renderItems as any,
+        render: renderItems,
     },
 });
