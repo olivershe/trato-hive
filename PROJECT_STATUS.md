@@ -181,9 +181,9 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 - [x] **[TASK-020] UI Polish: The Intelligent Hive** (6 hours) ✅
   - [x] Custom-style toolbars and drag-handles using `packages/ui`
   - [x] Add `framer-motion` micro-animations for block reordering
-- [ ] **[TASK-021] Collaboration Foundation** (5 hours)
-  - [ ] POC setup for `Yjs` or Liveblocks for real-time editing
-  - [ ] Implement "User Presence" indicators
+- [x] **[TASK-021] Collaboration Foundation** (5 hours) ✅
+  - [x] POC setup for `Yjs` or Liveblocks for real-time editing
+  - [x] Implement "User Presence" indicators
 - [ ] **[TASK-022] Mobile Experience** (4 hours)
   - [ ] Optimize editor for tablet and mobile touch interactions
 - [ ] **[TASK-023] Frontend Verification Suite** (4 hours)
@@ -398,7 +398,7 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 **Next Up:**
 - [x] [TASK-019] Block Protocol Renderer
 - [x] [TASK-020] UI Polish: The Intelligent Hive
-- [ ] [TASK-021] Collaboration Foundation
+- [x] [TASK-021] Collaboration Foundation ✅
 
 **Next Actions:**
 
