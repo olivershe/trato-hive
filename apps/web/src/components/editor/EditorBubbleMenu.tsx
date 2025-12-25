@@ -6,6 +6,7 @@ import { type Editor } from "@tiptap/core";
 import { Bold, Italic, Strikethrough, Code, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { HexagonSpinner } from "../ui/HexagonSpinner";
 
 interface EditorBubbleMenuProps extends Omit<BubbleMenuProps, "editor"> {
     editor: Editor;
@@ -94,7 +95,9 @@ export function EditorBubbleMenu({ editor, ...props }: EditorBubbleMenuProps) {
                         exit={{ opacity: 0, width: 0 }}
                         className="flex items-center gap-2 px-2"
                     >
-                        <Sparkles className="h-3 w-3 text-gold shrink-0" />
+                        <div className="flex items-center justify-center w-5 h-5">
+                            <HexagonSpinner size={20} />
+                        </div>
                         <input
                             autoFocus
                             placeholder="Ask AI to edit..."
@@ -131,8 +134,8 @@ function MenuButton({
         <button
             onClick={onClick}
             className={`rounded-full p-2 transition-colors ${isActive
-                    ? "bg-charcoal text-white dark:bg-white dark:text-charcoal"
-                    : "text-charcoal hover:bg-gold/10 dark:text-cultured-white dark:hover:bg-white/10"
+                ? "bg-charcoal text-white dark:bg-white dark:text-charcoal"
+                : "text-charcoal hover:bg-gold/10 dark:text-cultured-white dark:hover:bg-white/10"
                 }`}
         >
             {icon}

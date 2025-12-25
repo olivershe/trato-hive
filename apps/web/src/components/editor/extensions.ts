@@ -32,7 +32,13 @@ const placeholder = Placeholder.configure({
         if (node.type.name === "heading") {
             return `Heading ${node.attrs.level}`;
         }
-        return "Press '/' for commands...";
+        if (node.type.name === "bulletList" || node.type.name === "orderedList") {
+            return "List item...";
+        }
+        if (node.type.name === "blockquote") {
+            return "Empty quote...";
+        }
+        return "Type '/' for commands or ask AI...";
     },
     includeChildren: true,
 });

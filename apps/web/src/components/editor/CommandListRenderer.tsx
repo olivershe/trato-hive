@@ -59,30 +59,31 @@ export const CommandListRenderer = forwardRef((props: CommandListProps, ref) => 
     }));
 
     return (
-        <div className="z-50 h-auto max-h-[330px] w-72 overflow-y-auto rounded-md border border-gold/20 bg-alabaster dark:bg-surface-dark px-1 py-2 shadow-md transition-all">
+        <div className="z-50 h-auto max-h-[330px] w-72 overflow-y-auto rounded-xl border border-gold/20 bg-alabaster/90 p-2 shadow-xl backdrop-blur-md transition-all dark:bg-charcoal/90 dark:border-white/10 scrollbar-thin scrollbar-thumb-gold/20 scrollbar-track-transparent">
             {props.items.length > 0 ? (
                 props.items.map((item, index) => (
                     <button
                         key={index}
                         onClick={() => selectItem(index)}
-                        className={`flex w-full items-center space-x-2 rounded-md px-2 py-1.5 text-left text-sm text-charcoal dark:text-cultured-white transition-colors duration-200 ${index === selectedIndex
-                                ? "bg-orange/10 text-orange dark:bg-orange/20"
-                                : "hover:bg-bone/50 dark:hover:bg-deep-grey/50"
+                        className={`flex w-full items-center space-x-3 rounded-lg px-2 py-2 text-left text-sm transition-all duration-200 ${index === selectedIndex
+                                ? "bg-white text-orange shadow-sm dark:bg-white/10 dark:text-gold"
+                                : "text-charcoal hover:bg-gold/5 dark:text-cultured-white dark:hover:bg-white/5"
                             }`}
                     >
-                        <div className="flex h-10 w-10 flex-none items-center justify-center rounded-md border border-gold/10 bg-white dark:bg-deep-grey">
+                        <div className={`flex h-9 w-9 flex-none items-center justify-center rounded-lg border ${index === selectedIndex ? "border-orange/20 bg-orange/10 dark:border-gold/30 dark:bg-gold/20" : "border-transparent bg-transparent"
+                            }`}>
                             {item.icon}
                         </div>
                         <div>
                             <p className="font-semibold">{item.title}</p>
-                            <p className="text-xs text-charcoal/60 dark:text-cultured-white/60 truncate max-w-[180px]">
+                            <p className="text-xs opacity-70 truncate max-w-[180px]">
                                 {item.description}
                             </p>
                         </div>
                     </button>
                 ))
             ) : (
-                <div className="px-2 py-1.5 text-sm text-charcoal/60 dark:text-cultured-white/60 font-sans italic">
+                <div className="px-2 py-2 text-sm text-charcoal/60 dark:text-cultured-white/60 font-sans italic text-center">
                     No results found
                 </div>
             )}
