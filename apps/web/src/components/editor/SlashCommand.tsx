@@ -238,6 +238,19 @@ export const suggestionItems = createSuggestionItems([
                 .run();
         },
     },
+    {
+        title: "Deal Pipeline",
+        description: "Insert a full M&A database view (Kanban, Table, etc).",
+        searchTerms: ["pipeline", "kanban", "board", "table", "deals"],
+        icon: <LayoutDashboard className="w-4 text-gold" />,
+        command: ({ editor, range }) => {
+            (editor.chain() as any)
+                .focus()
+                .deleteRange(range)
+                .setDealDatabaseBlock()
+                .run();
+        },
+    },
 ] as SuggestionItem[]);
 
 export const slashCommand = Command.configure({

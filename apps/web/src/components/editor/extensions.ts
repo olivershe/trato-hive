@@ -18,6 +18,7 @@ import UniqueID from "@tiptap/extension-unique-id";
 import { CitationBlock } from "./extensions/CitationBlock";
 import { DealHeaderBlock } from "./extensions/DealHeaderBlock";
 import { ActivityTimelineBlock } from "./extensions/ActivityTimelineBlock";
+import { DealDatabaseBlock } from "./extensions/DealDatabaseBlock";
 
 // @ts-ignore
 const uniqueId = UniqueID.configure({
@@ -137,4 +138,5 @@ export const defaultExtensions = [
     CitationBlock,
     DealHeaderBlock,
     ActivityTimelineBlock,
+    DealDatabaseBlock,
 ];

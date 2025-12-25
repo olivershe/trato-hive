@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { renderHook, act } from "@testing-library/react";
 import { useBlockSync } from "./useBlockSync";
 import { api } from "../trpc/react";
