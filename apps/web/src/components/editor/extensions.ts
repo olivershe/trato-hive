@@ -14,6 +14,12 @@ import {
     Highlight,
     // @ts-ignore
 } from "novel/extensions";
+import UniqueID from "@tiptap/extension-unique-id";
+
+// @ts-ignore
+const uniqueId = UniqueID.configure({
+    types: ['paragraph', 'heading', 'taskItem', 'blockquote', 'image'],
+});
 
 const placeholder = Placeholder.configure({
     placeholder: ({ node }: { node: any }) => {
@@ -97,6 +103,7 @@ export const defaultExtensions = [
         },
         gapcursor: false,
     }),
+    uniqueId,
     placeholder,
     tiptapLink,
     tiptapImage,

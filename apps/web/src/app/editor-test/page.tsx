@@ -18,7 +18,8 @@ export default function EditorTestPage() {
                 <section className="bg-alabaster dark:bg-surface-dark p-1 rounded-2xl shadow-xl border border-gold/10 overflow-hidden">
                     <BlockEditor
                         className="w-full"
-                        onChange={(content) => console.log("Editor Update:", content)}
+                        pageId="test-page-id"
+                        initialContent={{}}
                     />
                 </section>
 

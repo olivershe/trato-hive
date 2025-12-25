@@ -12,6 +12,8 @@ export const metadata: Metadata = {
     description: "Next-generation M&A CRM with verifiable AI-driven insights.",
 };
 
+import { TRPCReactProvider } from "@/trpc/provider";
+
 export default function RootLayout({
     children,
 }: Readonly<{
@@ -20,7 +22,9 @@ export default function RootLayout({
     return (
         <html lang="en">
             <body className={`${inter.variable} font-sans antialiased`}>
-                {children}
+                <TRPCReactProvider>
+                    {children}
+                </TRPCReactProvider>
             </body>
         </html>
     );

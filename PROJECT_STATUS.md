@@ -159,9 +159,9 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 - [x] **[TASK-015] Block Editor Core** (6 hours) ✅
   - [x] Build `BlockEditor.tsx` headless wrapper
   - [x] Implement custom Slash Command menu (`/`) for M&A blocks
-- [ ] **[TASK-016] Content Persistence Sync** (4 hours)
-  - [ ] Connect Tiptap JSON output to tRPC `updateBlock` mutations
-  - [ ] Implement debounced auto-save to Phase 6.4 schema
+- [x] **[TASK-016] Content Persistence Sync** (4 hours) ✅
+  - [x] Connect Tiptap JSON output to tRPC `updateBlock` mutations
+  - [x] Implement debounced auto-save to Phase 6.4 schema
 - [ ] **[TASK-017] Custom M&A Blocks I: Citations** (5 hours)
   - [ ] Build `CitationBlock` extension (verifiable facts from Layer 2)
   - [ ] Implement hover-previews for source document snippets

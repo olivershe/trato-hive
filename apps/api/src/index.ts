@@ -15,6 +15,7 @@ import Fastify from 'fastify';
 import { fastifyTRPCPlugin } from '@trpc/server/adapters/fastify';
 import { createContext } from './trpc/context';
 import { appRouter } from './trpc/router';
+export type { AppRouter } from './trpc/router';
 
 /**
  * Initialize Fastify instance
@@ -30,12 +31,12 @@ const fastify = Fastify({
     transport:
       process.env.NODE_ENV === 'development'
         ? {
-            target: 'pino-pretty',
-            options: {
-              translateTime: 'HH:MM:ss Z',
-              ignore: 'pid,hostname',
-            },
-          }
+          target: 'pino-pretty',
+          options: {
+            translateTime: 'HH:MM:ss Z',
+            ignore: 'pid,hostname',
+          },
+        }
         : undefined,
   },
 });
@@ -56,7 +57,7 @@ fastify.register(fastifyTRPCPlugin, {
   trpcOptions: {
     router: appRouter,
     createContext,
-    onError({ path, error }) {
+    onError({ path, error }: { path: string | undefined; error: Error }) {
       fastify.log.error(`❌ tRPC Error on ${path ?? '<no-path>'}:`);
       fastify.log.error(error);
     },

@@ -15,6 +15,8 @@
  */
 import { router } from './init';
 
+import { blockRouter } from "../routers/block";
+
 /**
  * Root application router
  *
@@ -31,7 +33,7 @@ import { router } from './init';
  * ```
  */
 export const appRouter = router({
-  // Feature routers will be added in Phase 8
+  block: blockRouter,
 });
 
 /**
