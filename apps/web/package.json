@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@tanstack/react-query": "^5.59.20",
+    "@tippyjs/react": "^4.2.6",
     "@tiptap/core": "^3.14.0",
     "@tiptap/extension-character-count": "^3.14.0",
     "@tiptap/extension-color": "^3.14.0",

@@ -15,6 +15,7 @@ import {
     // @ts-ignore
 } from "novel/extensions";
 import UniqueID from "@tiptap/extension-unique-id";
+import { CitationBlock } from "./extensions/CitationBlock";
 
 // @ts-ignore
 const uniqueId = UniqueID.configure({
@@ -131,4 +132,5 @@ export const defaultExtensions = [
     Highlight.configure({
         multicolor: true,
     }),
+    CitationBlock,
 ];
