@@ -13,7 +13,7 @@
  *
  * @see packages/auth for session enrichment logic
  */
-import type { FetchCreateContextFnOptions } from '@trpc/server/adapters/fetch';
+import type { CreateFastifyContextOptions } from '@trpc/server/adapters/fastify';
 import { auth } from '@trato-hive/auth';
 import { prisma } from '@trato-hive/db';
 
@@ -29,7 +29,7 @@ import { prisma } from '@trato-hive/db';
  * @param _opts - Fetch adapter options (unused, but required by type)
  * @returns Context object with session and database client
  */
-export async function createContext(_opts: FetchCreateContextFnOptions) {
+export async function createContext({ req, res }: CreateFastifyContextOptions) {
   // Get session from NextAuth (includes organizationId and role)
   const session = await auth();
 
