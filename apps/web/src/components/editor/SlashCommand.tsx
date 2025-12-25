@@ -200,13 +200,17 @@ export const suggestionItems = createSuggestionItems([
         searchTerms: ["fact", "cite", "source", "verify"],
         icon: <Zap className="w-4 text-citation" />,
         command: ({ editor, range }) => {
-            editor
-                .chain()
+            (editor.chain() as any)
                 .focus()
                 .deleteRange(range)
-                .insertContent({
-                    type: "paragraph",
-                    content: [{ type: "text", text: "[Verifiable Fact Citation Placeholder]" }]
+                .setCitationBlock({
+                    factId: crypto.randomUUID(),
+                    sourceText: "The target company, Acme Corp, reported a 15% YoY increase in revenue for Q3 2024, driven by strong enterprise sales.",
+                    confidence: 0.92,
+                    documentName: "Q3 2024 Financial Report.pdf",
+                    subject: "Acme Corp",
+                    predicate: "revenue increase",
+                    object: "15% YoY",
                 })
                 .run();
         },
