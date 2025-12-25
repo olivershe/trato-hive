@@ -19,6 +19,8 @@ import { CitationBlock } from "./extensions/CitationBlock";
 import { DealHeaderBlock } from "./extensions/DealHeaderBlock";
 import { ActivityTimelineBlock } from "./extensions/ActivityTimelineBlock";
 import { DealDatabaseBlock } from "./extensions/DealDatabaseBlock";
+import GlobalDragHandle from "tiptap-extension-global-drag-handle";
+import AutoJoiner from "tiptap-extension-auto-joiner";
 
 // @ts-ignore
 const uniqueId = UniqueID.configure({
@@ -139,4 +141,12 @@ export const defaultExtensions = [
     DealHeaderBlock,
     ActivityTimelineBlock,
     DealDatabaseBlock,
+    GlobalDragHandle.configure({
+        dragHandleWidth: 20, // Match CSS width
+        scrollTreshold: 100, // Auto scroll speed/threshold
+        // excludedTags: ['pre', 'code'], // Optional exclusions
+    }),
+    AutoJoiner.configure({
+        elementsToJoin: ["bulletList", "orderedList"], // Join lists when adjacent
+    }),
 ];

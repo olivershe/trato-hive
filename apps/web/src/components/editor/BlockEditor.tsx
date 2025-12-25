@@ -2,10 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { EditorRoot, EditorContent, JSONContent } from "novel";
+import { type Editor } from "@tiptap/core";
 import { defaultExtensions } from "./extensions";
 import { slashCommand } from "./SlashCommand";
 import { useBlockSync, type SaveStatus } from "../../hooks/useBlockSync";
 import { CheckCircle2, Cloud, AlertCircle, Loader2 } from "lucide-react";
+import "./drag-handle.css";
+import { EditorBubbleMenu } from "./EditorBubbleMenu";
 
 const extensions = [...defaultExtensions, slashCommand];
 
@@ -25,6 +28,7 @@ export function BlockEditor({
     // Sync Hook
     const { content, updateContent, status } = useBlockSync(pageId, initialContent);
     const [editorContent, setEditorContent] = useState<JSONContent | undefined>(content);
+    const [editor, setEditor] = useState<Editor | null>(null);
 
     // Ensure local state updates if initial content loads later (though hooks usually handle this via effect, 
     // but since specific logic might be needed):
@@ -60,8 +64,12 @@ export function BlockEditor({
                         const json = editor.getJSON();
                         updateContent(json); // Notify hook
                     }}
+                    onCreate={({ editor }) => {
+                        setEditor(editor);
+                    }}
                     editable={editable}
                 >
+                    {editor && <EditorBubbleMenu editor={editor} />}
                 </EditorContent>
             </EditorRoot>
         </div>

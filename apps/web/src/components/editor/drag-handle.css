@@ -1,0 +1,58 @@
+/* Global Drag Handle */
+.drag-handle {
+    width: 1.5rem;
+    height: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: theme('colors.charcoal');
+    cursor: grab;
+    border-radius: 0.25rem;
+    opacity: 0;
+    transition: opacity 0.2s, background-color 0.2s;
+}
+
+.drag-handle:hover {
+    background-color: theme('colors.gold / 20%');
+}
+
+.dark .drag-handle {
+    color: theme('colors.cultured-white');
+}
+
+.dark .drag-handle:hover {
+    background-color: theme('colors.gold / 30%');
+}
+
+.ProseMirror-focused .drag-handle {
+    /* Keep visible if needed, logic handled by extension usually */
+}
+
+/* Ensure container allows overflow for negative margin handles if used */
+.ProseMirror {
+    position: relative;
+}
+
+/* Notion-like handle position */
+.drag-handle::before {
+    content: "";
+    /* Grip Icon (6 dots) using CSS or similar, but extension usually inserts an element. 
+     We will check what the extension inserts. 
+     Usually it inserts a div with class drag-handle. 
+     We can set background-image to a grip icon or use SVG in the extension config?
+     The extension allows custom template?
+     If not, we style the div.
+  */
+    width: 16px;
+    height: 16px;
+    mask-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1" /><circle cx="9" cy="5" r="1" /><circle cx="9" cy="19" r="1" /><circle cx="15" cy="12" r="1" /><circle cx="15" cy="5" r="1" /><circle cx="15" cy="19" r="1" /></svg>');
+    mask-repeat: no-repeat;
+    mask-position: center;
+    background-color: currentColor;
+}
+
+@media (hover: none) {
+    .drag-handle {
+        display: none !important;
+    }
+}
