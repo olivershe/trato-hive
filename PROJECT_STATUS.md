@@ -1,9 +1,9 @@
 # Trato Hive - Project Status & Implementation Roadmap
 
-**Last Updated:** December 24, 2025
-**Current Phase:** Phase 6 - Foundation Packages 🔄 IN PROGRESS
-**Latest Commit:** [TASK-013a] Block Protocol Schema - Pages & Blocks foundation
-**Overall Progress:** Phase 6: 9/13 tasks complete (69.2%)
+**Last Updated:** December 25, 2025
+**Current Phase:** Phase 7 - Frontend (Block Protocol & Editor) 🔄 IN PROGRESS
+**Latest Commit:** `767b5d0` (feat: [TASK-014] initialize novel/tiptap)
+**Overall Progress:** Phase 7: 1/11 tasks complete (9%)
 **Completed Work Archive:** See [COMPLETED_WORK.md](./COMPLETED_WORK.md) for Phases 1-5 & completed tasks
 
 ---
@@ -153,9 +153,9 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 
 **Tasks:**
 
-- [ ] **[TASK-014] Editor Setup & Design Tokens** (3 hours)
-  - [ ] Initialize `apps/web` with `novel` and `@tiptap/react`
-  - [ ] Configure Tailwind 4.0 tokens (Soft Sand, Gold, Bone) in `packages/ui`
+- [x] **[TASK-014] Editor Setup & Design Tokens** (3 hours) ✅
+  - [x] Initialize `apps/web` with `novel` and `@tiptap/react`
+  - [x] Configure Tailwind 4.0 tokens (Soft Sand, Gold, Bone) in `packages/ui`
 - [ ] **[TASK-015] Block Editor Core** (6 hours)
   - [ ] Build `BlockEditor.tsx` headless wrapper
   - [ ] Implement custom Slash Command menu (`/`) for M&A blocks
