@@ -83,7 +83,7 @@ export function EditorBubbleMenu({ editor, ...props }: EditorBubbleMenuProps) {
                         />
                         <MenuButton
                             isActive={editor.isActive("code")}
-                            onClick={() => editor.chain().focus().toggleCode().run()}
+                            onClick={() => (editor.chain().focus() as any).toggleCode().run()}
                             icon={<Code className="h-3 w-3" />}
                         />
                     </motion.div>

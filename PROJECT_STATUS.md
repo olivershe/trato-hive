@@ -2,8 +2,8 @@
 
 **Last Updated:** December 25, 2025
 **Current Phase:** Phase 7 - Frontend (Block Protocol & Editor) 🔄 IN PROGRESS
-**Latest Commit:** `feat(web): implement Block Protocol Renderer` (feat(web): implement Block Protocol Renderer [TASK-019])
-**Overall Progress:** Phase 7: 7/11 tasks complete (63%)
+**Latest Commit:** `feat(web): implement Extended UI Polish` (feat(web): implement Extended UI Polish (Active Focus, Save Animation) [TASK-020])
+**Overall Progress:** Phase 7: 8/11 tasks complete (72%)
 **Completed Work Archive:** See [COMPLETED_WORK.md](./COMPLETED_WORK.md) for Phases 1-5 & completed tasks
 
 ---
@@ -178,9 +178,9 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 - [x] **[TASK-019] Block Protocol Renderer** (4 hours) ✅
   - [x] Create read-only recursive React renderer for shared "Deal 360" views
   - [x] Optimize for Server-Side Rendering (SSR) in Next.js 15
-- [ ] **[TASK-020] UI Polish: The Intelligent Hive** (6 hours)
-  - [ ] Custom-style toolbars and drag-handles using `packages/ui`
-  - [ ] Add `framer-motion` micro-animations for block reordering
+- [x] **[TASK-020] UI Polish: The Intelligent Hive** (6 hours) ✅
+  - [x] Custom-style toolbars and drag-handles using `packages/ui`
+  - [x] Add `framer-motion` micro-animations for block reordering
 - [ ] **[TASK-021] Collaboration Foundation** (5 hours)
   - [ ] POC setup for `Yjs` or Liveblocks for real-time editing
   - [ ] Implement "User Presence" indicators
@@ -397,7 +397,8 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 
 **Next Up:**
 - [x] [TASK-019] Block Protocol Renderer
-- [ ] [TASK-020] UI Polish: The Intelligent Hive
+- [x] [TASK-020] UI Polish: The Intelligent Hive
+- [ ] [TASK-021] Collaboration Foundation
 
 **Next Actions:**
 

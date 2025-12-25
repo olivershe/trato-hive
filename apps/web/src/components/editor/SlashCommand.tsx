@@ -1,8 +1,6 @@
-
 import {
     Command,
     createSuggestionItems,
-    renderItems,
 } from "novel/extensions";
 import {
     CheckSquare,
