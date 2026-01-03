@@ -22,8 +22,9 @@
 import NextAuth from 'next-auth';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import type { Adapter } from 'next-auth/adapters';
+import type { Session } from 'next-auth';
 import Google from 'next-auth/providers/google';
-import AzureAD from 'next-auth/providers/azure-ad';
+import MicrosoftEntraID from 'next-auth/providers/microsoft-entra-id';
 import { prisma } from '@trato-hive/db';
 import { authConfig } from './auth.config';
 
@@ -31,7 +32,7 @@ import { authConfig } from './auth.config';
  * NextAuth instance with database adapter
  * Uses AUTH_SECRET from environment (NextAuth v5 default)
  */
-export const { handlers, auth, signIn, signOut } = NextAuth({
+const nextAuth = NextAuth({
   ...authConfig,
   adapter: PrismaAdapter(prisma) as Adapter,
 
@@ -48,14 +49,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
 
     /**
-     * Microsoft Azure AD Provider
-     * Requires: AZURE_AD_CLIENT_ID, AZURE_AD_CLIENT_SECRET, AZURE_AD_TENANT_ID
-     * Callback URL: {AUTH_URL}/api/auth/callback/azure-ad
+     * Microsoft Entra ID Provider (formerly Azure AD)
+     * Requires: AUTH_MICROSOFT_ENTRA_ID_ID, AUTH_MICROSOFT_ENTRA_ID_SECRET, AUTH_MICROSOFT_ENTRA_ID_ISSUER
+     * Callback URL: {AUTH_URL}/api/auth/callback/microsoft-entra-id
      */
-    AzureAD({
-      clientId: process.env.AZURE_AD_CLIENT_ID!,
-      clientSecret: process.env.AZURE_AD_CLIENT_SECRET!,
-      tenantId: process.env.AZURE_AD_TENANT_ID!,
+    MicrosoftEntraID({
+      clientId: process.env.AUTH_MICROSOFT_ENTRA_ID_ID!,
+      clientSecret: process.env.AUTH_MICROSOFT_ENTRA_ID_SECRET!,
+      issuer: process.env.AUTH_MICROSOFT_ENTRA_ID_ISSUER!, // https://login.microsoftonline.com/{tenant-id}/v2.0
       allowDangerousEmailAccountLinking: true, // Enable automatic account linking by email
     }),
   ],
@@ -150,3 +151,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
   },
 });
+
+/**
+ * Export NextAuth handlers and functions
+ * Using explicit type assertions to avoid @auth/core internal type leakage
+ */
+export const handlers = nextAuth.handlers;
+export const auth: () => Promise<Session | null> = nextAuth.auth;
+/** Sign in function - uses NextAuth's internal signIn */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const signIn = nextAuth.signIn as (
+  provider?: string,
+  options?: Record<string, unknown>,
+  authorizationParams?: Record<string, unknown>
+) => Promise<void>;
+/** Sign out function - uses NextAuth's internal signOut */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const signOut = nextAuth.signOut as (options?: Record<string, unknown>) => Promise<void>;

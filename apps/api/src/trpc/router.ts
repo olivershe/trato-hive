@@ -2,10 +2,12 @@
  * Root tRPC Router
  *
  * This is the main router that combines all feature routers.
- * Feature routers will be added in Phase 8 (Backend Implementation).
+ *
+ * Active routers:
+ * - block - Block synchronization for editor
+ * - deal - Deal CRUD operations
  *
  * Future routers:
- * - dealRouter - Deal CRUD operations
  * - companyRouter - Company management
  * - documentRouter - Document handling
  * - diligenceRouter - VDR and Q&A
@@ -14,26 +16,15 @@
  * @see apps/api/CLAUDE.md for router patterns
  */
 import { router } from './init';
-
-import { blockRouter } from "../routers/block";
+import { blockRouter } from '../routers/block';
+import { dealsRouter } from '../routers/deals';
 
 /**
  * Root application router
- *
- * Feature routers will be added here:
- * @example
- * ```typescript
- * import { dealRouter } from './routers/deals';
- * import { companyRouter } from './routers/companies';
- *
- * export const appRouter = router({
- *   deal: dealRouter,
- *   company: companyRouter,
- * });
- * ```
  */
 export const appRouter = router({
   block: blockRouter,
+  deal: dealsRouter,
 });
 
 /**

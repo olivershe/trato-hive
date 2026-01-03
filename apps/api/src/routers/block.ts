@@ -1,32 +1,31 @@
 import { z } from "zod";
-import { router, publicProcedure, protectedProcedure } from "../trpc/init";
-import { prisma } from "../index"; // Wait, prisma is not exported from index usually, usually it's in a db package or lib.
-// Checking apps/api/src/trpc/context.ts usually has prisma.
-// But wait, the previous view_file of index.ts didn't show prisma export.
-// I should check where prisma client is instantiated.
-// Usually in a monorepo it's in packages/db.
-import { PrismaClient } from "@prisma/client";
+import { router, organizationProtectedProcedure } from "../trpc/init";
 
-// Instantiate localized prisma client if not available via context for now,
-// or better yet, assume getContext provides it.
-// Let's assume standard tRPC pattern: ctx.prisma.
-
-// Recurisve type for Tiptap JSON is hard to define in Zod easily, 
-// using z.any() for the content structure for now to avoid deep recursive type issues,
-// but validation logic will handle it.
+/**
+ * Block Router - Handles Tiptap editor content synchronization
+ *
+ * Uses organizationProtectedProcedure for multi-tenancy and authentication.
+ * Content is stored as hierarchical Block records linked to a Page.
+ */
 
 export const blockRouter = router({
-    sync: publicProcedure // Changing to protected later, public for now to ease testing if auth not fully wired in frontend
+    /**
+     * Sync Tiptap editor content to database
+     *
+     * Flattens the Tiptap JSON tree into Block records with parent-child relationships.
+     * Uses a transaction to ensure consistency.
+     */
+    sync: organizationProtectedProcedure
         .input(
             z.object({
-                pageId: z.string(),
+                pageId: z.string().cuid(),
                 content: z.record(z.any()), // Tiptap JSON doc
             })
         )
         .mutation(async ({ ctx, input }) => {
             const { pageId, content } = input;
-            // In a real app we'd use ctx.prisma
-            const prisma = new PrismaClient();
+            const { db, session } = ctx;
+            const userId = session.user.id;
 
             // 1. Recursive function to flatten the tree into a list of BlockCreateInputs
             const nodesToCreate: any[] = [];
@@ -50,9 +49,7 @@ export const blockRouter = router({
                     parentId,
                     pageId,
                     order,
-                    createdBy: "user_cm53s..." // Placeholder User ID until Auth is fully wired
-                    // We really need a valid user ID. 
-                    // I'll query the first user in DB or use a hardcoded one if auth is missing.
+                    createdById: userId, // Use authenticated user from session
                 });
 
                 if (node.content && Array.isArray(node.content)) {
@@ -69,15 +66,8 @@ export const blockRouter = router({
                 });
             }
 
-            // 2. Transaction
-            // We need to fetch a valid user first to satisfy foreign key
-            const user = await prisma.user.findFirst();
-            const userId = user?.id || "clq..."; // Fallback
-
-            // Update createdBy for all nodes
-            nodesToCreate.forEach(n => n.createdBy = userId);
-
-            await prisma.$transaction(async (tx) => {
+            // 2. Transaction - clear existing blocks and insert new ones
+            await db.$transaction(async (tx) => {
                 // Clear existing blocks for this page
                 await tx.block.deleteMany({
                     where: { pageId }

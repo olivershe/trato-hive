@@ -1,19 +1,20 @@
 {
     "compilerOptions": {
-        "target": "es2020",
-        "module": "esnext",
-        "moduleResolution": "node",
+        "target": "ES2022",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
         "strict": true,
         "lib": [
-            "es2020",
-            "dom"
+            "ES2022"
         ],
         "skipLibCheck": true,
-        "declaration": true,
-        "declarationMap": true,
+        "declaration": false,
         "outDir": "dist",
         "baseUrl": ".",
-        "esModuleInterop": true
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
+        "resolveJsonModule": true,
+        "noEmit": true
     },
     "include": [
         "src/**/*"

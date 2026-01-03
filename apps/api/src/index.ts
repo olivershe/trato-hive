@@ -12,6 +12,9 @@
  * @see apps/api/CLAUDE.md for architecture patterns
  */
 import Fastify from 'fastify';
+import helmet from '@fastify/helmet';
+import cors from '@fastify/cors';
+import rateLimit from '@fastify/rate-limit';
 import { fastifyTRPCPlugin } from '@trpc/server/adapters/fastify';
 import { createContext } from './trpc/context';
 import { appRouter } from './trpc/router';
@@ -39,6 +42,34 @@ const fastify = Fastify({
         }
         : undefined,
   },
+});
+
+/**
+ * Security & Performance Plugins
+ */
+
+// Security headers (XSS, clickjacking, sniffing protection)
+fastify.register(helmet, {
+  // Allow tRPC to use JSON content-type
+  contentSecurityPolicy: false,
+});
+
+// CORS for frontend access
+fastify.register(cors, {
+  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+});
+
+// Rate limiting (100 requests per minute)
+fastify.register(rateLimit, {
+  max: 100,
+  timeWindow: '1 minute',
+  errorResponseBuilder: () => ({
+    statusCode: 429,
+    error: 'Too Many Requests',
+    message: 'Rate limit exceeded. Please try again later.',
+  }),
 });
 
 /**

@@ -28,3 +28,52 @@ export const updateDealSchema = createDealSchema.partial().extend({
 })
 
 export type UpdateDealInput = z.infer<typeof updateDealSchema>
+
+/**
+ * Deal List Input - Pagination, filtering, and sorting
+ */
+export const dealListInputSchema = z.object({
+  page: z.number().int().positive().default(1),
+  pageSize: z.number().int().positive().max(100).default(20),
+  filter: z
+    .object({
+      stage: z.enum(dealStageValues).optional(),
+      type: z.enum(dealTypeValues).optional(),
+      search: z.string().optional(),
+      companyId: z.string().cuid().optional(),
+    })
+    .optional(),
+  sort: z
+    .object({
+      field: z
+        .enum(['name', 'value', 'stage', 'createdAt', 'expectedCloseDate'])
+        .default('createdAt'),
+      order: z.enum(['asc', 'desc']).default('desc'),
+    })
+    .optional(),
+})
+
+export type DealListInput = z.infer<typeof dealListInputSchema>
+
+/**
+ * Deal Get Input - Single deal by ID
+ */
+export const dealGetInputSchema = z.object({
+  id: z.string().cuid({ message: 'Invalid deal ID' }),
+})
+
+export type DealGetInput = z.infer<typeof dealGetInputSchema>
+
+/**
+ * Router-specific create schema (organizationId comes from context)
+ */
+export const routerCreateDealSchema = createDealSchema.omit({ organizationId: true })
+
+export type RouterCreateDealInput = z.infer<typeof routerCreateDealSchema>
+
+/**
+ * Router-specific update schema (organizationId comes from context)
+ */
+export const routerUpdateDealSchema = updateDealSchema.omit({ organizationId: true })
+
+export type RouterUpdateDealInput = z.infer<typeof routerUpdateDealSchema>
