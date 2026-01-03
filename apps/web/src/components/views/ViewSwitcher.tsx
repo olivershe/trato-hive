@@ -8,7 +8,7 @@ import {
     GitCommitHorizontal,
     BarChart3
 } from "lucide-react";
-import { cn } from "@trato-hive/ui";
+import { cn } from "@/lib/utils";
 
 export function ViewSwitcher() {
     const { currentView, setView, viewTitle } = useView();

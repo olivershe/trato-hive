@@ -213,6 +213,9 @@ importers:
       '@tiptap/starter-kit':
         specifier: ^3.14.0
         version: 3.14.0
+      '@tiptap/suggestion':
+        specifier: ^3.14.0
+        version: 3.14.0(@tiptap/core@3.14.0)(@tiptap/pm@3.14.0)
       '@trato-hive/api':
         specifier: workspace:^
         version: link:../api
@@ -4659,6 +4662,16 @@ packages:
     dependencies:
       '@tiptap/core': 2.27.1(@tiptap/pm@2.27.1)
       '@tiptap/pm': 2.27.1
+    dev: false
+
+  /@tiptap/suggestion@3.14.0(@tiptap/core@3.14.0)(@tiptap/pm@3.14.0):
+    resolution: {integrity: sha512-B9BQ9Tck8HsISDc6jZmtaSpl8KK69JbKHfU0ntILxgj8aBASElewO+W8WE49JSTxuyJGRgnhGSgaGpM4LhbLAg==}
+    peerDependencies:
+      '@tiptap/core': ^3.14.0
+      '@tiptap/pm': ^3.14.0
+    dependencies:
+      '@tiptap/core': 3.14.0(@tiptap/pm@3.14.0)
+      '@tiptap/pm': 3.14.0
     dev: false
 
   /@trpc/client@11.7.1(@trpc/server@11.7.1)(typescript@5.9.3):

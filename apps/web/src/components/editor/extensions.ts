@@ -1,19 +1,14 @@
-import {
-    TiptapImage,
-    TiptapLink,
-    UpdatedCharacterCount,
-    Placeholder,
-    StarterKit,
-    HorizontalRule,
-    TaskItem,
-    TaskList,
-    Typography,
-    Underline,
-    Color,
-    TextStyle,
-    Highlight,
-    // @ts-ignore
-} from "novel/extensions";
+import StarterKit from "@tiptap/starter-kit";
+import Image from "@tiptap/extension-image";
+// Note: Link and Underline are removed - Novel adds them internally
+import CharacterCount from "@tiptap/extension-character-count";
+import Placeholder from "@tiptap/extension-placeholder";
+import TaskItem from "@tiptap/extension-task-item";
+import TaskList from "@tiptap/extension-task-list";
+import Typography from "@tiptap/extension-typography";
+import { Color } from "@tiptap/extension-color";
+import { TextStyle } from "@tiptap/extension-text-style";
+import Highlight from "@tiptap/extension-highlight";
 import UniqueID from "@tiptap/extension-unique-id";
 import { CitationBlock } from "./extensions/CitationBlock";
 import { DealHeaderBlock } from "./extensions/DealHeaderBlock";
@@ -44,14 +39,9 @@ const placeholder = Placeholder.configure({
     includeChildren: true,
 });
 
-const tiptapLink = TiptapLink.configure({
-    HTMLAttributes: {
-        class:
-            "text-orange underline underline-offset-[3px] hover:text-orange/80 transition-colors cursor-pointer",
-    },
-});
+// Note: Link configuration is handled internally by Novel
 
-const tiptapImage = TiptapImage.extend({
+const tiptapImage = Image.extend({
     addAttributes() {
         return {
             ...this.parent?.(),
@@ -70,7 +60,7 @@ const tiptapImage = TiptapImage.extend({
     },
 });
 
-const updatedCharacterCount = UpdatedCharacterCount.configure({
+const characterCount = CharacterCount.configure({
     limit: 50000,
 });
 
@@ -109,7 +99,12 @@ export const defaultExtensions = [
                 spellcheck: "false",
             },
         },
-        horizontalRule: false,
+        // Configure HorizontalRule directly in StarterKit instead of separately
+        horizontalRule: {
+            HTMLAttributes: {
+                class: "mt-4 mb-6 border-t border-gold/20",
+            },
+        },
         dropcursor: {
             color: "#DBEAFE",
             width: 4,
@@ -118,14 +113,9 @@ export const defaultExtensions = [
     }),
     uniqueId,
     placeholder,
-    tiptapLink,
+    // Note: Link is handled internally by Novel - removed to avoid duplicates
     tiptapImage,
-    updatedCharacterCount,
-    HorizontalRule.configure({
-        HTMLAttributes: {
-            class: "mt-4 mb-6 border-t border-gold/20",
-        },
-    }),
+    characterCount,
     TaskList.configure({
         HTMLAttributes: {
             class: "not-prose pl-2",
@@ -138,7 +128,7 @@ export const defaultExtensions = [
         nested: true,
     }),
     Typography,
-    Underline,
+    // Note: Underline is handled internally by Novel - removed to avoid duplicates
     TextStyle,
     Color,
     Highlight.configure({
