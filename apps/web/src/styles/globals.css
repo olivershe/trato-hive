@@ -1,4 +1,4 @@
-@import "@trato-hive/ui/index.css" source(workspace);
+@import "../../../../packages/ui/src/index.css";
 
 /* Additional app-specific styles */
 :root {

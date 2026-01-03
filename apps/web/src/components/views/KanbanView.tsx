@@ -16,7 +16,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { createPortal } from "react-dom";
-import { cn } from "@trato-hive/ui";
+import { cn } from "@/lib/utils";
 import { DollarSign, Calendar } from "lucide-react";
 import { useView } from "./ViewContext";
 import { Deal } from "./mock-data";

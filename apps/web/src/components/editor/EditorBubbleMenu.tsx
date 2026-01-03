@@ -1,7 +1,7 @@
 
 "use client";
 
-import { BubbleMenu } from "@tiptap/react";
+import { BubbleMenu } from "@tiptap/react/menus";
 import { type Editor } from "@tiptap/core";
 import { Bold, Italic, Strikethrough, Code, Sparkles } from "lucide-react";
 import { useState } from "react";
@@ -30,7 +30,9 @@ export function EditorBubbleMenu({ editor }: EditorBubbleMenuProps) {
                 animation: 'shift-away',
                 zIndex: 99999,
             }}
-            shouldShow={({ selection }) => {
+            shouldShow={() => {
+                // In Tiptap v3, check selection via editor state
+                const { selection } = editor.state;
                 const { empty } = selection;
 
                 // Don't show on empty selection
