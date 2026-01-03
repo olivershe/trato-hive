@@ -1,0 +1,294 @@
+/**
+ * Deal Service
+ *
+ * Business logic for Deal CRUD operations.
+ * Enforces multi-tenancy via organizationId on all operations.
+ */
+import { TRPCError } from '@trpc/server';
+import type { PrismaClient, Deal, Prisma, DealStage, DealType } from '@trato-hive/db';
+import type { DealListInput, RouterCreateDealInput } from '@trato-hive/shared';
+
+export interface DealListResult {
+  items: Deal[];
+  pagination: {
+    page: number;
+    pageSize: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+export interface FactSheetResult {
+  dealId: string;
+  dealName: string;
+  facts: Array<{
+    id: string;
+    type: string;
+    subject: string;
+    predicate: string;
+    object: string;
+    confidence: number;
+    sourceText: string | null;
+    document: { id: string; name: string } | null;
+  }>;
+  company: { id: string; name: string; aiSummary: string | null } | null;
+}
+
+export class DealService {
+  constructor(private db: PrismaClient) {}
+
+  /**
+   * List deals with pagination and filtering
+   * Multi-tenancy: Filters by organizationId
+   */
+  async list(input: DealListInput, organizationId: string): Promise<DealListResult> {
+    const { page = 1, pageSize = 20, filter, sort } = input;
+    const skip = (page - 1) * pageSize;
+
+    // Build where clause
+    const where: Prisma.DealWhereInput = {
+      organizationId, // Multi-tenancy enforcement
+    };
+
+    if (filter?.stage) {
+      where.stage = filter.stage as DealStage;
+    }
+    if (filter?.type) {
+      where.type = filter.type as DealType;
+    }
+    if (filter?.companyId) {
+      where.companyId = filter.companyId;
+    }
+    if (filter?.search) {
+      where.name = {
+        contains: filter.search,
+        mode: 'insensitive',
+      };
+    }
+
+    // Build orderBy
+    const orderBy: Prisma.DealOrderByWithRelationInput = {};
+    if (sort?.field) {
+      orderBy[sort.field as keyof Prisma.DealOrderByWithRelationInput] = sort.order || 'desc';
+    } else {
+      orderBy.createdAt = 'desc';
+    }
+
+    // Execute queries in parallel
+    const [items, total] = await Promise.all([
+      this.db.deal.findMany({
+        where,
+        orderBy,
+        skip,
+        take: pageSize,
+        include: {
+          company: {
+            select: {
+              id: true,
+              name: true,
+              industry: true,
+            },
+          },
+        },
+      }),
+      this.db.deal.count({ where }),
+    ]);
+
+    return {
+      items,
+      pagination: {
+        page,
+        pageSize,
+        total,
+        totalPages: Math.ceil(total / pageSize),
+      },
+    };
+  }
+
+  /**
+   * Get single deal by ID
+   * Multi-tenancy: Validates deal belongs to organization
+   */
+  async getById(id: string, organizationId: string): Promise<Deal> {
+    const deal = await this.db.deal.findUnique({
+      where: { id },
+      include: {
+        company: true,
+      },
+    });
+
+    if (!deal) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Deal not found',
+      });
+    }
+
+    // Multi-tenancy check
+    if (deal.organizationId !== organizationId) {
+      throw new TRPCError({
+        code: 'NOT_FOUND', // Don't reveal existence
+        message: 'Deal not found',
+      });
+    }
+
+    return deal;
+  }
+
+  /**
+   * Get deal with its Notion-style page and blocks
+   * Used by the editor to load the deal document
+   */
+  async getWithPage(id: string, organizationId: string) {
+    const deal = await this.getById(id, organizationId);
+
+    // Get page with blocks
+    const page = await this.db.page.findFirst({
+      where: { dealId: id },
+      include: {
+        blocks: {
+          orderBy: [{ order: 'asc' }],
+        },
+      },
+    });
+
+    return {
+      ...deal,
+      page,
+    };
+  }
+
+  /**
+   * Create new deal with Notion-style page
+   * Multi-tenancy: Sets organizationId from context
+   */
+  async create(
+    input: RouterCreateDealInput,
+    organizationId: string,
+    userId: string
+  ): Promise<Deal> {
+    return this.db.$transaction(async (tx) => {
+      // 1. Create the deal - cast enum fields
+      const deal = await tx.deal.create({
+        data: {
+          name: input.name,
+          type: input.type as DealType,
+          stage: input.stage as DealStage,
+          value: input.value,
+          currency: input.currency,
+          probability: input.probability,
+          expectedCloseDate: input.expectedCloseDate,
+          description: input.description,
+          notes: input.notes,
+          companyId: input.companyId,
+          organizationId,
+        },
+      });
+
+      // 2. Create the associated Page (Notion-style)
+      const page = await tx.page.create({
+        data: {
+          dealId: deal.id,
+          title: deal.name,
+        },
+      });
+
+      // 3. Create default DealHeaderBlock
+      await tx.block.create({
+        data: {
+          pageId: page.id,
+          type: 'deal_header',
+          order: 0,
+          properties: {
+            dealId: deal.id,
+            name: deal.name,
+            stage: deal.stage,
+            type: deal.type,
+            value: deal.value,
+          },
+          createdBy: userId,
+        },
+      });
+
+      return deal;
+    });
+  }
+
+  /**
+   * Update existing deal
+   * Multi-tenancy: Validates ownership before update
+   */
+  async update(
+    id: string,
+    data: Partial<RouterCreateDealInput>,
+    organizationId: string
+  ): Promise<Deal> {
+    // First validate access
+    await this.getById(id, organizationId);
+
+    // Build update data with proper enum casts
+    const updateData: Prisma.DealUpdateInput = {};
+    if (data.name !== undefined) updateData.name = data.name;
+    if (data.type !== undefined) updateData.type = data.type as DealType;
+    if (data.stage !== undefined) updateData.stage = data.stage as DealStage;
+    if (data.value !== undefined) updateData.value = data.value;
+    if (data.currency !== undefined) updateData.currency = data.currency;
+    if (data.probability !== undefined) updateData.probability = data.probability;
+    if (data.expectedCloseDate !== undefined) updateData.expectedCloseDate = data.expectedCloseDate;
+    if (data.description !== undefined) updateData.description = data.description;
+    if (data.notes !== undefined) updateData.notes = data.notes;
+    if (data.companyId !== undefined) {
+      updateData.company = data.companyId ? { connect: { id: data.companyId } } : { disconnect: true };
+    }
+
+    // Perform update
+    return this.db.deal.update({
+      where: { id },
+      data: updateData,
+    });
+  }
+
+  /**
+   * Get fact sheet for deal
+   * Joins with Fact, Company, Document tables
+   */
+  async getFactSheet(dealId: string, organizationId: string): Promise<FactSheetResult> {
+    const deal = await this.getById(dealId, organizationId);
+
+    // Get facts for the deal's company (if exists)
+    const facts = deal.companyId
+      ? await this.db.fact.findMany({
+          where: { companyId: deal.companyId },
+          include: {
+            document: {
+              select: { id: true, name: true },
+            },
+          },
+          orderBy: { confidence: 'desc' },
+        })
+      : [];
+
+    const company = deal.companyId
+      ? await this.db.company.findUnique({
+          where: { id: deal.companyId },
+          select: { id: true, name: true, aiSummary: true },
+        })
+      : null;
+
+    return {
+      dealId: deal.id,
+      dealName: deal.name,
+      facts: facts.map((f) => ({
+        id: f.id,
+        type: f.type,
+        subject: f.subject,
+        predicate: f.predicate,
+        object: f.object,
+        confidence: f.confidence,
+        sourceText: f.sourceText,
+        document: f.document,
+      })),
+      company,
+    };
+  }
+}
