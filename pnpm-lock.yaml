@@ -364,6 +364,12 @@ importers:
       '@trato-hive/ai-core':
         specifier: workspace:*
         version: link:../ai-core
+      '@trato-hive/data-plane':
+        specifier: workspace:*
+        version: link:../data-plane
+      '@trato-hive/db':
+        specifier: workspace:*
+        version: link:../db
       '@trato-hive/semantic-layer':
         specifier: workspace:*
         version: link:../semantic-layer
