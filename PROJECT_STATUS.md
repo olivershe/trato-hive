@@ -2,8 +2,8 @@
 
 **Last Updated:** January 5, 2026
 **Current Phase:** Phase 9 - AI Stack (In Progress)
-**Latest Commit:** `feat(ai-core): implement Phase 9.1 AI Stack foundation [TASK-031,032,034,035]`
-**Overall Progress:** Phase 9.1: 4/5 tasks complete (80%)
+**Latest Commit:** `feat(semantic-layer): implement Phase 9.2 vector store and fact extraction [TASK-036,037,039]`
+**Overall Progress:** Phase 9: 7/16 tasks complete (44%)
 **Completed Work Archive:** See [COMPLETED_WORK.md](./COMPLETED_WORK.md) for Phases 1-5 & completed tasks
 
 ---
@@ -287,17 +287,33 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
   - [x] vitest configured with 70% coverage thresholds
   - [x] Tests for cost calculation, error classification, citation extraction
 
-#### 9.2: packages/semantic-layer Implementation
+#### 9.2: packages/semantic-layer Implementation ✅ **COMPLETE** (January 5, 2026)
 
-**Location:** `packages/semantic-layer/src/`  
+**Location:** `packages/semantic-layer/src/`
 **Reference:** packages/semantic-layer/CLAUDE.md, docs/architecture/semantic-layer.md
 
-**Tasks:**
+**Completed Tasks:**
 
-- [ ] **[TASK-036] Vector Store (Pinecone)** (6 hours)
-- [ ] **[TASK-037] Fact Extraction** (8 hours)
+- [x] **[TASK-036] Vector Store (Pinecone)** (6 hours) ✅
+  - [x] Multi-tenant vector storage with organizationId namespaces
+  - [x] Upsert, search, delete operations with batch processing
+  - [x] Metadata filtering (documentId, pageNumber, boundingBox)
+  - [x] Factory functions with env var support
+
+- [x] **[TASK-037] Fact Extraction** (8 hours) ✅
+  - [x] LLM-powered extraction with structured output (Zod validation)
+  - [x] FactType enum: FINANCIAL_METRIC, KEY_PERSON, PRODUCT, CUSTOMER, RISK, OPPORTUNITY
+  - [x] Confidence thresholds (0.7) and deduplication
+  - [x] Database storage with Prisma integration
+  - [x] Utility functions: formatFact, groupFactsByType, sortFactsByConfidence
+
 - [ ] **[TASK-038] Knowledge Graph (Neo4j)** (6 hours - LOW PRIORITY)
-- [ ] **[TASK-039] Semantic Layer Testing** (3 hours)
+  - Deferred for future implementation
+
+- [x] **[TASK-039] Semantic Layer Testing** (3 hours) ✅
+  - [x] 66 unit tests (22 vector-store, 20 embeddings, 24 facts)
+  - [x] Mock Pinecone, OpenAI, and Prisma clients
+  - [x] vitest configured with 70% coverage thresholds
 
 #### 9.3: packages/data-plane Implementation
 
@@ -399,17 +415,18 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 - Phase 6: Foundation Packages - ✅ 100% (40 hours) - [Archive](./COMPLETED_WORK.md#phase-6-foundation-packages)
 - Phase 7: Frontend - ✅ 91% (10/11 tasks, ~50 hours) - TASK-022 (Mobile) remaining
 - Phase 8: Backend - ✅ 100% (17 hours) **COMPLETE January 3, 2026**
-- Phase 9: AI Stack - 🔄 15% (4/16 tasks, ~20 hours) **IN PROGRESS**
+- Phase 9: AI Stack - 🔄 44% (7/16 tasks, ~37 hours) **IN PROGRESS**
   - ✅ 9.1: packages/ai-core (4/4 core tasks) - January 5, 2026
+  - ✅ 9.2: packages/semantic-layer (3/3 core tasks) - January 5, 2026
 - Phase 10: Features - ⏸️ 0% (60 hours)
 
 **Total Time:**
 
-- Completed: ~165 hours (Phases 1-8 + 9.1)
-- Remaining: ~110 hours (Phases 9.2-9.4, 10)
+- Completed: ~182 hours (Phases 1-8 + 9.1 + 9.2)
+- Remaining: ~93 hours (Phases 9.3-9.4, 10)
 - Total: ~275 hours
 
-**Overall Progress: 60% complete**
+**Overall Progress: 66% complete**
 
 ---
 
@@ -418,23 +435,23 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 **Current Phase:** Phase 9 - AI Stack 🔄 IN PROGRESS
 
 **Last Completed:**
-- ✅ [TASK-031,032,034,035] Phase 9.1 AI Core Implementation (January 5, 2026)
-  - LLM Service with retry logic, cost tracking, error classification
-  - Streaming Service with Vercel AI SDK
-  - Citation Extraction with CitationBlock-compatible types
-  - 49 tests passing (26 llm + 23 rag)
-  - Hybrid architecture: Anthropic SDK (backend) + Vercel AI SDK (streaming)
+- ✅ [TASK-036,037,039] Phase 9.2 Semantic Layer Implementation (January 5, 2026)
+  - Vector Store (Pinecone) with multi-tenant namespaces
+  - Fact Extraction with LLM-powered structured output
+  - 66 tests passing (22 vector + 20 embeddings + 24 facts)
+  - EmbeddingService with OpenAI text-embedding-3-large
 
 **Next Up:**
 - [ ] [TASK-040] Reducto AI Integration (Phase 9.3 data-plane)
 - [ ] [TASK-041] S3 Storage Client (Phase 9.3 data-plane)
-- [ ] [TASK-036] Vector Store (Pinecone) (Phase 9.2 semantic-layer)
+- [ ] [TASK-042] BullMQ Queue Client (Phase 9.3 data-plane)
+- [ ] [TASK-044] Document Agent (Phase 9.4 agents)
 
 **Next Actions:**
 
-1. Continue Phase 9: data-plane or semantic-layer
+1. Continue Phase 9: Start Phase 9.3 (data-plane)
 2. Recommended: Start with TASK-040 (Reducto AI) for document processing
-3. Alternative: Start with TASK-036 (Vector Store) for embeddings
+3. Then: TASK-041 (S3 Storage) and TASK-042 (BullMQ Queue)
 
 **After Each Completed Task:**
 
