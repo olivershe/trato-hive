@@ -24,19 +24,22 @@
     "clean": "rm -rf dist coverage .turbo"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.962.0",
+    "@aws-sdk/s3-request-presigner": "^3.962.0",
+    "@trato-hive/db": "workspace:*",
+    "@trato-hive/shared": "workspace:*",
     "axios": "^1.7.9",
     "bullmq": "^5.28.1",
+    "form-data": "^4.0.5",
     "ioredis": "^5.4.2",
     "reducto": "^1.0.0",
-    "zod": "^3.23.8",
-    "@trato-hive/db": "workspace:*",
-    "@trato-hive/shared": "workspace:*"
+    "zod": "^3.23.8"
   },
   "devDependencies": {
-    "tsup": "^8.3.5",
-    "vitest": "^2.1.8",
     "@types/node": "^22.10.2",
     "eslint": "^8.57.0",
-    "typescript": "^5.6.3"
+    "tsup": "^8.3.5",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.8"
   }
 }
