@@ -189,9 +189,9 @@ interface AISuggestion {
 
 | Component | Status | Task |
 |-----------|--------|------|
-| DocumentAgent | ❌ Placeholder | TASK-044 |
-| DiligenceAgent | ❌ Placeholder | TASK-045 |
-| SourcingAgent | ✅ Basic | Phase 6 |
-| PipelineAgent | ✅ Basic | Phase 6 |
-| GeneratorAgent | ✅ Basic | Phase 6 |
-| Agent Testing | ❌ Not started | TASK-046 |
+| DocumentAgent | ✅ Complete | TASK-044 |
+| DiligenceAgent | ✅ Complete | TASK-045 |
+| SourcingAgent | ⏸️ Future | Phase 10 |
+| PipelineAgent | ⏸️ Future | Phase 10 |
+| GeneratorAgent | ⏸️ Future | Phase 10 |
+| Agent Testing | ✅ 31 tests | TASK-046 |

@@ -2,8 +2,8 @@
 
 **Last Updated:** January 5, 2026
 **Current Phase:** Phase 9 - AI Stack (In Progress)
-**Latest Commit:** `feat(data-plane): implement Phase 9.3 S3, Reducto, BullMQ [TASK-040,041,042,043]`
-**Overall Progress:** Phase 9: 11/16 tasks complete (69%)
+**Latest Commit:** `feat(agents): implement Phase 9.4 Document & Diligence Agents [TASK-044,045,046]`
+**Overall Progress:** Phase 9: 14/16 tasks complete (87.5%)
 **Completed Work Archive:** See [COMPLETED_WORK.md](./COMPLETED_WORK.md) for Phases 1-5 & completed tasks
 
 ---
@@ -345,16 +345,33 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
   - [x] Mock AWS SDK, axios, BullMQ
   - [x] vitest configured with 70% coverage thresholds
 
-#### 9.4: packages/agents Implementation
+#### 9.4: packages/agents Implementation ✅ **COMPLETE** (January 5, 2026)
 
-**Location:** `packages/agents/src/`  
+**Location:** `packages/agents/src/`
 **Reference:** packages/agents/CLAUDE.md, docs/architecture/agentic-layer.md
 
-**Tasks:**
+**Completed Tasks:**
 
-- [ ] **[TASK-044] Document Agent** (10 hours)
-- [ ] **[TASK-045] Diligence Agent** (12 hours)
-- [ ] **[TASK-046] Agents Testing** (3 hours)
+- [x] **[TASK-044] Document Agent** (10 hours) ✅
+  - [x] Full document processing pipeline: fetch → parse → chunk → embed → index → extract facts
+  - [x] Integration with StorageClient, ReductoClient, VectorStore, EmbeddingService, FactExtractor
+  - [x] Status tracking (UPLOADING → PROCESSING → PARSED → INDEXED)
+  - [x] Reprocessing support for re-embedding and re-extraction
+  - [x] DocumentAgentError with typed error codes
+
+- [x] **[TASK-045] Diligence Agent (RAG Q&A)** (12 hours) ✅
+  - [x] RAG-based question answering with vector store retrieval
+  - [x] CitationBlock-compatible responses with CitationAttributes
+  - [x] Integration with VectorStore, EmbeddingService, LLMClient, RAGService
+  - [x] Report generation with 6 predefined sections
+  - [x] Follow-up question support with conversation context
+  - [x] canAnswer() pre-check for question answerability
+
+- [x] **[TASK-046] Agents Testing** (3 hours) ✅
+  - [x] 31 unit tests (12 document-agent, 19 diligence-agent)
+  - [x] vitest configured with 70% coverage thresholds
+  - [x] Mock dependencies for all external services
+  - [x] BullMQ workers for background processing
 
 ---
 
@@ -483,43 +500,42 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 - Phase 6: Foundation Packages - ✅ 100% (40 hours) - [Archive](./COMPLETED_WORK.md#phase-6-foundation-packages)
 - Phase 7: Frontend - ✅ 91% (10/11 tasks, ~50 hours) - TASK-022 (Mobile) remaining
 - Phase 8: Backend - ✅ 100% (17 hours) **COMPLETE January 3, 2026**
-- Phase 9: AI Stack - 🔄 69% (11/16 tasks, ~54 hours) **IN PROGRESS**
+- Phase 9: AI Stack - 🔄 87.5% (14/16 tasks, ~79 hours) **IN PROGRESS**
   - ✅ 9.1: packages/ai-core (4/4 core tasks) - January 5, 2026
   - ✅ 9.2: packages/semantic-layer (3/3 core tasks) - January 5, 2026
   - ✅ 9.3: packages/data-plane (4/4 tasks) - January 5, 2026
+  - ✅ 9.4: packages/agents (3/3 tasks) - January 5, 2026
 - Phase 10: Features - ⏸️ 0% (~104 hours) - Includes AI Suggestions, Inline Databases & Notion-like UI
 
 **Total Time:**
 
-- Completed: ~199 hours (Phases 1-8 + 9.1 + 9.2 + 9.3)
-- Remaining: ~76 hours (Phases 9.4, 10)
+- Completed: ~224 hours (Phases 1-8 + 9.1 + 9.2 + 9.3 + 9.4)
+- Remaining: ~51 hours (Phases 9 remaining: TASK-038, TASK-022, Phase 10)
 - Total: ~275 hours
 
-**Overall Progress: 72% complete**
+**Overall Progress: 81% complete**
 
 ---
 
 ## 📍 Current Status & Next Actions
 
-**Current Phase:** Phase 9 - AI Stack 🔄 IN PROGRESS
+**Current Phase:** Phase 9 - AI Stack 🔄 IN PROGRESS (87.5% complete)
 
 **Last Completed:**
-- ✅ [TASK-040,041,042,043] Phase 9.3 Data Plane Implementation (January 5, 2026)
-  - S3 Storage Client with multi-tenant isolation (organizationId prefix)
-  - Reducto AI Integration with sync/async parsing
-  - BullMQ Queue with 5 job types (process, embed, extract, reindex, delete)
-  - 82 tests passing (24 storage + 32 reducto + 26 queue)
+- ✅ [TASK-044,045,046] Phase 9.4 Agents Implementation (January 5, 2026)
+  - Document Agent: Full processing pipeline (fetch → parse → embed → index → extract)
+  - Diligence Agent: RAG Q&A with CitationBlock-compatible responses
+  - BullMQ Workers: Document processing, query, and report generation
+  - 31 tests passing (12 document-agent + 19 diligence-agent)
 
-**Next Up:**
-- [ ] [TASK-044] Document Agent (Phase 9.4 agents)
-- [ ] [TASK-045] Diligence Agent (Phase 9.4 agents)
-- [ ] [TASK-046] Agents Testing (Phase 9.4 agents)
+**Remaining Phase 9 Tasks:**
+- [ ] [TASK-038] Knowledge Graph (Neo4j) - LOW PRIORITY
+- [ ] [TASK-022] Mobile Experience - LOW PRIORITY
 
 **Next Actions:**
 
-1. Continue Phase 9: Start Phase 9.4 (agents)
-2. Recommended: Start with TASK-044 (Document Agent) - orchestrates parsing pipeline
-3. Then: TASK-045 (Diligence Agent) - RAG Q&A with citations
+1. Continue to Phase 10: Features (Templates, AI Suggestions, Inline Databases)
+2. Or: Implement remaining low-priority tasks (TASK-038, TASK-022)
 
 **After Each Completed Task:**
 
