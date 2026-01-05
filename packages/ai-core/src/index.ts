@@ -5,6 +5,9 @@
  * Layer 3: TIC Core
  */
 
+// Types
+export * from './types';
+
 // LLM clients
 export * from './llm';
 
