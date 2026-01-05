@@ -358,9 +358,57 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 
 ---
 
-### Phase 10: Features (Templates & Blocks)
+### Phase 10: Features (Templates, AI Suggestions & Inline Databases)
 
-**Strategy:** Instead of building static pages, we build "Page Templates" composed of Blocks.
+**Strategy:** Instead of building static pages, we build "Page Templates" composed of Blocks. Users can customize their workspace with AI-assisted updates and inline databases.
+
+#### 10.0: Core Infrastructure 🆕
+
+**Tasks:**
+
+- [ ] **[TASK-074] AI Suggestion Block** (6 hours) 🆕
+  - [ ] `AISuggestionBlock` Tiptap extension (shows AI-extracted field updates)
+  - [ ] Accept/Dismiss actions with `deal.applySuggestion` mutation
+  - [ ] Activity log integration (full audit trail)
+  - [ ] Visual design: Gold accent, "AI Suggests" badge, confidence indicator
+
+- [ ] **[TASK-075] Entity Fact Mapper** (4 hours) 🆕
+  - [ ] Map extracted Facts to Deal/Company field updates
+  - [ ] Confidence thresholds (0.9+ = high confidence suggestion)
+  - [ ] `deal.getSuggestionsFromFacts` tRPC query
+
+- [ ] **[TASK-076] Inline Database System** (10 hours) 🆕
+  - [ ] `Database` model: schema (columns: name, type, options), organizationId
+  - [ ] `DatabaseEntry` model: rows with typed JSONB properties
+  - [ ] Column types: Text, Number, Select, Multi-Select, Date, Person, Checkbox, URL
+  - [ ] `database.create`, `database.addEntry`, `database.updateEntry` tRPC
+  - [ ] `database.suggestEntriesFromFacts` - AI extraction → database rows
+  - [ ] Prisma migration for new models
+
+- [ ] **[TASK-077] DatabaseViewBlock** (10 hours) 🆕
+  - [ ] `DatabaseViewBlock` Tiptap extension (embed database in any page)
+  - [ ] View types: Table, Kanban, Gallery (switchable)
+  - [ ] Filters, sorting, and grouping persisted in block properties
+  - [ ] "Create New Database" flow from slash command (`/database`)
+
+- [ ] **[TASK-078] Database Editing UI** (8 hours) 🆕
+  - [ ] **Inline cell editing**: Click cell → edit in place → auto-save on blur
+  - [ ] **Entry form modal**: "+ New" button → sidebar form with all column fields
+  - [ ] **Column configuration**: Click header → rename, change type, delete
+  - [ ] **Row actions**: Hover menu (duplicate, delete, open as page)
+  - [ ] **Bulk import**: CSV/Excel upload → batch create entries
+
+- [ ] **[TASK-079] Notion-like UI with Trato Hive Styling** (8 hours) 🆕
+  - [ ] Design tokens: Alabaster backgrounds, Gold accents, Bone borders
+  - [ ] Compact grid layout matching Notion table density
+  - [ ] Hover states with subtle shadow elevation
+  - [ ] Column resize handles and drag-to-reorder columns
+  - [ ] Dark mode support (Surface Dark, Cultured White text)
+  - [ ] Framer Motion animations for row add/delete/reorder
+  - [ ] "Intelligent Hive" polish: subtle hexagon patterns, premium feel
+  - [ ] **Testing**: Playwright E2E tests for database table interactions
+  - [ ] **Testing**: Visual regression tests (Chromatic or Percy)
+  - [ ] **Testing**: Accessibility audit (keyboard navigation, screen readers)
 
 #### 10.1: features/deals Template (Week 9)
 
@@ -374,6 +422,7 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
   - [ ] Define `DealTemplate`: A JSON structure defining the default blocks for a new deal
   - [ ] `DealHeaderBlock`: Custom block displaying stage/value
   - [ ] `PipelineBlock`: Kanban view as a block type
+  - [ ] Default embedded "Due Diligence Tracker" database
 
 #### 10.2: features/command-center Template (Week 10)
 
@@ -397,6 +446,7 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 - [ ] **[TASK-063] Diligence Template** (4 hours) 🆕
   - [ ] `VDRBlock`: File explorer block
   - [ ] `QABlock`: Chat interface block
+  - [ ] Default embedded "Document Review" database
 
 #### 10.4: features/generator Integration (Week 11-12)
 
@@ -437,7 +487,7 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
   - ✅ 9.1: packages/ai-core (4/4 core tasks) - January 5, 2026
   - ✅ 9.2: packages/semantic-layer (3/3 core tasks) - January 5, 2026
   - ✅ 9.3: packages/data-plane (4/4 tasks) - January 5, 2026
-- Phase 10: Features - ⏸️ 0% (60 hours)
+- Phase 10: Features - ⏸️ 0% (~104 hours) - Includes AI Suggestions, Inline Databases & Notion-like UI
 
 **Total Time:**
 
