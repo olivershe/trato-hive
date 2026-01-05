@@ -1,9 +1,9 @@
 # Trato Hive - Project Status & Implementation Roadmap
 
-**Last Updated:** January 3, 2026
-**Current Phase:** Phase 8 - Backend (Deals API) ✅ COMPLETE
-**Latest Commit:** `feat(api): implement Phase 8 backend - Deals API with tests [TASK-024-029]`
-**Overall Progress:** Phase 8: 7/7 tasks complete (100%)
+**Last Updated:** January 5, 2026
+**Current Phase:** Phase 9 - AI Stack (In Progress)
+**Latest Commit:** `feat(ai-core): implement Phase 9.1 AI Stack foundation [TASK-031,032,034,035]`
+**Overall Progress:** Phase 9.1: 4/5 tasks complete (80%)
 **Completed Work Archive:** See [COMPLETED_WORK.md](./COMPLETED_WORK.md) for Phases 1-5 & completed tasks
 
 ---
@@ -249,20 +249,43 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 
 ---
 
-### Phase 9: AI Stack (Week 6-8, ~70 hours)
+### Phase 9: AI Stack (Week 6-8, ~70 hours) 🔄 IN PROGRESS
 
-#### 9.1: packages/ai-core Implementation
+#### 9.1: packages/ai-core Implementation ✅ **COMPLETE** (January 5, 2026)
 
-**Location:** `packages/ai-core/src/`  
+**Location:** `packages/ai-core/src/`
 **Reference:** packages/ai-core/CLAUDE.md, docs/architecture/tic-core.md
+**Architecture:** Hybrid approach - Anthropic SDK (backend) + Vercel AI SDK (streaming)
 
-**Tasks:**
+**Completed Tasks:**
 
-- [ ] **[TASK-031] LLM Service (Claude Sonnet 4.5)** (8 hours)
-- [ ] **[TASK-032] Streaming Service** (4 hours)
-- [ ] **[TASK-033] Embedding Service** (4 hours)
-- [ ] **[TASK-034] Citation Extraction** (6 hours)
-- [ ] **[TASK-035] AI Core Testing** (3 hours)
+- [x] **[TASK-031] LLM Service Enhancement** (8 hours) ✅
+  - [x] Production-ready LLM client with retry logic and exponential backoff
+  - [x] Cost tracking per model with MODEL_PRICING
+  - [x] Error classification (RATE_LIMIT, AUTH, TIMEOUT, CONTEXT_LENGTH, etc.)
+  - [x] Support Claude (Anthropic SDK) and OpenAI/Kimi (LangChain)
+  - [x] generateJSON() for structured output with Zod validation
+
+- [x] **[TASK-032] Streaming Service** (4 hours) ✅
+  - [x] Vercel AI SDK integration for streaming chat UI
+  - [x] streamResponse() and streamChat() async generators
+  - [x] Both Claude and OpenAI provider support
+  - [x] getStreamResult() for Next.js API route compatibility
+
+- [ ] **[TASK-033] Embedding Service** (4 hours) - Deferred to semantic-layer
+  - Will be implemented in TASK-036 (Vector Store) with Pinecone
+
+- [x] **[TASK-034] Citation Extraction** (6 hours) ✅
+  - [x] CitationBlock-compatible types (CitationAttributes)
+  - [x] extractCitationIndices() for [N] marker parsing
+  - [x] mapFactsToCitations() and mapChunksToCitations()
+  - [x] validateCitations() and cleanInvalidCitations()
+  - [x] Build context prompts for RAG with numbered citations
+
+- [x] **[TASK-035] AI Core Testing** (3 hours) ✅
+  - [x] 49 unit tests (26 llm.test.ts, 23 rag.test.ts)
+  - [x] vitest configured with 70% coverage thresholds
+  - [x] Tests for cost calculation, error classification, citation extraction
 
 #### 9.2: packages/semantic-layer Implementation
 
@@ -376,41 +399,42 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 - Phase 6: Foundation Packages - ✅ 100% (40 hours) - [Archive](./COMPLETED_WORK.md#phase-6-foundation-packages)
 - Phase 7: Frontend - ✅ 91% (10/11 tasks, ~50 hours) - TASK-022 (Mobile) remaining
 - Phase 8: Backend - ✅ 100% (17 hours) **COMPLETE January 3, 2026**
-- Phase 9: AI Stack - ⏸️ 0% (70 hours)
+- Phase 9: AI Stack - 🔄 15% (4/16 tasks, ~20 hours) **IN PROGRESS**
+  - ✅ 9.1: packages/ai-core (4/4 core tasks) - January 5, 2026
 - Phase 10: Features - ⏸️ 0% (60 hours)
 
 **Total Time:**
 
-- Completed: ~145 hours (Phases 1-8)
-- Remaining: ~130 hours (Phases 9-10)
+- Completed: ~165 hours (Phases 1-8 + 9.1)
+- Remaining: ~110 hours (Phases 9.2-9.4, 10)
 - Total: ~275 hours
 
-**Overall Progress: 53% complete**
+**Overall Progress: 60% complete**
 
 ---
 
 ## 📍 Current Status & Next Actions
 
-**Current Phase:** Phase 8 - Backend ✅ COMPLETE
+**Current Phase:** Phase 9 - AI Stack 🔄 IN PROGRESS
 
 **Last Completed:**
-- ✅ [TASK-024-029] Phase 8 Backend Implementation (January 3, 2026)
-  - Fastify plugins (helmet, cors, rate-limit)
-  - blockRouter security fixes
-  - DealService + ActivityService
-  - Deals tRPC router (6 procedures)
-  - Fact sheet integration
-  - 22 tests passing (13 unit + 9 integration)
+- ✅ [TASK-031,032,034,035] Phase 9.1 AI Core Implementation (January 5, 2026)
+  - LLM Service with retry logic, cost tracking, error classification
+  - Streaming Service with Vercel AI SDK
+  - Citation Extraction with CitationBlock-compatible types
+  - 49 tests passing (26 llm + 23 rag)
+  - Hybrid architecture: Anthropic SDK (backend) + Vercel AI SDK (streaming)
 
 **Next Up:**
-- [ ] [TASK-022] Mobile Experience (Phase 7 remaining)
-- [ ] [TASK-031] LLM Service (Phase 9 start)
+- [ ] [TASK-040] Reducto AI Integration (Phase 9.3 data-plane)
+- [ ] [TASK-041] S3 Storage Client (Phase 9.3 data-plane)
+- [ ] [TASK-036] Vector Store (Pinecone) (Phase 9.2 semantic-layer)
 
 **Next Actions:**
 
-1. Complete TASK-022: Mobile Experience (optional)
-2. Begin Phase 9: AI Stack implementation
-3. Start with TASK-031: LLM Service (Claude Sonnet 4.5)
+1. Continue Phase 9: data-plane or semantic-layer
+2. Recommended: Start with TASK-040 (Reducto AI) for document processing
+3. Alternative: Start with TASK-036 (Vector Store) for embeddings
 
 **After Each Completed Task:**
 
@@ -421,7 +445,7 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 
 ---
 
-**Last Updated:** January 3, 2026
+**Last Updated:** January 5, 2026
 **Maintained By:** All team members (update after every task)
 **Reference:** Root CLAUDE.md Section 5 (EPC Workflow)
 **Completed Work:** See [COMPLETED_WORK.md](./COMPLETED_WORK.md)
