@@ -7,6 +7,7 @@
 import { z } from 'zod'
 import { router, organizationProtectedProcedure } from '../trpc/init'
 import { DatabaseService } from '../services/database.service'
+import { FactMapperService } from '../services/fact-mapper.service'
 import { ActivityService } from '../services'
 import {
   routerCreateDatabaseSchema,
@@ -21,6 +22,7 @@ import {
   getDatabaseSchema,
   listDatabasesSchema,
   listEntriesSchema,
+  suggestEntriesFromFactsSchema,
 } from '@trato-hive/shared'
 import { ActivityType } from '@trato-hive/db'
 
@@ -234,6 +236,30 @@ export const databasesRouter = router({
         input.id,
         ctx.organizationId,
         ctx.session.user.id
+      )
+    }),
+
+  // ===========================================================================
+  // AI Suggestions (Entity Fact Mapper)
+  // ===========================================================================
+
+  /**
+   * database.suggestEntriesFromFacts - AI-powered entry suggestions from extracted facts
+   * Auth: organizationProtectedProcedure
+   * Maps facts from deal documents to suggested database entries
+   */
+  suggestEntriesFromFacts: organizationProtectedProcedure
+    .input(suggestEntriesFromFactsSchema)
+    .query(async ({ ctx, input }) => {
+      const service = new FactMapperService(ctx.db)
+      return service.suggestEntriesFromFacts(
+        input.databaseId,
+        input.dealId,
+        ctx.organizationId,
+        {
+          minConfidence: input.minConfidence,
+          maxSuggestions: input.maxSuggestions,
+        }
       )
     }),
 })
