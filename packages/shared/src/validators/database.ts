@@ -11,7 +11,7 @@ const columnTypeValues = Object.values(DatabaseColumnType) as [string, ...string
 // =============================================================================
 
 /**
- * Single column definition
+ * Single column definition (with required ID)
  */
 export const databaseColumnSchema = z.object({
   id: z.string().min(1, 'Column ID is required'),
@@ -24,7 +24,16 @@ export const databaseColumnSchema = z.object({
 export type DatabaseColumnInput = z.infer<typeof databaseColumnSchema>
 
 /**
- * Database schema (collection of columns)
+ * Column input for create/add operations (ID optional, generated server-side)
+ */
+export const databaseColumnInputSchema = databaseColumnSchema.extend({
+  id: z.string().min(1).optional(),
+})
+
+export type DatabaseColumnCreateInput = z.infer<typeof databaseColumnInputSchema>
+
+/**
+ * Database schema (collection of columns - IDs required)
  */
 export const databaseSchemaSchema = z.object({
   columns: z
@@ -34,6 +43,18 @@ export const databaseSchemaSchema = z.object({
 })
 
 export type DatabaseSchemaInput = z.infer<typeof databaseSchemaSchema>
+
+/**
+ * Database schema input for create operations (IDs optional)
+ */
+export const databaseSchemaInputSchema = z.object({
+  columns: z
+    .array(databaseColumnInputSchema)
+    .min(1, 'At least one column is required')
+    .max(50, 'Maximum 50 columns allowed'),
+})
+
+export type DatabaseSchemaCreateInput = z.infer<typeof databaseSchemaInputSchema>
 
 // =============================================================================
 // Database CRUD Validators
@@ -46,7 +67,7 @@ export const createDatabaseSchema = z.object({
   organizationId: z.string().cuid({ message: 'Invalid organization ID' }),
   name: z.string().min(1, 'Name is required').max(200, 'Name too long'),
   description: z.string().max(1000, 'Description too long').nullable().optional(),
-  schema: databaseSchemaSchema,
+  schema: databaseSchemaInputSchema, // IDs optional, generated server-side
 })
 
 export type CreateDatabaseInput = z.infer<typeof createDatabaseSchema>
@@ -84,7 +105,7 @@ export type UpdateDatabaseSchemaInput = z.infer<typeof updateDatabaseSchemaSchem
  */
 export const addColumnSchema = z.object({
   databaseId: z.string().cuid({ message: 'Invalid database ID' }),
-  column: databaseColumnSchema,
+  column: databaseColumnInputSchema, // ID optional, generated server-side
   position: z.number().int().min(0).optional(), // Insert position (default: end)
 })
 

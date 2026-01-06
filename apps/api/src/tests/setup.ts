@@ -29,6 +29,12 @@ export const TEST_IDS = {
   block: 'clq7890123456ghijklmnopqrs',
   doc: 'clq8901234567hijklmnopqrst',
   fact: 'clq9012345678ijklmnopqrstu',
+  database: 'clqa123456789jklmnopqrstuv',
+  database2: 'clqb234567890klmnopqrstuvw',
+  entry: 'clqc345678901lmnopqrstuvwx',
+  entry2: 'clqd456789012mnopqrstuvwxy',
+  column: 'col_task_12345',
+  column2: 'col_status_6789',
 } as const;
 
 /**
@@ -72,6 +78,83 @@ export function createMockDeal(overrides?: Partial<Deal>): Deal {
   };
 }
 
+// Database schema type for testing
+interface DatabaseSchema {
+  columns: Array<{
+    id: string;
+    name: string;
+    type: string;
+    options?: string[];
+    width?: number;
+  }>;
+}
+
+// Mock database type
+interface MockDatabase {
+  id: string;
+  organizationId: string;
+  name: string;
+  description: string | null;
+  schema: DatabaseSchema;
+  createdById: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Mock database entry type
+interface MockDatabaseEntry {
+  id: string;
+  databaseId: string;
+  properties: Record<string, unknown>;
+  suggestedBy: string | null;
+  factIds: string[];
+  createdById: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+/**
+ * Create a mock database for testing
+ */
+export function createMockDatabase(overrides?: Partial<MockDatabase>): MockDatabase {
+  return {
+    id: TEST_IDS.database,
+    organizationId: TEST_IDS.org,
+    name: 'Test Database',
+    description: 'A test database',
+    schema: {
+      columns: [
+        { id: TEST_IDS.column, name: 'Task', type: 'TEXT' },
+        { id: TEST_IDS.column2, name: 'Status', type: 'SELECT', options: ['To Do', 'In Progress', 'Done'] },
+      ],
+    },
+    createdById: TEST_IDS.user,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ...overrides,
+  };
+}
+
+/**
+ * Create a mock database entry for testing
+ */
+export function createMockDatabaseEntry(overrides?: Partial<MockDatabaseEntry>): MockDatabaseEntry {
+  return {
+    id: TEST_IDS.entry,
+    databaseId: TEST_IDS.database,
+    properties: {
+      [TEST_IDS.column]: 'Test Task',
+      [TEST_IDS.column2]: 'To Do',
+    },
+    suggestedBy: null,
+    factIds: [],
+    createdById: TEST_IDS.user,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ...overrides,
+  };
+}
+
 /**
  * Create a mock Prisma client
  */
@@ -101,6 +184,22 @@ export function createMockPrisma() {
     activity: {
       create: vi.fn(),
       findMany: vi.fn(),
+    },
+    database: {
+      findMany: vi.fn(),
+      findUnique: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
+      count: vi.fn(),
+    },
+    databaseEntry: {
+      findMany: vi.fn(),
+      findUnique: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
+      count: vi.fn(),
     },
     $transaction: vi.fn((fn: (tx: unknown) => Promise<unknown>) => fn(createMockPrisma())),
   };
