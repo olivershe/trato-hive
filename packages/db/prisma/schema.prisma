@@ -26,12 +26,14 @@ model User {
   updatedAt DateTime @updatedAt
 
   // Relations
-  accounts      Account[]
-  sessions      Session[]
-  organizations OrganizationMember[]
-  documents     Document[]
-  activities    Activity[]
-  createdBlocks Block[]
+  accounts        Account[]
+  sessions        Session[]
+  organizations   OrganizationMember[]
+  documents       Document[]
+  activities      Activity[]
+  createdBlocks   Block[]
+  databases       Database[]      @relation("DatabaseCreator")
+  databaseEntries DatabaseEntry[] @relation("DatabaseEntryCreator")
 
   @@map("users")
 }
@@ -95,6 +97,7 @@ model Organization {
   deals     Deal[]
   companies Company[]
   documents Document[]
+  databases Database[]
 
   @@map("organizations")
 }
@@ -401,6 +404,67 @@ model Activity {
   @@index([type])
   @@index([createdAt])
   @@map("activities")
+}
+
+// =============================================================================
+// INLINE DATABASES (Experience Layer - User-Created Tables)
+// =============================================================================
+
+enum DatabaseColumnType {
+  TEXT
+  NUMBER
+  SELECT
+  MULTI_SELECT
+  DATE
+  PERSON
+  CHECKBOX
+  URL
+}
+
+model Database {
+  id              String   @id @default(cuid())
+  organizationId  String
+  name            String
+  description     String?  @db.Text
+
+  // Column definitions stored as JSONB array:
+  // [{ id: string, name: string, type: DatabaseColumnType, options?: string[], width?: number }]
+  schema          Json     @db.JsonB
+
+  createdById     String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  creator         User         @relation("DatabaseCreator", fields: [createdById], references: [id])
+  entries         DatabaseEntry[]
+
+  @@index([organizationId])
+  @@index([createdById])
+  @@map("databases")
+}
+
+model DatabaseEntry {
+  id          String   @id @default(cuid())
+  databaseId  String
+
+  // Row values stored as JSONB object: { "col_id_1": "value", "col_id_2": 123 }
+  properties  Json     @db.JsonB
+
+  // AI suggestion tracking (for EntityFactMapper integration)
+  suggestedBy String?              // e.g., "entity-fact-mapper", "document-agent"
+  factIds     String[] @default([]) // Source fact IDs for citation trail
+
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  database    Database @relation(fields: [databaseId], references: [id], onDelete: Cascade)
+  creator     User     @relation("DatabaseEntryCreator", fields: [createdById], references: [id])
+
+  @@index([databaseId])
+  @@index([createdById])
+  @@map("database_entries")
 }
 
 // =============================================================================

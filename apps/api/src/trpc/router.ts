@@ -6,6 +6,7 @@
  * Active routers:
  * - block - Block synchronization for editor
  * - deal - Deal CRUD operations
+ * - database - Inline database CRUD operations
  *
  * Future routers:
  * - companyRouter - Company management
@@ -18,6 +19,7 @@
 import { router } from './init';
 import { blockRouter } from '../routers/block';
 import { dealsRouter } from '../routers/deals';
+import { databasesRouter } from '../routers/databases';
 
 /**
  * Root application router
@@ -25,6 +27,7 @@ import { dealsRouter } from '../routers/deals';
 export const appRouter = router({
   block: blockRouter,
   deal: dealsRouter,
+  database: databasesRouter,
 });
 
 /**
