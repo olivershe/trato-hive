@@ -389,10 +389,12 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
   - [ ] Activity log integration (full audit trail)
   - [ ] Visual design: Gold accent, "AI Suggests" badge, confidence indicator
 
-- [ ] **[TASK-075] Entity Fact Mapper** (4 hours) 🆕
-  - [ ] Map extracted Facts to Deal/Company field updates
-  - [ ] Confidence thresholds (0.9+ = high confidence suggestion)
-  - [ ] `deal.getSuggestionsFromFacts` tRPC query
+- [x] **[TASK-075] Entity Fact Mapper** (4 hours) ✅
+  - [x] `FactMapperService` with fact-to-entry mapping logic
+  - [x] Map extracted Facts to database entries via deal documents
+  - [x] Confidence thresholds (0.7+ default, configurable)
+  - [x] `database.suggestEntriesFromFacts` tRPC query
+  - [x] 18 unit tests for FactMapperService
 
 - [x] **[TASK-076] Inline Database System** (10 hours) ✅
   - [x] `Database` model: schema (columns: name, type, options), organizationId
@@ -506,7 +508,7 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
   - ✅ 9.2: packages/semantic-layer (3/3 core tasks) - January 5, 2026
   - ✅ 9.3: packages/data-plane (4/4 tasks) - January 5, 2026
   - ✅ 9.4: packages/agents (3/3 tasks) - January 5, 2026
-- Phase 10: Features - 🔄 17% (1/6 core tasks, ~94 hours remaining) - Includes AI Suggestions, Inline Databases & Notion-like UI
+- Phase 10: Features - 🔄 33% (2/6 core tasks, ~90 hours remaining) - Includes AI Suggestions, Inline Databases & Notion-like UI
 
 **Total Time:**
 
@@ -523,12 +525,12 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 **Current Phase:** Phase 9 - AI Stack 🔄 IN PROGRESS (87.5% complete)
 
 **Last Completed:**
-- ✅ [TASK-076] Inline Database System (January 6, 2026)
-  - Database & DatabaseEntry Prisma models with JSONB schema storage
-  - DatabaseService with 16 methods for full CRUD lifecycle
-  - 14 tRPC procedures with organization-scoped access control
-  - 25 integration tests with multi-tenancy enforcement
-  - 8 column types: TEXT, NUMBER, SELECT, MULTI_SELECT, DATE, PERSON, CHECKBOX, URL
+- ✅ [TASK-075] Entity Fact Mapper (January 6, 2026)
+  - FactMapperService bridges semantic-layer facts with inline databases
+  - Maps extracted facts from deal documents to suggested database entries
+  - Confidence threshold filtering (0.7+ default, configurable)
+  - `database.suggestEntriesFromFacts` tRPC procedure
+  - 18 unit tests (65 total API tests)
 
 **Remaining Phase 9 Tasks:**
 - [ ] [TASK-038] Knowledge Graph (Neo4j) - LOW PRIORITY
@@ -536,9 +538,9 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 
 **Next Actions:**
 
-1. [TASK-075] Entity Fact Mapper - Map Facts to database entries (IN PROGRESS)
-2. [TASK-074] AI Suggestion Block - UI for AI-suggested updates
-3. [TASK-077] DatabaseViewBlock - Tiptap extension for embedded databases
+1. [TASK-074] AI Suggestion Block - UI for AI-suggested updates
+2. [TASK-077] DatabaseViewBlock - Tiptap extension for embedded databases
+3. [TASK-078] Database Editing UI - Inline cell editing and entry forms
 
 **After Each Completed Task:**
 
