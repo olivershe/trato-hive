@@ -249,7 +249,8 @@ export type ListEntriesInput = z.infer<typeof listEntriesSchema>
 export const suggestEntriesFromFactsSchema = z.object({
   databaseId: z.string().cuid({ message: 'Invalid database ID' }),
   dealId: z.string().cuid({ message: 'Invalid deal ID' }),
-  maxSuggestions: z.number().int().min(1).max(20).default(5),
+  minConfidence: z.number().min(0).max(1).default(0.7),
+  maxSuggestions: z.number().int().min(1).max(20).default(10),
 })
 
 export type SuggestEntriesFromFactsInput = z.infer<typeof suggestEntriesFromFactsSchema>

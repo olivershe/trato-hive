@@ -394,13 +394,14 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
   - [ ] Confidence thresholds (0.9+ = high confidence suggestion)
   - [ ] `deal.getSuggestionsFromFacts` tRPC query
 
-- [ ] **[TASK-076] Inline Database System** (10 hours) 🆕
-  - [ ] `Database` model: schema (columns: name, type, options), organizationId
-  - [ ] `DatabaseEntry` model: rows with typed JSONB properties
-  - [ ] Column types: Text, Number, Select, Multi-Select, Date, Person, Checkbox, URL
-  - [ ] `database.create`, `database.addEntry`, `database.updateEntry` tRPC
-  - [ ] `database.suggestEntriesFromFacts` - AI extraction → database rows
-  - [ ] Prisma migration for new models
+- [x] **[TASK-076] Inline Database System** (10 hours) ✅
+  - [x] `Database` model: schema (columns: name, type, options), organizationId
+  - [x] `DatabaseEntry` model: rows with typed JSONB properties
+  - [x] Column types: Text, Number, Select, Multi-Select, Date, Person, Checkbox, URL
+  - [x] `database.create`, `database.addEntry`, `database.updateEntry` tRPC (14 procedures)
+  - [x] `DatabaseService` with 16 methods, full CRUD for databases/columns/entries
+  - [x] Prisma migration for new models
+  - [x] 25 integration tests with multi-tenancy enforcement
 
 - [ ] **[TASK-077] DatabaseViewBlock** (10 hours) 🆕
   - [ ] `DatabaseViewBlock` Tiptap extension (embed database in any page)
@@ -505,7 +506,7 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
   - ✅ 9.2: packages/semantic-layer (3/3 core tasks) - January 5, 2026
   - ✅ 9.3: packages/data-plane (4/4 tasks) - January 5, 2026
   - ✅ 9.4: packages/agents (3/3 tasks) - January 5, 2026
-- Phase 10: Features - ⏸️ 0% (~104 hours) - Includes AI Suggestions, Inline Databases & Notion-like UI
+- Phase 10: Features - 🔄 17% (1/6 core tasks, ~94 hours remaining) - Includes AI Suggestions, Inline Databases & Notion-like UI
 
 **Total Time:**
 
@@ -522,11 +523,12 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 **Current Phase:** Phase 9 - AI Stack 🔄 IN PROGRESS (87.5% complete)
 
 **Last Completed:**
-- ✅ [TASK-044,045,046] Phase 9.4 Agents Implementation (January 5, 2026)
-  - Document Agent: Full processing pipeline (fetch → parse → embed → index → extract)
-  - Diligence Agent: RAG Q&A with CitationBlock-compatible responses
-  - BullMQ Workers: Document processing, query, and report generation
-  - 31 tests passing (12 document-agent + 19 diligence-agent)
+- ✅ [TASK-076] Inline Database System (January 6, 2026)
+  - Database & DatabaseEntry Prisma models with JSONB schema storage
+  - DatabaseService with 16 methods for full CRUD lifecycle
+  - 14 tRPC procedures with organization-scoped access control
+  - 25 integration tests with multi-tenancy enforcement
+  - 8 column types: TEXT, NUMBER, SELECT, MULTI_SELECT, DATE, PERSON, CHECKBOX, URL
 
 **Remaining Phase 9 Tasks:**
 - [ ] [TASK-038] Knowledge Graph (Neo4j) - LOW PRIORITY
@@ -534,8 +536,9 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 
 **Next Actions:**
 
-1. Continue to Phase 10: Features (Templates, AI Suggestions, Inline Databases)
-2. Or: Implement remaining low-priority tasks (TASK-038, TASK-022)
+1. [TASK-075] Entity Fact Mapper - Map Facts to database entries (IN PROGRESS)
+2. [TASK-074] AI Suggestion Block - UI for AI-suggested updates
+3. [TASK-077] DatabaseViewBlock - Tiptap extension for embedded databases
 
 **After Each Completed Task:**
 
