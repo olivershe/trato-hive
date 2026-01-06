@@ -48,3 +48,17 @@ export { ActivityType } from './activity'
 // API Types
 export type { ApiResponse, PaginatedResponse } from './api'
 export { ErrorCode, AppError } from './api'
+
+// Database Types (Inline Database System)
+export type {
+  DatabaseColumn,
+  DatabaseSchema,
+  Database,
+  DatabaseEntry,
+  DatabaseWithEntries,
+  DatabaseWithCreator,
+  DatabaseEntryWithCreator,
+  DatabaseEntryWithFacts,
+  DatabaseTemplate,
+} from './database'
+export { DatabaseColumnType, DATABASE_TEMPLATES } from './database'
