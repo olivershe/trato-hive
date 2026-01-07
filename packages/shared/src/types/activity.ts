@@ -14,6 +14,8 @@ export const ActivityType = {
   COMPANY_ADDED: 'COMPANY_ADDED',
   AI_QUERY: 'AI_QUERY',
   USER_ACTION: 'USER_ACTION',
+  AI_SUGGESTION_ACCEPTED: 'AI_SUGGESTION_ACCEPTED',
+  AI_SUGGESTION_DISMISSED: 'AI_SUGGESTION_DISMISSED',
 } as const
 
 export type ActivityTypeValue = (typeof ActivityType)[keyof typeof ActivityType]

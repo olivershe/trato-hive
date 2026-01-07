@@ -114,6 +114,24 @@ export const suggestionItems = [
         },
     },
     {
+        title: "AI Suggestion",
+        description: "Insert an AI-suggested field update",
+        searchTerms: ["ai", "suggestion", "recommend", "suggest"],
+        icon: <Sparkles size={18} className="text-orange" />,
+        command: ({ editor, range }: any) => {
+            editor.chain().focus().deleteRange(range).setAISuggestionBlock({
+                entityType: "Deal",
+                entityId: "",
+                field: "value",
+                currentValue: null,
+                suggestedValue: null,
+                confidence: 0.85,
+                factIds: [],
+                status: "pending",
+            }).run();
+        },
+    },
+    {
         title: "New Deal",
         description: "Embed a Deal Header card",
         searchTerms: ["deal", "header", "crm"],

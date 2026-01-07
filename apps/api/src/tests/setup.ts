@@ -267,6 +267,7 @@ export function createMockPrisma() {
     company: {
       findUnique: vi.fn(),
       findMany: vi.fn(),
+      update: vi.fn(),
     },
     document: {
       findMany: vi.fn(),

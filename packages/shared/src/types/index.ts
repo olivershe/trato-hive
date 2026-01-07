@@ -62,3 +62,17 @@ export type {
   DatabaseTemplate,
 } from './database'
 export { DatabaseColumnType, DATABASE_TEMPLATES } from './database'
+
+// AI Suggestion Types
+export type {
+  SuggestionEntityType,
+  SuggestionStatus,
+  AISuggestionAttributes,
+  ApplySuggestionInput,
+  DismissSuggestionInput,
+  ApplySuggestionResult,
+  DismissSuggestionResult,
+  DealFieldSuggestion,
+  DatabaseEntrySuggestion,
+  EntitySuggestions,
+} from './suggestion'

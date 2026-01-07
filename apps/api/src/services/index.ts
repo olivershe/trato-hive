@@ -12,3 +12,10 @@ export {
   type FactSuggestionOptions,
   type FactWithSource,
 } from './fact-mapper.service';
+export {
+  SuggestionService,
+  type ApplySuggestionInput,
+  type DismissSuggestionInput,
+  type ApplySuggestionResult,
+  type DismissSuggestionResult,
+} from './suggestion.service';
