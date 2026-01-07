@@ -6,12 +6,15 @@
  */
 import { z } from 'zod';
 import { router, organizationProtectedProcedure } from '../trpc/init';
-import { DealService, ActivityService } from '../services';
+import { DealService, ActivityService, SuggestionService } from '../services';
 import {
   dealListInputSchema,
   dealGetInputSchema,
   routerCreateDealSchema,
   routerUpdateDealSchema,
+  applySuggestionSchema,
+  dismissSuggestionSchema,
+  generateSuggestionsSchema,
 } from '@trato-hive/shared';
 import { ActivityType } from '@trato-hive/db';
 
@@ -117,5 +120,61 @@ export const dealsRouter = router({
     .query(async ({ ctx, input }) => {
       const dealService = new DealService(ctx.db);
       return dealService.getFactSheet(input.dealId, ctx.organizationId);
+    }),
+
+  // ===========================================================================
+  // AI Suggestion Procedures
+  // ===========================================================================
+
+  /**
+   * deal.applySuggestion - Accept AI suggestion and update entity
+   * Auth: organizationProtectedProcedure
+   * Side effect: Updates entity, logs AI_SUGGESTION_ACCEPTED activity
+   */
+  applySuggestion: organizationProtectedProcedure
+    .input(applySuggestionSchema)
+    .mutation(async ({ ctx, input }) => {
+      const suggestionService = new SuggestionService(ctx.db);
+      return suggestionService.applySuggestion(
+        input,
+        ctx.organizationId,
+        ctx.session.user.id
+      );
+    }),
+
+  /**
+   * deal.dismissSuggestion - Dismiss AI suggestion
+   * Auth: organizationProtectedProcedure
+   * Side effect: Logs AI_SUGGESTION_DISMISSED activity
+   */
+  dismissSuggestion: organizationProtectedProcedure
+    .input(dismissSuggestionSchema)
+    .mutation(async ({ ctx, input }) => {
+      const suggestionService = new SuggestionService(ctx.db);
+      return suggestionService.dismissSuggestion(
+        input,
+        ctx.organizationId,
+        ctx.session.user.id
+      );
+    }),
+
+  /**
+   * deal.generateSuggestions - Generate AI suggestions from deal facts
+   * Auth: organizationProtectedProcedure
+   * Returns: Field suggestions based on extracted facts
+   */
+  generateSuggestions: organizationProtectedProcedure
+    .input(generateSuggestionsSchema)
+    .query(async ({ ctx, input }) => {
+      const suggestionService = new SuggestionService(ctx.db);
+      if (input.dealId) {
+        return suggestionService.generateSuggestionsForDeal(
+          input.dealId,
+          ctx.organizationId,
+          { minConfidence: input.minConfidence, maxSuggestions: input.maxSuggestions }
+        );
+      }
+      // CompanyId support can be added later
+      return { fieldSuggestions: [], totalFacts: 0 };
     }),
 });

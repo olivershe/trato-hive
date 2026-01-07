@@ -1,6 +1,6 @@
 # Trato Hive - Project Status & Implementation Roadmap
 
-**Last Updated:** January 5, 2026
+**Last Updated:** January 7, 2026
 **Current Phase:** Phase 9 - AI Stack (In Progress)
 **Latest Commit:** `feat(agents): implement Phase 9.4 Document & Diligence Agents [TASK-044,045,046]`
 **Overall Progress:** Phase 9: 14/16 tasks complete (87.5%)
@@ -383,11 +383,14 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 
 **Tasks:**
 
-- [ ] **[TASK-074] AI Suggestion Block** (6 hours) 🆕
-  - [ ] `AISuggestionBlock` Tiptap extension (shows AI-extracted field updates)
-  - [ ] Accept/Dismiss actions with `deal.applySuggestion` mutation
-  - [ ] Activity log integration (full audit trail)
-  - [ ] Visual design: Gold accent, "AI Suggests" badge, confidence indicator
+- [x] **[TASK-074] AI Suggestion Block** (6 hours) ✅
+  - [x] `AISuggestionBlock` Tiptap extension (shows AI-extracted field updates)
+  - [x] Accept/Dismiss actions with `deal.applySuggestion` mutation
+  - [x] Activity log integration (AI_SUGGESTION_ACCEPTED, AI_SUGGESTION_DISMISSED)
+  - [x] Visual design: Orange accent, "AI SUGGESTS" badge, confidence indicator
+  - [x] `SuggestionService` with entity validation and audit logging
+  - [x] Shared types and Zod validators for suggestions
+  - [x] Slash command `/ai-suggestion` for editor integration
 
 - [x] **[TASK-075] Entity Fact Mapper** (4 hours) ✅
   - [x] `FactMapperService` with fact-to-entry mapping logic
@@ -508,7 +511,7 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
   - ✅ 9.2: packages/semantic-layer (3/3 core tasks) - January 5, 2026
   - ✅ 9.3: packages/data-plane (4/4 tasks) - January 5, 2026
   - ✅ 9.4: packages/agents (3/3 tasks) - January 5, 2026
-- Phase 10: Features - 🔄 33% (2/6 core tasks, ~90 hours remaining) - Includes AI Suggestions, Inline Databases & Notion-like UI
+- Phase 10: Features - 🔄 50% (3/6 core tasks, ~84 hours remaining) - Includes AI Suggestions, Inline Databases & Notion-like UI
 
 **Total Time:**
 
@@ -525,12 +528,13 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 **Current Phase:** Phase 9 - AI Stack 🔄 IN PROGRESS (87.5% complete)
 
 **Last Completed:**
-- ✅ [TASK-075] Entity Fact Mapper (January 6, 2026)
-  - FactMapperService bridges semantic-layer facts with inline databases
-  - Maps extracted facts from deal documents to suggested database entries
-  - Confidence threshold filtering (0.7+ default, configurable)
-  - `database.suggestEntriesFromFacts` tRPC procedure
-  - 18 unit tests (65 total API tests)
+- ✅ [TASK-074] AI Suggestion Block (January 7, 2026)
+  - `AISuggestionBlock` Tiptap extension with Accept/Dismiss UI
+  - `SuggestionService` with multi-entity support (Deal, Company, Database)
+  - `deal.applySuggestion` and `deal.dismissSuggestion` tRPC mutations
+  - Activity logging (AI_SUGGESTION_ACCEPTED, AI_SUGGESTION_DISMISSED)
+  - Orange accent design with confidence indicators
+  - Slash command `/ai-suggestion` for editor insertion
 
 **Remaining Phase 9 Tasks:**
 - [ ] [TASK-038] Knowledge Graph (Neo4j) - LOW PRIORITY
@@ -538,9 +542,9 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 
 **Next Actions:**
 
-1. [TASK-074] AI Suggestion Block - UI for AI-suggested updates
-2. [TASK-077] DatabaseViewBlock - Tiptap extension for embedded databases
-3. [TASK-078] Database Editing UI - Inline cell editing and entry forms
+1. [TASK-077] DatabaseViewBlock - Tiptap extension for embedded databases
+2. [TASK-078] Database Editing UI - Inline cell editing and entry forms
+3. [TASK-079] Notion-like UI - Design tokens, styling, animations
 
 **After Each Completed Task:**
 
@@ -551,7 +555,7 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 
 ---
 
-**Last Updated:** January 5, 2026
+**Last Updated:** January 7, 2026
 **Maintained By:** All team members (update after every task)
 **Reference:** Root CLAUDE.md Section 5 (EPC Workflow)
 **Completed Work:** See [COMPLETED_WORK.md](./COMPLETED_WORK.md)
