@@ -15,6 +15,7 @@ import { DealHeaderBlock } from "./extensions/DealHeaderBlock";
 import { ActivityTimelineBlock } from "./extensions/ActivityTimelineBlock";
 import { DealDatabaseBlock } from "./extensions/DealDatabaseBlock";
 import { AISuggestionBlock } from "./extensions/AISuggestionBlock";
+import { DatabaseViewBlock } from "./extensions/DatabaseViewBlock";
 import GlobalDragHandle from "tiptap-extension-global-drag-handle";
 import AutoJoiner from "tiptap-extension-auto-joiner";
 import Focus from "@tiptap/extension-focus";
@@ -140,6 +141,7 @@ export const defaultExtensions = [
     ActivityTimelineBlock,
     DealDatabaseBlock,
     AISuggestionBlock,
+    DatabaseViewBlock,
     GlobalDragHandle.configure({
         dragHandleWidth: 20, // Match CSS width
         scrollTreshold: 100, // Auto scroll speed/threshold

@@ -408,11 +408,13 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
   - [x] Prisma migration for new models
   - [x] 25 integration tests with multi-tenancy enforcement
 
-- [ ] **[TASK-077] DatabaseViewBlock** (10 hours) 🆕
-  - [ ] `DatabaseViewBlock` Tiptap extension (embed database in any page)
-  - [ ] View types: Table, Kanban, Gallery (switchable)
-  - [ ] Filters, sorting, and grouping persisted in block properties
-  - [ ] "Create New Database" flow from slash command (`/database`)
+- [x] **[TASK-077] DatabaseViewBlock** (10 hours) ✅ PR pending
+  - [x] `DatabaseViewBlock` Tiptap extension (embed database in any page)
+  - [x] View types: Table, Kanban, Gallery (switchable)
+  - [x] Filters, sorting, and grouping persisted in block properties
+  - [x] "Create New Database" flow from slash command (`/database`)
+  - [x] DatabasePicker component for create/link database flow
+  - [x] CellRenderer with type-specific editing (TEXT, NUMBER, SELECT, etc.)
 
 - [ ] **[TASK-078] Database Editing UI** (8 hours) 🆕
   - [ ] **Inline cell editing**: Click cell → edit in place → auto-save on blur
@@ -542,7 +544,7 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 
 **Next Actions:**
 
-1. [TASK-077] DatabaseViewBlock - Tiptap extension for embedded databases
+1. ~~[TASK-077] DatabaseViewBlock - Tiptap extension for embedded databases~~ ✅ DONE
 2. [TASK-078] Database Editing UI - Inline cell editing and entry forms
 3. [TASK-079] Notion-like UI - Design tokens, styling, animations
 

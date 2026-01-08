@@ -20,9 +20,8 @@ import type {
   ListEntriesInput,
 } from '@trato-hive/shared'
 
-// Types defined locally until shared package build is fixed
-// TODO: Import from @trato-hive/shared when type exports are working
-type DatabaseColumnTypeValue =
+// Local type definitions (re-declared to avoid tsup DTS build issues)
+export type DatabaseColumnTypeValue =
   | 'TEXT'
   | 'NUMBER'
   | 'SELECT'
@@ -32,7 +31,7 @@ type DatabaseColumnTypeValue =
   | 'CHECKBOX'
   | 'URL'
 
-interface DatabaseColumn {
+export interface DatabaseColumn {
   id: string
   name: string
   type: DatabaseColumnTypeValue
@@ -40,7 +39,7 @@ interface DatabaseColumn {
   width?: number
 }
 
-interface DatabaseSchema {
+export interface DatabaseSchema {
   columns: DatabaseColumn[]
 }
 import { createId } from '@paralleldrive/cuid2'

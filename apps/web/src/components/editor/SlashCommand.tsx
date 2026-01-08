@@ -11,12 +11,10 @@ import {
     ImageIcon,
     List,
     ListOrdered,
-    MessageSquarePlus,
     Text,
     TextQuote,
     Sparkles,
     Database,
-    Calendar,
     KanbanSquare,
     BookOpen
 } from "lucide-react";
@@ -152,6 +150,22 @@ export const suggestionItems = [
         icon: <BookOpen size={18} className="text-teal-blue" />,
         command: ({ editor, range }: any) => {
             editor.chain().focus().deleteRange(range).setNode("citationBlock").run();
+        },
+    },
+    {
+        title: "Database",
+        description: "Insert an inline database table",
+        searchTerms: ["database", "table", "spreadsheet", "tracker", "inline"],
+        icon: <Database size={18} className="text-gold" />,
+        command: ({ editor, range }: any) => {
+            editor.chain().focus().deleteRange(range).setDatabaseViewBlock({
+                databaseId: null,
+                viewType: "table",
+                filters: [],
+                sortBy: null,
+                groupBy: null,
+                hiddenColumns: [],
+            }).run();
         },
     },
     // Basic Blocks

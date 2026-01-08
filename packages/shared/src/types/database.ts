@@ -196,3 +196,75 @@ export const DATABASE_TEMPLATES: DatabaseTemplate[] = [
     },
   },
 ]
+
+// =============================================================================
+// View Configuration Types (for DatabaseViewBlock)
+// =============================================================================
+
+/**
+ * DatabaseViewType - Available view modes for inline databases
+ */
+export const DatabaseViewType = {
+  TABLE: 'table',
+  KANBAN: 'kanban',
+  GALLERY: 'gallery',
+} as const
+
+export type DatabaseViewTypeValue =
+  (typeof DatabaseViewType)[keyof typeof DatabaseViewType]
+
+/**
+ * DatabaseFilterOperator - Supported filter operations
+ */
+export const DatabaseFilterOperator = {
+  EQUALS: 'equals',
+  NOT_EQUALS: 'notEquals',
+  CONTAINS: 'contains',
+  NOT_CONTAINS: 'notContains',
+  IS_EMPTY: 'isEmpty',
+  IS_NOT_EMPTY: 'isNotEmpty',
+  GREATER_THAN: 'gt',
+  LESS_THAN: 'lt',
+  GREATER_OR_EQUAL: 'gte',
+  LESS_OR_EQUAL: 'lte',
+} as const
+
+export type DatabaseFilterOperatorValue =
+  (typeof DatabaseFilterOperator)[keyof typeof DatabaseFilterOperator]
+
+/**
+ * DatabaseFilter - A single filter condition for database queries
+ */
+export interface DatabaseFilter {
+  id: string // Unique ID for this filter
+  columnId: string
+  operator: DatabaseFilterOperatorValue
+  value?: unknown // Value to compare (not needed for isEmpty/isNotEmpty)
+}
+
+/**
+ * DatabaseSort - Sort configuration for database entries
+ */
+export interface DatabaseSort {
+  columnId: string
+  direction: 'asc' | 'desc'
+}
+
+/**
+ * DatabaseViewConfig - Complete view state for a database block
+ * Persisted in block properties for state restoration
+ */
+export interface DatabaseViewConfig {
+  viewType: DatabaseViewTypeValue
+  filters: DatabaseFilter[]
+  sortBy: DatabaseSort | null
+  groupBy: string | null // Column ID for grouping (used in Kanban view)
+  hiddenColumns: string[] // Column IDs to hide
+}
+
+/**
+ * DatabaseViewBlockAttributes - Attributes for the DatabaseViewBlock Tiptap extension
+ */
+export interface DatabaseViewBlockAttributes extends DatabaseViewConfig {
+  databaseId: string | null // null = "Create New" or "Link" mode
+}
