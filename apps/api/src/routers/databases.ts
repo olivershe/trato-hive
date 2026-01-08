@@ -239,6 +239,31 @@ export const databasesRouter = router({
       )
     }),
 
+  /**
+   * database.bulkCreateEntries - Bulk create entries (for CSV import)
+   * Auth: organizationProtectedProcedure
+   */
+  bulkCreateEntries: organizationProtectedProcedure
+    .input(
+      z.object({
+        databaseId: z.string().cuid(),
+        entries: z.array(
+          z.object({
+            properties: z.record(z.unknown()),
+          })
+        ).min(1).max(1000), // Limit to 1000 entries per import
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const service = new DatabaseService(ctx.db)
+      return service.bulkCreateEntries(
+        input.databaseId,
+        input.entries,
+        ctx.organizationId,
+        ctx.session.user.id
+      )
+    }),
+
   // ===========================================================================
   // AI Suggestions (Entity Fact Mapper)
   // ===========================================================================

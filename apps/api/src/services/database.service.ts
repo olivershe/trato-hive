@@ -601,4 +601,38 @@ export class DatabaseService {
       properties: duplicate.properties as Record<string, unknown>,
     }
   }
+
+  /**
+   * Bulk create entries (for CSV import)
+   */
+  async bulkCreateEntries(
+    databaseId: string,
+    entries: Array<{ properties: Record<string, unknown> }>,
+    organizationId: string,
+    userId: string
+  ) {
+    // Validate database access
+    await this.getById(databaseId, organizationId)
+
+    // Create entries in a transaction
+    const created = await this.db.$transaction(
+      entries.map((entry) =>
+        this.db.databaseEntry.create({
+          data: {
+            databaseId,
+            properties: entry.properties as Prisma.JsonObject,
+            createdById: userId,
+          },
+        })
+      )
+    )
+
+    return {
+      count: created.length,
+      entries: created.map((entry) => ({
+        ...entry,
+        properties: entry.properties as Record<string, unknown>,
+      })),
+    }
+  }
 }
