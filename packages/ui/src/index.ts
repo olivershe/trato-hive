@@ -11,8 +11,23 @@ export * from './lib/utils';
 // Design Tokens
 export * from './tokens/colors';
 
-// Component exports (to be added as components are built)
-// export * from './components/button';
-// export * from './components/card';
-// export * from './components/input';
-// etc.
+// Components
+export {
+  Sheet,
+  SheetTrigger,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+  SheetFooter,
+  SheetClose,
+} from './components/sheet';
+
+export {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
+} from './components/dropdown-menu';

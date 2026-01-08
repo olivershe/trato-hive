@@ -7,8 +7,21 @@
 import { Node, mergeAttributes } from "@tiptap/core";
 import { ReactNodeViewRenderer, NodeViewWrapper, NodeViewProps } from "@tiptap/react";
 import { useState, useCallback } from "react";
-import { Database, Table2, LayoutGrid, Plus, Link2, Loader2 } from "lucide-react";
+import { Database, Table2, LayoutGrid, Plus, Link2, Loader2, MoreHorizontal, Trash2, Copy, Edit, Settings, X } from "lucide-react";
 import { api } from "@/trpc/react";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetFooter,
+  SheetClose,
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "@trato-hive/ui";
 
 // =============================================================================
 // Local Type Definitions (to avoid shared package export issues)
@@ -446,6 +459,10 @@ function DatabaseView({
   void _filters;
   void _onFiltersChange;
   void _onHiddenColumnsChange;
+
+  // Bulk import state
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
+
   // Fetch database with entries
   const { data: database, isLoading, error } = api.database.getById.useQuery(
     { id: databaseId },
@@ -486,7 +503,19 @@ function DatabaseView({
           <span className="font-medium text-charcoal">{database.name}</span>
         </div>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
+          {/* Import button */}
+          <button
+            onClick={() => setImportDialogOpen(true)}
+            className="flex items-center gap-1 px-2 py-1 text-xs text-charcoal/60 hover:text-charcoal hover:bg-bone rounded transition-colors"
+            title="Import from CSV"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Import
+          </button>
+
+          <div className="w-px h-4 bg-bone" />
+
           {/* View switcher */}
           <button
             onClick={() => onViewTypeChange("table")}
@@ -543,6 +572,13 @@ function DatabaseView({
           <DatabaseGalleryView database={database} />
         )}
       </div>
+
+      {/* Bulk import dialog */}
+      <BulkImportDialog
+        database={database}
+        open={importDialogOpen}
+        onOpenChange={setImportDialogOpen}
+      />
     </div>
   );
 }
@@ -562,23 +598,43 @@ function DatabaseTableView({ database, sortBy, hiddenColumns, onSortChange }: Da
   const columns = database.schema.columns.filter((col) => !hiddenColumns.includes(col.id));
   const entries = database.entries || [];
 
-  // Create entry mutation
-  const utils = api.useUtils();
-  const createEntryMutation = api.database.createEntry.useMutation({
-    onSuccess: () => {
-      utils.database.getById.invalidate({ id: database.id });
-    },
-  });
+  // Entry form state
+  const [entryFormOpen, setEntryFormOpen] = useState(false);
+  const [editingEntry, setEditingEntry] = useState<DatabaseEntry | null>(null);
 
-  const handleAddRow = () => {
-    const emptyProperties: Record<string, unknown> = {};
-    columns.forEach((col) => {
-      emptyProperties[col.id] = col.type === "CHECKBOX" ? false : null;
-    });
-    createEntryMutation.mutate({
-      databaseId: database.id,
-      properties: emptyProperties,
-    });
+  // Column config state
+  const [configColumn, setConfigColumn] = useState<DatabaseColumn | null>(null);
+  const [configPosition, setConfigPosition] = useState<{ x: number; y: number } | null>(null);
+
+  const handleOpenNewForm = () => {
+    setEditingEntry(null);
+    setEntryFormOpen(true);
+  };
+
+  const handleEditEntry = (entry: DatabaseEntry) => {
+    setEditingEntry(entry);
+    setEntryFormOpen(true);
+  };
+
+  const handleColumnHeaderClick = (e: React.MouseEvent, col: DatabaseColumn) => {
+    // Right-click or ctrl+click opens config
+    if (e.ctrlKey || e.metaKey || e.button === 2) {
+      e.preventDefault();
+      const rect = (e.target as HTMLElement).getBoundingClientRect();
+      setConfigColumn(col);
+      setConfigPosition({ x: rect.left, y: rect.bottom + 4 });
+    } else {
+      // Normal click toggles sort
+      if (sortBy?.columnId === col.id) {
+        onSortChange(
+          sortBy.direction === "asc"
+            ? { columnId: col.id, direction: "desc" }
+            : null
+        );
+      } else {
+        onSortChange({ columnId: col.id, direction: "asc" });
+      }
+    }
   };
 
   return (
@@ -586,30 +642,34 @@ function DatabaseTableView({ database, sortBy, hiddenColumns, onSortChange }: Da
       <table className="w-full">
         <thead>
           <tr className="border-b border-bone bg-alabaster/50">
+            {/* Row actions column */}
+            <th className="w-10 px-1" />
             {columns.map((col) => (
               <th
                 key={col.id}
-                className="px-3 py-2 text-left text-sm font-medium text-charcoal/80 cursor-pointer hover:bg-bone/50"
+                className="px-3 py-2 text-left text-sm font-medium text-charcoal/80 cursor-pointer hover:bg-bone/50 group"
                 style={{ width: col.width || 150 }}
-                onClick={() => {
-                  if (sortBy?.columnId === col.id) {
-                    onSortChange(
-                      sortBy.direction === "asc"
-                        ? { columnId: col.id, direction: "desc" }
-                        : null
-                    );
-                  } else {
-                    onSortChange({ columnId: col.id, direction: "asc" });
-                  }
-                }}
+                onClick={(e) => handleColumnHeaderClick(e, col)}
+                onContextMenu={(e) => handleColumnHeaderClick(e, col)}
               >
                 <div className="flex items-center gap-1">
-                  {col.name}
+                  <span className="flex-1">{col.name}</span>
                   {sortBy?.columnId === col.id && (
                     <span className="text-gold">
                       {sortBy.direction === "asc" ? "↑" : "↓"}
                     </span>
                   )}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const rect = (e.target as HTMLElement).getBoundingClientRect();
+                      setConfigColumn(col);
+                      setConfigPosition({ x: rect.left, y: rect.bottom + 4 });
+                    }}
+                    className="opacity-0 group-hover:opacity-100 p-0.5 hover:bg-bone rounded transition-opacity"
+                  >
+                    <Settings className="w-3 h-3 text-charcoal/50" />
+                  </button>
                 </div>
               </th>
             ))}
@@ -618,13 +678,21 @@ function DatabaseTableView({ database, sortBy, hiddenColumns, onSortChange }: Da
         <tbody>
           {entries.length === 0 ? (
             <tr>
-              <td colSpan={columns.length} className="px-3 py-8 text-center text-charcoal/50">
+              <td colSpan={columns.length + 1} className="px-3 py-8 text-center text-charcoal/50">
                 No entries yet
               </td>
             </tr>
           ) : (
             entries.map((entry) => (
-              <tr key={entry.id} className="border-b border-bone/50 hover:bg-alabaster/30">
+              <tr key={entry.id} className="border-b border-bone/50 hover:bg-alabaster/30 group relative">
+                {/* Row actions */}
+                <td className="px-1 relative">
+                  <RowActionsMenu
+                    entry={entry}
+                    database={database}
+                    onEdit={() => handleEditEntry(entry)}
+                  />
+                </td>
                 {columns.map((col) => (
                   <td key={col.id} className="px-3 py-2">
                     <CellRenderer
@@ -643,13 +711,37 @@ function DatabaseTableView({ database, sortBy, hiddenColumns, onSortChange }: Da
 
       {/* Add row button */}
       <button
-        onClick={handleAddRow}
-        disabled={createEntryMutation.isPending}
+        onClick={handleOpenNewForm}
         className="w-full px-3 py-2 text-left text-sm text-charcoal/50 hover:bg-alabaster/50 hover:text-charcoal flex items-center gap-2"
       >
         <Plus className="w-4 h-4" />
         New
       </button>
+
+      {/* Entry form sheet */}
+      <EntryFormSheet
+        database={database}
+        entry={editingEntry}
+        open={entryFormOpen}
+        onOpenChange={setEntryFormOpen}
+      />
+
+      {/* Column config popover */}
+      {configColumn && configPosition && (
+        <div
+          className="fixed z-50"
+          style={{ left: configPosition.x, top: configPosition.y }}
+        >
+          <ColumnConfigPopover
+            column={configColumn}
+            databaseId={database.id}
+            onClose={() => {
+              setConfigColumn(null);
+              setConfigPosition(null);
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 }
@@ -987,4 +1079,748 @@ function getTemplateSchema(templateId: string): { columns: Array<{ id: string; n
   };
 
   return templates[templateId] || { columns: [{ id: "col_title", name: "Title", type: "TEXT" }] };
+}
+
+// =============================================================================
+// Entry Form Sheet Component
+// =============================================================================
+
+interface EntryFormSheetProps {
+  database: DatabaseWithEntries;
+  entry?: DatabaseEntry | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+function EntryFormSheet({ database, entry, open, onOpenChange }: EntryFormSheetProps) {
+  const [formData, setFormData] = useState<Record<string, unknown>>(() => {
+    if (entry) {
+      return { ...entry.properties };
+    }
+    const initial: Record<string, unknown> = {};
+    database.schema.columns.forEach((col) => {
+      initial[col.id] = col.type === "CHECKBOX" ? false : "";
+    });
+    return initial;
+  });
+
+  const utils = api.useUtils();
+  const createEntryMutation = api.database.createEntry.useMutation({
+    onSuccess: () => {
+      utils.database.getById.invalidate({ id: database.id });
+      onOpenChange(false);
+    },
+  });
+  const updateEntryMutation = api.database.updateEntry.useMutation({
+    onSuccess: () => {
+      utils.database.getById.invalidate({ id: database.id });
+      onOpenChange(false);
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (entry) {
+      updateEntryMutation.mutate({
+        id: entry.id,
+        properties: formData,
+      });
+    } else {
+      createEntryMutation.mutate({
+        databaseId: database.id,
+        properties: formData,
+      });
+    }
+  };
+
+  const handleFieldChange = (columnId: string, value: unknown) => {
+    setFormData((prev) => ({ ...prev, [columnId]: value }));
+  };
+
+  const isLoading = createEntryMutation.isPending || updateEntryMutation.isPending;
+
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto">
+        <SheetClose className="absolute right-4 top-4" />
+        <SheetHeader>
+          <SheetTitle>{entry ? "Edit Entry" : "New Entry"}</SheetTitle>
+        </SheetHeader>
+
+        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+          {database.schema.columns.map((col) => (
+            <div key={col.id} className="space-y-2">
+              <label className="block text-sm font-medium text-charcoal dark:text-cultured-white">
+                {col.name}
+              </label>
+              <FormField
+                column={col}
+                value={formData[col.id]}
+                onChange={(value) => handleFieldChange(col.id, value)}
+              />
+            </div>
+          ))}
+
+          <SheetFooter className="pt-6">
+            <button
+              type="button"
+              onClick={() => onOpenChange(false)}
+              className="px-4 py-2 text-sm font-medium text-charcoal hover:bg-bone rounded-md transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="px-4 py-2 text-sm font-medium text-white bg-gold hover:bg-gold/90 rounded-md transition-colors disabled:opacity-50"
+            >
+              {isLoading ? "Saving..." : entry ? "Update" : "Create"}
+            </button>
+          </SheetFooter>
+        </form>
+      </SheetContent>
+    </Sheet>
+  );
+}
+
+// =============================================================================
+// Form Field Component (for Entry Form)
+// =============================================================================
+
+interface FormFieldProps {
+  column: DatabaseColumn;
+  value: unknown;
+  onChange: (value: unknown) => void;
+}
+
+function FormField({ column, value, onChange }: FormFieldProps) {
+  switch (column.type) {
+    case "CHECKBOX":
+      return (
+        <input
+          type="checkbox"
+          checked={Boolean(value)}
+          onChange={(e) => onChange(e.target.checked)}
+          className="w-5 h-5 rounded border-bone text-gold focus:ring-gold"
+        />
+      );
+
+    case "SELECT":
+      return (
+        <select
+          value={String(value ?? "")}
+          onChange={(e) => onChange(e.target.value || null)}
+          className="w-full px-3 py-2 rounded-md border border-bone bg-white text-charcoal focus:border-gold focus:ring-1 focus:ring-gold"
+        >
+          <option value="">Select...</option>
+          {column.options?.map((opt) => (
+            <option key={opt} value={opt}>
+              {opt}
+            </option>
+          ))}
+        </select>
+      );
+
+    case "MULTI_SELECT":
+      const selectedValues = Array.isArray(value) ? value : [];
+      return (
+        <div className="space-y-2">
+          {column.options?.map((opt) => (
+            <label key={opt} className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={selectedValues.includes(opt)}
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    onChange([...selectedValues, opt]);
+                  } else {
+                    onChange(selectedValues.filter((v: string) => v !== opt));
+                  }
+                }}
+                className="w-4 h-4 rounded border-bone text-gold focus:ring-gold"
+              />
+              {opt}
+            </label>
+          ))}
+        </div>
+      );
+
+    case "NUMBER":
+      return (
+        <input
+          type="number"
+          value={value != null ? String(value) : ""}
+          onChange={(e) => onChange(e.target.value ? parseFloat(e.target.value) : null)}
+          className="w-full px-3 py-2 rounded-md border border-bone bg-white text-charcoal focus:border-gold focus:ring-1 focus:ring-gold"
+        />
+      );
+
+    case "DATE":
+      return (
+        <input
+          type="date"
+          value={String(value ?? "")}
+          onChange={(e) => onChange(e.target.value || null)}
+          className="w-full px-3 py-2 rounded-md border border-bone bg-white text-charcoal focus:border-gold focus:ring-1 focus:ring-gold"
+        />
+      );
+
+    case "URL":
+      return (
+        <input
+          type="url"
+          value={String(value ?? "")}
+          onChange={(e) => onChange(e.target.value || null)}
+          placeholder="https://..."
+          className="w-full px-3 py-2 rounded-md border border-bone bg-white text-charcoal focus:border-gold focus:ring-1 focus:ring-gold"
+        />
+      );
+
+    default: // TEXT
+      return (
+        <input
+          type="text"
+          value={String(value ?? "")}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-full px-3 py-2 rounded-md border border-bone bg-white text-charcoal focus:border-gold focus:ring-1 focus:ring-gold"
+        />
+      );
+  }
+}
+
+// =============================================================================
+// Column Config Popover Component
+// =============================================================================
+
+interface ColumnConfigPopoverProps {
+  column: DatabaseColumn;
+  databaseId: string;
+  onClose: () => void;
+}
+
+function ColumnConfigPopover({ column, databaseId, onClose }: ColumnConfigPopoverProps) {
+  const [name, setName] = useState(column.name);
+  const [type, setType] = useState(column.type);
+  const [options, setOptions] = useState<string[]>(column.options || []);
+  const [newOption, setNewOption] = useState("");
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  const utils = api.useUtils();
+
+  const updateColumnMutation = api.database.updateColumn.useMutation({
+    onSuccess: () => {
+      utils.database.getById.invalidate({ id: databaseId });
+      onClose();
+    },
+  });
+
+  const deleteColumnMutation = api.database.deleteColumn.useMutation({
+    onSuccess: () => {
+      utils.database.getById.invalidate({ id: databaseId });
+      onClose();
+    },
+  });
+
+  const handleSave = () => {
+    updateColumnMutation.mutate({
+      databaseId,
+      columnId: column.id,
+      updates: {
+        name,
+        type,
+        options: type === "SELECT" || type === "MULTI_SELECT" ? options : undefined,
+      },
+    });
+  };
+
+  const handleDelete = () => {
+    deleteColumnMutation.mutate({
+      databaseId,
+      columnId: column.id,
+    });
+  };
+
+  const handleAddOption = () => {
+    if (newOption.trim() && !options.includes(newOption.trim())) {
+      setOptions([...options, newOption.trim()]);
+      setNewOption("");
+    }
+  };
+
+  const handleRemoveOption = (opt: string) => {
+    setOptions(options.filter((o) => o !== opt));
+  };
+
+  const columnTypes = [
+    { value: "TEXT", label: "Text" },
+    { value: "NUMBER", label: "Number" },
+    { value: "SELECT", label: "Select" },
+    { value: "MULTI_SELECT", label: "Multi-select" },
+    { value: "DATE", label: "Date" },
+    { value: "CHECKBOX", label: "Checkbox" },
+    { value: "URL", label: "URL" },
+  ];
+
+  if (showDeleteConfirm) {
+    return (
+      <div className="p-4 w-64 bg-white rounded-lg border border-bone shadow-lg">
+        <p className="text-sm text-charcoal mb-4">
+          Delete column "{column.name}"? This cannot be undone.
+        </p>
+        <div className="flex gap-2 justify-end">
+          <button
+            onClick={() => setShowDeleteConfirm(false)}
+            className="px-3 py-1.5 text-sm text-charcoal hover:bg-bone rounded"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleDelete}
+            disabled={deleteColumnMutation.isPending}
+            className="px-3 py-1.5 text-sm text-white bg-red-500 hover:bg-red-600 rounded disabled:opacity-50"
+          >
+            {deleteColumnMutation.isPending ? "Deleting..." : "Delete"}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-4 w-72 bg-white rounded-lg border border-bone shadow-lg">
+      {/* Column Name */}
+      <div className="mb-4">
+        <label className="block text-xs font-medium text-charcoal/70 mb-1">Name</label>
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="w-full px-2 py-1.5 text-sm rounded border border-bone focus:border-gold focus:ring-1 focus:ring-gold"
+        />
+      </div>
+
+      {/* Column Type */}
+      <div className="mb-4">
+        <label className="block text-xs font-medium text-charcoal/70 mb-1">Type</label>
+        <select
+          value={type}
+          onChange={(e) => setType(e.target.value)}
+          className="w-full px-2 py-1.5 text-sm rounded border border-bone focus:border-gold focus:ring-1 focus:ring-gold"
+        >
+          {columnTypes.map((t) => (
+            <option key={t.value} value={t.value}>{t.label}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* Options (for SELECT types) */}
+      {(type === "SELECT" || type === "MULTI_SELECT") && (
+        <div className="mb-4">
+          <label className="block text-xs font-medium text-charcoal/70 mb-1">Options</label>
+          <div className="space-y-1 mb-2 max-h-32 overflow-y-auto">
+            {options.map((opt) => (
+              <div key={opt} className="flex items-center justify-between px-2 py-1 bg-alabaster rounded text-sm">
+                <span>{opt}</span>
+                <button onClick={() => handleRemoveOption(opt)} className="text-charcoal/50 hover:text-red-500">
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            ))}
+          </div>
+          <div className="flex gap-1">
+            <input
+              type="text"
+              value={newOption}
+              onChange={(e) => setNewOption(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleAddOption()}
+              placeholder="Add option..."
+              className="flex-1 px-2 py-1 text-sm rounded border border-bone focus:border-gold"
+            />
+            <button
+              onClick={handleAddOption}
+              className="px-2 py-1 text-sm text-gold hover:bg-gold/10 rounded"
+            >
+              Add
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Actions */}
+      <div className="flex items-center justify-between pt-3 border-t border-bone">
+        <button
+          onClick={() => setShowDeleteConfirm(true)}
+          className="text-sm text-red-500 hover:text-red-600"
+        >
+          Delete column
+        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={onClose}
+            className="px-3 py-1.5 text-sm text-charcoal hover:bg-bone rounded"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={updateColumnMutation.isPending}
+            className="px-3 py-1.5 text-sm text-white bg-gold hover:bg-gold/90 rounded disabled:opacity-50"
+          >
+            {updateColumnMutation.isPending ? "Saving..." : "Save"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// =============================================================================
+// Row Actions Menu Component
+// =============================================================================
+
+interface RowActionsMenuProps {
+  entry: DatabaseEntry;
+  database: DatabaseWithEntries;
+  onEdit: () => void;
+}
+
+function RowActionsMenu({ entry, database, onEdit }: RowActionsMenuProps) {
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const utils = api.useUtils();
+
+  const duplicateMutation = api.database.duplicateEntry.useMutation({
+    onSuccess: () => {
+      utils.database.getById.invalidate({ id: database.id });
+    },
+  });
+
+  const deleteMutation = api.database.deleteEntry.useMutation({
+    onSuccess: () => {
+      utils.database.getById.invalidate({ id: database.id });
+    },
+  });
+
+  const handleDuplicate = () => {
+    duplicateMutation.mutate({ id: entry.id });
+  };
+
+  const handleDelete = () => {
+    deleteMutation.mutate({ id: entry.id });
+    setShowDeleteConfirm(false);
+  };
+
+  if (showDeleteConfirm) {
+    return (
+      <div className="absolute left-0 top-full mt-1 z-50 p-3 bg-white rounded-lg border border-bone shadow-lg">
+        <p className="text-sm text-charcoal mb-3">Delete this entry?</p>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setShowDeleteConfirm(false)}
+            className="px-2 py-1 text-xs text-charcoal hover:bg-bone rounded"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleDelete}
+            disabled={deleteMutation.isPending}
+            className="px-2 py-1 text-xs text-white bg-red-500 hover:bg-red-600 rounded disabled:opacity-50"
+          >
+            {deleteMutation.isPending ? "..." : "Delete"}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger className="p-1 rounded hover:bg-bone opacity-0 group-hover:opacity-100 transition-opacity">
+        <MoreHorizontal className="w-4 h-4 text-charcoal/50" />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start">
+        <DropdownMenuItem onClick={onEdit}>
+          <Edit className="w-4 h-4 mr-2" />
+          Edit
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={handleDuplicate} disabled={duplicateMutation.isPending}>
+          <Copy className="w-4 h-4 mr-2" />
+          {duplicateMutation.isPending ? "Duplicating..." : "Duplicate"}
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={() => setShowDeleteConfirm(true)} destructive>
+          <Trash2 className="w-4 h-4 mr-2" />
+          Delete
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+// =============================================================================
+// Bulk Import Dialog Component
+// =============================================================================
+
+interface BulkImportDialogProps {
+  database: DatabaseWithEntries;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+function BulkImportDialog({ database, open, onOpenChange }: BulkImportDialogProps) {
+  const [csvData, setCsvData] = useState<Array<Record<string, string>>>([]);
+  const [headers, setHeaders] = useState<string[]>([]);
+  const [columnMapping, setColumnMapping] = useState<Record<string, string>>({});
+  const [error, setError] = useState<string | null>(null);
+
+  const utils = api.useUtils();
+  const bulkCreateMutation = api.database.bulkCreateEntries.useMutation({
+    onSuccess: (result) => {
+      utils.database.getById.invalidate({ id: database.id });
+      onOpenChange(false);
+      setCsvData([]);
+      setHeaders([]);
+      setColumnMapping({});
+    },
+    onError: (err) => {
+      setError(err.message);
+    },
+  });
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setError(null);
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const text = event.target?.result as string;
+      const lines = text.split("\n").filter((line) => line.trim());
+
+      if (lines.length < 2) {
+        setError("CSV must have at least a header row and one data row");
+        return;
+      }
+
+      // Parse CSV (simple parser - handles basic CSV)
+      const parseRow = (row: string): string[] => {
+        const result: string[] = [];
+        let current = "";
+        let inQuotes = false;
+
+        for (let i = 0; i < row.length; i++) {
+          const char = row[i];
+          if (char === '"') {
+            inQuotes = !inQuotes;
+          } else if (char === "," && !inQuotes) {
+            result.push(current.trim());
+            current = "";
+          } else {
+            current += char;
+          }
+        }
+        result.push(current.trim());
+        return result;
+      };
+
+      const headerRow = parseRow(lines[0]);
+      setHeaders(headerRow);
+
+      // Auto-map columns by name match
+      const autoMapping: Record<string, string> = {};
+      headerRow.forEach((header) => {
+        const match = database.schema.columns.find(
+          (col) => col.name.toLowerCase() === header.toLowerCase()
+        );
+        if (match) {
+          autoMapping[header] = match.id;
+        }
+      });
+      setColumnMapping(autoMapping);
+
+      // Parse data rows
+      const data = lines.slice(1).map((line) => {
+        const values = parseRow(line);
+        const row: Record<string, string> = {};
+        headerRow.forEach((header, i) => {
+          row[header] = values[i] || "";
+        });
+        return row;
+      });
+
+      setCsvData(data);
+    };
+    reader.readAsText(file);
+  };
+
+  const handleImport = () => {
+    // Convert CSV data to database entry format
+    const entries = csvData.map((row) => {
+      const properties: Record<string, unknown> = {};
+      Object.entries(columnMapping).forEach(([csvHeader, columnId]) => {
+        if (columnId && row[csvHeader] !== undefined) {
+          const column = database.schema.columns.find((c) => c.id === columnId);
+          let value: unknown = row[csvHeader];
+
+          // Type conversion based on column type
+          if (column) {
+            if (column.type === "NUMBER") {
+              value = value ? parseFloat(value as string) : null;
+            } else if (column.type === "CHECKBOX") {
+              value = ["true", "yes", "1"].includes(String(value).toLowerCase());
+            } else if (column.type === "DATE") {
+              value = value || null;
+            }
+          }
+
+          properties[columnId] = value;
+        }
+      });
+      return { properties };
+    });
+
+    bulkCreateMutation.mutate({
+      databaseId: database.id,
+      entries,
+    });
+  };
+
+  const mappedColumnCount = Object.values(columnMapping).filter(Boolean).length;
+
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto">
+        <SheetClose className="absolute right-4 top-4" />
+        <SheetHeader>
+          <SheetTitle>Import from CSV</SheetTitle>
+        </SheetHeader>
+
+        <div className="mt-6 space-y-6">
+          {/* File upload */}
+          {csvData.length === 0 ? (
+            <div className="border-2 border-dashed border-bone rounded-lg p-8 text-center">
+              <input
+                type="file"
+                accept=".csv"
+                onChange={handleFileUpload}
+                className="hidden"
+                id="csv-upload"
+              />
+              <label
+                htmlFor="csv-upload"
+                className="cursor-pointer flex flex-col items-center gap-3"
+              >
+                <div className="w-12 h-12 rounded-full bg-alabaster flex items-center justify-center">
+                  <Database className="w-6 h-6 text-gold" />
+                </div>
+                <div>
+                  <p className="text-charcoal font-medium">Upload CSV file</p>
+                  <p className="text-sm text-charcoal/60">Click to select a file</p>
+                </div>
+              </label>
+            </div>
+          ) : (
+            <>
+              {/* Column mapping */}
+              <div>
+                <h3 className="text-sm font-medium text-charcoal mb-3">
+                  Map columns ({mappedColumnCount}/{headers.length} mapped)
+                </h3>
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {headers.map((header) => (
+                    <div key={header} className="flex items-center gap-3">
+                      <span className="text-sm text-charcoal/70 w-32 truncate">{header}</span>
+                      <span className="text-charcoal/40">→</span>
+                      <select
+                        value={columnMapping[header] || ""}
+                        onChange={(e) => {
+                          setColumnMapping((prev) => ({
+                            ...prev,
+                            [header]: e.target.value,
+                          }));
+                        }}
+                        className="flex-1 px-2 py-1 text-sm rounded border border-bone focus:border-gold"
+                      >
+                        <option value="">Skip this column</option>
+                        {database.schema.columns.map((col) => (
+                          <option key={col.id} value={col.id}>
+                            {col.name} ({col.type})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Preview */}
+              <div>
+                <h3 className="text-sm font-medium text-charcoal mb-3">
+                  Preview ({csvData.length} rows)
+                </h3>
+                <div className="border border-bone rounded-md overflow-x-auto max-h-48">
+                  <table className="w-full text-sm">
+                    <thead className="bg-alabaster/50 sticky top-0">
+                      <tr>
+                        {headers.map((header) => (
+                          <th key={header} className="px-2 py-1 text-left text-charcoal/70 whitespace-nowrap">
+                            {header}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {csvData.slice(0, 5).map((row, i) => (
+                        <tr key={i} className="border-t border-bone/50">
+                          {headers.map((header) => (
+                            <td key={header} className="px-2 py-1 text-charcoal whitespace-nowrap">
+                              {row[header] || "-"}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {csvData.length > 5 && (
+                    <div className="px-2 py-1 text-center text-xs text-charcoal/50 bg-alabaster/30">
+                      ... and {csvData.length - 5} more rows
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {error && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-600">
+                  {error}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
+        <SheetFooter className="pt-6">
+          <button
+            type="button"
+            onClick={() => {
+              onOpenChange(false);
+              setCsvData([]);
+              setHeaders([]);
+              setColumnMapping({});
+            }}
+            className="px-4 py-2 text-sm font-medium text-charcoal hover:bg-bone rounded-md transition-colors"
+          >
+            Cancel
+          </button>
+          {csvData.length > 0 && (
+            <button
+              onClick={handleImport}
+              disabled={bulkCreateMutation.isPending || mappedColumnCount === 0}
+              className="px-4 py-2 text-sm font-medium text-white bg-gold hover:bg-gold/90 rounded-md transition-colors disabled:opacity-50"
+            >
+              {bulkCreateMutation.isPending ? "Importing..." : `Import ${csvData.length} rows`}
+            </button>
+          )}
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
+  );
 }

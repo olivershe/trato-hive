@@ -416,12 +416,13 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
   - [x] DatabasePicker component for create/link database flow
   - [x] CellRenderer with type-specific editing (TEXT, NUMBER, SELECT, etc.)
 
-- [ ] **[TASK-078] Database Editing UI** (8 hours) 🆕
-  - [ ] **Inline cell editing**: Click cell → edit in place → auto-save on blur
-  - [ ] **Entry form modal**: "+ New" button → sidebar form with all column fields
-  - [ ] **Column configuration**: Click header → rename, change type, delete
-  - [ ] **Row actions**: Hover menu (duplicate, delete, open as page)
-  - [ ] **Bulk import**: CSV/Excel upload → batch create entries
+- [x] **[TASK-078] Database Editing UI** (8 hours) ✅ PR pending
+  - [x] **Inline cell editing**: Click cell → edit in place → auto-save on blur
+  - [x] **Entry form modal**: "+ New" button → sidebar form with all column fields
+  - [x] **Column configuration**: Click header → rename, change type, delete
+  - [x] **Row actions**: Hover menu (duplicate, delete, open as page)
+  - [x] **Bulk import**: CSV upload → batch create entries
+  - [x] Sheet & DropdownMenu components in @trato-hive/ui
 
 - [ ] **[TASK-079] Notion-like UI with Trato Hive Styling** (8 hours) 🆕
   - [ ] Design tokens: Alabaster backgrounds, Gold accents, Bone borders
@@ -545,7 +546,7 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 **Next Actions:**
 
 1. ~~[TASK-077] DatabaseViewBlock - Tiptap extension for embedded databases~~ ✅ DONE
-2. [TASK-078] Database Editing UI - Inline cell editing and entry forms
+2. ~~[TASK-078] Database Editing UI - Inline cell editing and entry forms~~ ✅ DONE
 3. [TASK-079] Notion-like UI - Design tokens, styling, animations
 
 **After Each Completed Task:**
