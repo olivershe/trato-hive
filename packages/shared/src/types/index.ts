@@ -51,6 +51,7 @@ export { ErrorCode, AppError } from './api'
 
 // Database Types (Inline Database System)
 export type {
+  DatabaseColumnTypeValue,
   DatabaseColumn,
   DatabaseSchema,
   Database,
@@ -60,8 +61,19 @@ export type {
   DatabaseEntryWithCreator,
   DatabaseEntryWithFacts,
   DatabaseTemplate,
+  DatabaseFilter,
+  DatabaseFilterOperatorValue,
+  DatabaseSort,
+  DatabaseViewConfig,
+  DatabaseViewTypeValue,
+  DatabaseViewBlockAttributes,
 } from './database'
-export { DatabaseColumnType, DATABASE_TEMPLATES } from './database'
+export {
+  DatabaseColumnType,
+  DATABASE_TEMPLATES,
+  DatabaseViewType,
+  DatabaseFilterOperator,
+} from './database'
 
 // AI Suggestion Types
 export type {
