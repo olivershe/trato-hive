@@ -14,6 +14,7 @@ import type {
   FactExtractionOutput,
 } from './types';
 import { FactExtractionOutputSchema } from './types';
+import type { KnowledgeGraphService } from './knowledge-graph';
 
 // =============================================================================
 // Constants
@@ -89,10 +90,16 @@ export interface LLMClient {
 export class FactExtractor {
   private llmClient: LLMClient | null;
   private db: PrismaClient | null;
+  private knowledgeGraph: KnowledgeGraphService | null;
 
-  constructor(options: { llmClient?: LLMClient; db?: PrismaClient } = {}) {
+  constructor(options: {
+    llmClient?: LLMClient;
+    db?: PrismaClient;
+    knowledgeGraph?: KnowledgeGraphService;
+  } = {}) {
     this.llmClient = options.llmClient || null;
     this.db = options.db || null;
+    this.knowledgeGraph = options.knowledgeGraph || null;
   }
 
   /**
@@ -164,6 +171,7 @@ export class FactExtractor {
 
   /**
    * Store extracted facts in database
+   * Optionally syncs to knowledge graph if configured
    */
   async storeFacts(
     facts: ExtractedFact[],
@@ -191,14 +199,39 @@ export class FactExtractor {
         },
       });
 
-      storedFacts.push({
+      const storedFact: StoredFact = {
         ...fact,
         id: created.id,
         documentId: created.documentId,
         companyId: created.companyId,
         extractedBy: created.extractedBy,
         createdAt: created.createdAt,
-      });
+      };
+
+      storedFacts.push(storedFact);
+
+      // Sync to knowledge graph if configured
+      if (this.knowledgeGraph) {
+        try {
+          await this.knowledgeGraph.upsertFact(
+            {
+              factId: storedFact.id,
+              type: storedFact.type,
+              subject: storedFact.subject,
+              predicate: storedFact.predicate,
+              object: storedFact.object,
+              confidence: storedFact.confidence,
+              sourceText: storedFact.sourceText,
+              organizationId: context.organizationId,
+            },
+            storedFact.documentId ?? undefined,
+            storedFact.companyId ?? undefined
+          );
+        } catch (error) {
+          // Log but don't fail the operation - graph sync is best-effort
+          console.error('Failed to sync fact to knowledge graph:', error);
+        }
+      }
     }
 
     return storedFacts;
@@ -305,6 +338,7 @@ export class FactExtractor {
 export function createFactExtractor(options: {
   llmClient?: LLMClient;
   db?: PrismaClient;
+  knowledgeGraph?: KnowledgeGraphService;
 } = {}): FactExtractor {
   return new FactExtractor(options);
 }

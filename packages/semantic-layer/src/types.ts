@@ -194,3 +194,120 @@ export interface BatchEmbeddingResponse {
   model: string;
   totalTokens: number;
 }
+
+// =============================================================================
+// Knowledge Graph Types
+// =============================================================================
+
+/**
+ * Neo4j connection configuration
+ */
+export interface KnowledgeGraphConfig {
+  uri: string;
+  user: string;
+  password: string;
+}
+
+/**
+ * Graph node types
+ */
+export type GraphNodeType = 'Deal' | 'Company' | 'Document' | 'Fact';
+
+/**
+ * Graph relationship types
+ */
+export type GraphRelationType = 'OWNS' | 'HAS' | 'CONTAINS' | 'ABOUT' | 'SOURCE_DOCUMENT';
+
+/**
+ * Deal node in the knowledge graph
+ */
+export interface GraphDeal {
+  dealId: string;
+  name: string;
+  type: string;
+  stage: string;
+  value?: number;
+  organizationId: string;
+}
+
+/**
+ * Company node in the knowledge graph
+ */
+export interface GraphCompany {
+  companyId: string;
+  name: string;
+  industry?: string;
+  sector?: string;
+  employees?: number;
+  revenue?: number;
+  location?: string;
+  organizationId: string;
+}
+
+/**
+ * Document node in the knowledge graph
+ */
+export interface GraphDocument {
+  documentId: string;
+  name: string;
+  type: string;
+  status: string;
+  fileUrl: string;
+  organizationId: string;
+}
+
+/**
+ * Fact node in the knowledge graph
+ */
+export interface GraphFact {
+  factId: string;
+  type: FactType;
+  subject: string;
+  predicate: string;
+  object: string;
+  confidence: number;
+  sourceText: string;
+  organizationId: string;
+}
+
+/**
+ * Fact chain with related nodes (traversal result)
+ */
+export interface FactChain {
+  fact: GraphFact;
+  sourceDocument?: GraphDocument;
+  aboutCompany?: GraphCompany;
+}
+
+/**
+ * Related company from graph traversal
+ */
+export interface RelatedCompany {
+  company: GraphCompany;
+  sharedFacts: number;
+  relationshipTypes: string[];
+}
+
+/**
+ * Key person across deals result
+ */
+export interface PersonDealResult {
+  personName: string;
+  deals: Array<{
+    dealId: string;
+    dealName: string;
+    role: string;
+  }>;
+  totalMentions: number;
+}
+
+/**
+ * Shared customer result between companies
+ */
+export interface SharedCustomerResult {
+  customerName: string;
+  companies: Array<{
+    companyId: string;
+    companyName: string;
+  }>;
+}

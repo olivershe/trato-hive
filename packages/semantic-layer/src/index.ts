@@ -16,3 +16,6 @@ export * from './embeddings';
 
 // Fact extraction
 export * from './facts';
+
+// Knowledge graph (Neo4j)
+export * from './knowledge-graph';
