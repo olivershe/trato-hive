@@ -461,10 +461,13 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
   - [x] `dashboard.recentActivities` - Paginated org-wide activity feed
   - [x] `dashboard.activitySummary` - Activity counts by type
 
-- [ ] **[TASK-058] Command Center Template** (4 hours) 🆕
-  - [ ] `QueryBlock`: AI Query bar that inserts results as new blocks
-  - [ ] `InboxBlock`: Task list as a block
-  - [ ] `PipelineHealthBlock`: Chart as a block
+- [x] **[TASK-058] Command Center Template** (4 hours) ✅ (January 9, 2026)
+  - [x] `QueryBlock`: AI Query bar using DiligenceAgent with RAG-based Q&A
+  - [x] `InboxBlock`: Activity feed with dismiss/mark-read actions
+  - [x] `PipelineHealthBlock`: Recharts horizontal bar chart with pipeline metrics
+  - [x] `diligenceRouter`: tRPC router for DiligenceAgent (askQuestion, canAnswer, generateReport)
+  - [x] `ActivityStatus` enum: ACTIVE, READ, DISMISSED (migration pending DB)
+  - [x] Slash commands: `/ask`, `/pipeline`, `/inbox`
 
 #### 10.3: features/diligence Template (Week 11)
 
@@ -518,7 +521,7 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
   - ✅ 9.2: packages/semantic-layer (3/3 core tasks) - January 5, 2026
   - ✅ 9.3: packages/data-plane (4/4 tasks) - January 5, 2026
   - ✅ 9.4: packages/agents (3/3 tasks) - January 5, 2026
-- Phase 10: Features - 🔄 50% (3/6 core tasks, ~84 hours remaining) - Includes AI Suggestions, Inline Databases & Notion-like UI
+- Phase 10: Features - 🔄 57% (4/7 core tasks, ~80 hours remaining) - Includes AI Suggestions, Inline Databases & Command Center
 
 **Total Time:**
 
@@ -535,13 +538,14 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 **Current Phase:** Phase 10 - Features 🔄 IN PROGRESS
 
 **Last Completed:**
-- ✅ [TASK-056] Dashboard Service (January 9, 2026)
-  - Created `DashboardService` with 3 aggregation methods
-  - Created `dashboardRouter` with 3 tRPC procedures
-  - Pipeline health: deal counts/values by stage, weighted values
-  - Recent activities: paginated org-wide activity feed
-  - Activity summary: activity counts by type with labels
-  - 30 new tests (20 unit + 10 integration)
+- ✅ [TASK-058] Command Center Template (January 9, 2026)
+  - Created 3 new Tiptap blocks: QueryBlock, InboxBlock, PipelineHealthBlock
+  - QueryBlock: AI Q&A using DiligenceAgent with RAG and citations
+  - InboxBlock: Activity feed with dismiss/mark-read actions
+  - PipelineHealthBlock: Recharts bar chart with pipeline metrics
+  - Created `diligenceRouter` tRPC router for DiligenceAgent
+  - Added ActivityStatus enum (ACTIVE, READ, DISMISSED) to schema
+  - Slash commands: `/ask`, `/pipeline`, `/inbox`
 
 **Remaining Phase 9 Tasks:**
 - [ ] [TASK-038] Knowledge Graph (Neo4j) - LOW PRIORITY
@@ -552,7 +556,8 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 1. ~~[TASK-047] Deal Service Backend~~ ✅ DONE (Phase 8)
 2. ~~[TASK-048] Deal Template (Block Config)~~ ✅ DONE
 3. ~~[TASK-056] Dashboard Service~~ ✅ DONE
-4. [TASK-058] Command Center Template - QueryBlock, InboxBlock, PipelineHealthBlock
+4. ~~[TASK-058] Command Center Template~~ ✅ DONE
+5. [TASK-060] VDR Service - Backend file processing for Diligence Template
 
 **After Each Completed Task:**
 
