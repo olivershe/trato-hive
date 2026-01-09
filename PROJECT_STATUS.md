@@ -486,12 +486,16 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
   - [x] `QABlock`: Uses existing QueryBlock (RAG-based Q&A from TASK-058)
   - [x] "Document Review" database template with AI fields (linkedFacts, confidence, summary)
 
-#### 10.4: features/generator Integration (Week 11-12)
+#### 10.4: features/generator Integration (Week 11-12) ✅ **COMPLETE**
 
 **Tasks:**
 
-- [ ] **[TASK-066] Generator Service** (5 hours)
-  - [ ] Generate PPTX/DOCX from *Page content* (parse Blocks -> Slides) 🆕
+- [x] **[TASK-066] Generator Service** (5 hours) ✅ (January 9, 2026)
+  - [x] GeneratorService with PPTX and DOCX export
+  - [x] Block-to-slide mapping (headings, paragraphs, lists, citations, dealHeader)
+  - [x] Citation preservation as Sources slide (PPTX) and footnotes (DOCX)
+  - [x] generatorRouter with `exportPage` tRPC mutation
+  - [x] Multi-tenancy enforcement via Page → Deal/Company → organizationId
 
 #### 10.5: features/discovery Integration
 
@@ -526,15 +530,15 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
   - ✅ 9.2: packages/semantic-layer (3/3 core tasks) - January 5, 2026
   - ✅ 9.3: packages/data-plane (4/4 tasks) - January 5, 2026
   - ✅ 9.4: packages/agents (3/3 tasks) - January 5, 2026
-- Phase 10: Features - 🔄 80% (12/15 tasks, ~16 hours remaining) - Includes AI Suggestions, Inline Databases, VDR & Templates
+- Phase 10: Features - 🔄 87% (13/15 tasks, ~11 hours remaining) - Includes AI Suggestions, Inline Databases, VDR, Generator & Templates
 
 **Total Time:**
 
-- Completed: ~232 hours (Phases 1-8 + 9.1 + 9.2 + 9.3 + 9.4 + Phase 10 tasks)
-- Remaining: ~43 hours (Phases 9 remaining: TASK-038, TASK-022, Phase 10 remaining)
+- Completed: ~237 hours (Phases 1-8 + 9.1 + 9.2 + 9.3 + 9.4 + Phase 10 tasks)
+- Remaining: ~38 hours (Phases 9 remaining: TASK-038, TASK-022, Phase 10 remaining)
 - Total: ~275 hours
 
-**Overall Progress: 84% complete**
+**Overall Progress: 86% complete**
 
 ---
 
@@ -543,13 +547,12 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 **Current Phase:** Phase 10 - Features 🔄 IN PROGRESS
 
 **Last Completed:**
-- ✅ [TASK-060] VDR Service & [TASK-063] Diligence Template (January 9, 2026)
-  - VDR backend: 10 tRPC procedures for document/folder management
-  - VDRService with presigned S3 URLs (upload/download)
-  - VDRBlock: File tree explorer Tiptap extension
-  - "Document Review" database template with AI fields
-  - Prisma schema: Added `folderPath` field to Document model
-  - Slash command `/vdr` (Data Room)
+- ✅ [TASK-066] Generator Service (January 9, 2026)
+  - GeneratorService with PPTX and DOCX export
+  - Block-to-document mapping (headings, paragraphs, lists, citations)
+  - Citation preservation: Sources slide (PPTX) and footnotes (DOCX)
+  - generatorRouter with `exportPage` tRPC mutation
+  - Uses pptxgenjs and docx libraries
 
 **Remaining Phase 9 Tasks:**
 - [ ] [TASK-038] Knowledge Graph (Neo4j) - LOW PRIORITY
@@ -563,7 +566,9 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 4. ~~[TASK-058] Command Center Template~~ ✅ DONE
 5. ~~[TASK-060] VDR Service~~ ✅ DONE
 6. ~~[TASK-063] Diligence Template~~ ✅ DONE
-7. [TASK-066] Generator Service - Generate PPTX/DOCX from Page content
+7. ~~[TASK-066] Generator Service~~ ✅ DONE
+8. [TASK-071] Sourcing Service - Backend search for Discovery
+9. [TASK-073] Discovery Template - SearchBlock & ResultsBlock
 
 **After Each Completed Task:**
 

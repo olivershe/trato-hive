@@ -113,3 +113,12 @@ export type {
   ActivitySummary,
   ActivitySummaryResult,
 } from './dashboard'
+
+// Generator Types (Document Export)
+export type {
+  ExportResult,
+  CitationReference,
+  GeneratorExportOptions,
+  ExportFormat,
+} from './generator'
+export { EXPORT_MIME_TYPES } from './generator'

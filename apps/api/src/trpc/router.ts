@@ -10,6 +10,7 @@
  * - dashboard - Pipeline health and activity metrics
  * - diligence - AI Q&A with citations
  * - vdr - Virtual Data Room document management
+ * - generator - Document export (PPTX/DOCX)
  *
  * Future routers:
  * - companyRouter - Company management
@@ -24,6 +25,7 @@ import { databasesRouter } from '../routers/databases';
 import { dashboardRouter } from '../routers/dashboard';
 import { diligenceRouter } from '../routers/diligence';
 import { vdrRouter } from '../routers/vdr';
+import { generatorRouter } from '../routers/generator';
 
 /**
  * Root application router
@@ -35,6 +37,7 @@ export const appRouter = router({
   dashboard: dashboardRouter,
   diligence: diligenceRouter,
   vdr: vdrRouter,
+  generator: generatorRouter,
 });
 
 /**
