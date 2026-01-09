@@ -455,8 +455,11 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 
 **Tasks:**
 
-- [ ] **[TASK-056] Dashboard Service** (3 hours)
-  - [ ] Backend aggregation services
+- [x] **[TASK-056] Dashboard Service** (3 hours) ✅ (January 9, 2026)
+  - [x] Backend aggregation services (DashboardService + dashboardRouter)
+  - [x] `dashboard.pipelineHealth` - Pipeline metrics by stage, weighted values
+  - [x] `dashboard.recentActivities` - Paginated org-wide activity feed
+  - [x] `dashboard.activitySummary` - Activity counts by type
 
 - [ ] **[TASK-058] Command Center Template** (4 hours) 🆕
   - [ ] `QueryBlock`: AI Query bar that inserts results as new blocks
@@ -532,11 +535,13 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 **Current Phase:** Phase 10 - Features 🔄 IN PROGRESS
 
 **Last Completed:**
-- ✅ [TASK-048] Deal Template (Block Config) (January 9, 2026)
-  - Auto-create Due Diligence Tracker database when deal is created
-  - `DatabaseViewBlock` (order: 1) auto-linked to DD Tracker
-  - Uses `DATABASE_TEMPLATES` from `@trato-hive/shared` (single source of truth)
-  - Fixed shared package tree-shaking issue for constant exports
+- ✅ [TASK-056] Dashboard Service (January 9, 2026)
+  - Created `DashboardService` with 3 aggregation methods
+  - Created `dashboardRouter` with 3 tRPC procedures
+  - Pipeline health: deal counts/values by stage, weighted values
+  - Recent activities: paginated org-wide activity feed
+  - Activity summary: activity counts by type with labels
+  - 30 new tests (20 unit + 10 integration)
 
 **Remaining Phase 9 Tasks:**
 - [ ] [TASK-038] Knowledge Graph (Neo4j) - LOW PRIORITY
@@ -546,7 +551,7 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 
 1. ~~[TASK-047] Deal Service Backend~~ ✅ DONE (Phase 8)
 2. ~~[TASK-048] Deal Template (Block Config)~~ ✅ DONE
-3. [TASK-056] Dashboard Service - Backend aggregation
+3. ~~[TASK-056] Dashboard Service~~ ✅ DONE
 4. [TASK-058] Command Center Template - QueryBlock, InboxBlock, PipelineHealthBlock
 
 **After Each Completed Task:**

@@ -20,6 +20,7 @@ import { router } from './init';
 import { blockRouter } from '../routers/block';
 import { dealsRouter } from '../routers/deals';
 import { databasesRouter } from '../routers/databases';
+import { dashboardRouter } from '../routers/dashboard';
 
 /**
  * Root application router
@@ -28,6 +29,7 @@ export const appRouter = router({
   block: blockRouter,
   deal: dealsRouter,
   database: databasesRouter,
+  dashboard: dashboardRouter,
 });
 
 /**

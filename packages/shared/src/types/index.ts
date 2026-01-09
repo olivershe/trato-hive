@@ -24,7 +24,15 @@ export type {
 export { CompanyStatus } from './company'
 
 // Deal Types
-export type { Deal, DealWithCompany, DealWithDocuments, DealWithFacts, Deal360 } from './deal'
+export type {
+  Deal,
+  DealWithCompany,
+  DealWithDocuments,
+  DealWithFacts,
+  Deal360,
+  DealStageValue,
+  DealTypeValue,
+} from './deal'
 export { DealStage, DealType } from './deal'
 
 // Document Types
@@ -42,7 +50,7 @@ export type { Fact, FactWithSources, FactWithCompany } from './fact'
 export { FactType } from './fact'
 
 // Activity Types
-export type { Activity, ActivityWithUser, ActivityWithDeal } from './activity'
+export type { Activity, ActivityWithUser, ActivityWithDeal, ActivityTypeValue } from './activity'
 export { ActivityType } from './activity'
 
 // API Types
@@ -88,3 +96,14 @@ export type {
   DatabaseEntrySuggestion,
   EntitySuggestions,
 } from './suggestion'
+
+// Dashboard Types (Command Center)
+export type {
+  StageMetric,
+  TypeMetric,
+  PipelineHealthResult,
+  ActivityFeedItem,
+  RecentActivitiesResult,
+  ActivitySummary,
+  ActivitySummaryResult,
+} from './dashboard'
