@@ -70,7 +70,8 @@ describe('SuggestionService', () => {
 
   describe('applySuggestion - Deal', () => {
     it('should apply deal suggestion and log activity', async () => {
-      const mockDeal = createMockDeal({ value: 1000000 });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const mockDeal = createMockDeal({ value: 1000000 as any });
       mockPrisma.deal.findUnique.mockResolvedValue(mockDeal);
       mockPrisma.deal.update.mockResolvedValue({ ...mockDeal, value: 2000000 });
 

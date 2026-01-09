@@ -3,7 +3,6 @@
  */
 import { describe, it, expect } from 'vitest';
 import {
-  RAGService,
   createRAGService,
   type RetrievedChunk,
   type FactRecord,
