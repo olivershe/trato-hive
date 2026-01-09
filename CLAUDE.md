@@ -11,7 +11,7 @@
    - **Plan:** Use TodoWrite tool for tracking (required for >1 file or complex tasks)
    - **Code:** Implement with TDD (Red → Green → Refactor)
    - **Test:** Run `pnpm test` and `pnpm typecheck`
-   - **Commit:** Use `@git-workflow-manager` with `[TASK-###]` in message (auto-syncs Notion)
+   - **Commit:** Use `@git-workflow-manager` with `[TASK-###]` in message
    - **PR:** Open PR via `@git-workflow-manager`
    - **Update:** After merge, tick ✅ `[TASK-###]` in PROJECT_STATUS.md
 
@@ -38,8 +38,7 @@
 # 🤖 Tools & Commands
 - `pnpm dev` / `pnpm test` / `pnpm build`
 - **Context7 (MCP):** Use `mcp__context7__resolve-library-id` automatically for library docs.
-- **Git Agent:** `@git-workflow-manager` is MANDATORY for all git ops.
-  - **Rule:** Never commit directly to main. Always use `feature/TASK-###`.
+- **Git:** Use `@git-workflow-manager` for branches, commits, PRs. Never commit directly to main.
 
 # 🧠 Behavioral Rules
 <behavioral_rules>
@@ -55,11 +54,6 @@
 - **7-Layer Architecture:** Data ownership rules critical for Modules 2-5 (see `/docs/architecture/`)
 - **@architecture-review:** Invoke for multi-layer changes, new packages, DB schema changes
 - **@design-review:** Invoke for significant UI/UX changes before PR merge
-
-**Notion Integration:**
-- Auto-syncs via `[TASK-###]` tags in commit messages (handled by `@git-workflow-manager`)
-- Updates task status on PR merge (GitHub Actions)
-- Bidirectional sync runs daily (PROJECT_STATUS.md ↔ Notion)
 
 **Logging (When Required):**
 - **CHANGELOG.md:** User-visible changes, API changes, DB migrations
