@@ -9,6 +9,23 @@ import { ReactNodeViewRenderer, NodeViewWrapper, NodeViewProps } from "@tiptap/r
 import { useState, useCallback, useRef } from "react";
 import { Database, Table2, LayoutGrid, Plus, Link2, Loader2, Trash2, Copy, Edit, Settings, X, GripVertical } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+  DndContext,
+  DragOverlay,
+  DragStartEvent,
+  DragEndEvent,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  useSortable,
+  horizontalListSortingStrategy,
+  arrayMove,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { api } from "@/trpc/react";
 import {
   Sheet,
@@ -594,6 +611,95 @@ function DatabaseView({
 }
 
 // =============================================================================
+// Sortable Column Header Component
+// =============================================================================
+
+interface SortableColumnHeaderProps {
+  column: DatabaseColumn;
+  sortBy: DatabaseSort | null;
+  columnWidth: number;
+  resizingColumn: string | null;
+  onHeaderClick: (e: React.MouseEvent, col: DatabaseColumn) => void;
+  onResizeStart: (e: React.MouseEvent, columnId: string) => void;
+  onConfigClick: (e: React.MouseEvent, col: DatabaseColumn) => void;
+}
+
+function SortableColumnHeader({
+  column,
+  sortBy,
+  columnWidth,
+  resizingColumn,
+  onHeaderClick,
+  onResizeStart,
+  onConfigClick,
+}: SortableColumnHeaderProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: column.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    width: columnWidth,
+    minWidth: 60,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <th
+      ref={setNodeRef}
+      style={style}
+      role="columnheader"
+      aria-sort={sortBy?.columnId === column.id ? (sortBy.direction === "asc" ? "ascending" : "descending") : undefined}
+      className={`relative px-1.5 py-1 text-left text-[11px] font-medium text-charcoal/60 dark:text-cultured-white/60 select-none group ${
+        isDragging ? 'bg-gold/10 z-10' : 'hover:bg-bone/40 dark:hover:bg-surface-dark/50'
+      }`}
+    >
+      <div
+        className="flex items-center gap-0.5 cursor-grab active:cursor-grabbing"
+        {...attributes}
+        {...listeners}
+      >
+        {/* Drag handle indicator */}
+        <GripVertical className="w-2.5 h-2.5 text-charcoal/20 dark:text-cultured-white/20 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+        <span
+          className="flex-1 truncate uppercase tracking-wide cursor-pointer"
+          onClick={(e) => onHeaderClick(e, column)}
+          onContextMenu={(e) => onHeaderClick(e, column)}
+        >
+          {column.name}
+        </span>
+        {sortBy?.columnId === column.id && (
+          <span className="text-gold text-[10px] font-bold">
+            {sortBy.direction === "asc" ? "↑" : "↓"}
+          </span>
+        )}
+        <button
+          onClick={(e) => onConfigClick(e, column)}
+          className="opacity-0 group-hover:opacity-100 p-0.5 hover:bg-bone dark:hover:bg-surface-dark rounded transition-opacity"
+          aria-label={`Configure ${column.name} column`}
+        >
+          <Settings className="w-2.5 h-2.5 text-charcoal/40 dark:text-cultured-white/40" />
+        </button>
+      </div>
+      {/* Column resize handle */}
+      <div
+        className={`absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-gold/40 transition-colors ${
+          resizingColumn === column.id ? 'bg-gold/60' : ''
+        }`}
+        onMouseDown={(e) => onResizeStart(e, column.id)}
+        onClick={(e) => e.stopPropagation()}
+      />
+    </th>
+  );
+}
+
+// =============================================================================
 // Table View Component
 // =============================================================================
 
@@ -605,8 +711,16 @@ interface DatabaseTableViewProps {
 }
 
 function DatabaseTableView({ database, sortBy, hiddenColumns, onSortChange }: DatabaseTableViewProps) {
-  const columns = database.schema.columns.filter((col) => !hiddenColumns.includes(col.id));
+  const visibleColumns = database.schema.columns.filter((col) => !hiddenColumns.includes(col.id));
   const entries = database.entries || [];
+
+  // Column order state (for drag-to-reorder)
+  const [columnOrder, setColumnOrder] = useState<string[]>(() => visibleColumns.map((col) => col.id));
+
+  // Get columns in current order
+  const columns = columnOrder
+    .map((id) => visibleColumns.find((col) => col.id === id))
+    .filter((col): col is DatabaseColumn => col !== undefined);
 
   // Entry form state
   const [entryFormOpen, setEntryFormOpen] = useState(false);
@@ -619,7 +733,7 @@ function DatabaseTableView({ database, sortBy, hiddenColumns, onSortChange }: Da
   // Column resize state
   const [columnWidths, setColumnWidths] = useState<Record<string, number>>(() => {
     const widths: Record<string, number> = {};
-    columns.forEach((col) => {
+    visibleColumns.forEach((col) => {
       widths[col.id] = col.width || 150;
     });
     return widths;
@@ -627,6 +741,19 @@ function DatabaseTableView({ database, sortBy, hiddenColumns, onSortChange }: Da
   const [resizingColumn, setResizingColumn] = useState<string | null>(null);
   const resizeStartX = useRef<number>(0);
   const resizeStartWidth = useRef<number>(0);
+
+  // Column drag state
+  const [activeColumnId, setActiveColumnId] = useState<string | null>(null);
+  const activeColumn = activeColumnId ? columns.find((col) => col.id === activeColumnId) : null;
+
+  // dnd-kit sensors - require 8px movement to start drag (prevents accidental drags)
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    })
+  );
 
   const handleOpenNewForm = () => {
     setEditingEntry(null);
@@ -683,6 +810,25 @@ function DatabaseTableView({ database, sortBy, hiddenColumns, onSortChange }: Da
     document.addEventListener('mouseup', handleMouseUp);
   };
 
+  // Column drag handlers
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveColumnId(event.active.id as string);
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      setColumnOrder((prev) => {
+        const oldIndex = prev.indexOf(active.id as string);
+        const newIndex = prev.indexOf(over.id as string);
+        return arrayMove(prev, oldIndex, newIndex);
+      });
+    }
+
+    setActiveColumnId(null);
+  };
+
   // Row animation variants
   const rowVariants = {
     initial: { opacity: 0, y: -8 },
@@ -692,55 +838,38 @@ function DatabaseTableView({ database, sortBy, hiddenColumns, onSortChange }: Da
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full border-collapse" role="grid">
-        <thead>
-          <tr className="border-b border-bone dark:border-charcoal/60 bg-bone/30 dark:bg-surface-dark/30">
-            {/* Row actions column */}
-            <th className="w-7 px-0.5" role="columnheader" />
-            {columns.map((col, index) => (
-              <th
-                key={col.id}
-                role="columnheader"
-                aria-sort={sortBy?.columnId === col.id ? (sortBy.direction === "asc" ? "ascending" : "descending") : undefined}
-                className="relative px-1.5 py-1 text-left text-[11px] font-medium text-charcoal/60 dark:text-cultured-white/60 cursor-pointer hover:bg-bone/40 dark:hover:bg-surface-dark/50 select-none group"
-                style={{ width: columnWidths[col.id] || 150, minWidth: 60 }}
-                onClick={(e) => handleColumnHeaderClick(e, col)}
-                onContextMenu={(e) => handleColumnHeaderClick(e, col)}
-              >
-                <div className="flex items-center gap-0.5">
-                  <span className="flex-1 truncate uppercase tracking-wide">{col.name}</span>
-                  {sortBy?.columnId === col.id && (
-                    <span className="text-gold text-[10px] font-bold">
-                      {sortBy.direction === "asc" ? "↑" : "↓"}
-                    </span>
-                  )}
-                  <button
-                    onClick={(e) => {
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+      >
+        <table className="w-full border-collapse" role="grid">
+          <thead>
+            <tr className="border-b border-bone dark:border-charcoal/60 bg-bone/30 dark:bg-surface-dark/30">
+              {/* Row actions column */}
+              <th className="w-7 px-0.5" role="columnheader" />
+              <SortableContext items={columnOrder} strategy={horizontalListSortingStrategy}>
+                {columns.map((col) => (
+                  <SortableColumnHeader
+                    key={col.id}
+                    column={col}
+                    sortBy={sortBy}
+                    columnWidth={columnWidths[col.id] || 150}
+                    resizingColumn={resizingColumn}
+                    onHeaderClick={handleColumnHeaderClick}
+                    onResizeStart={handleResizeStart}
+                    onConfigClick={(e, column) => {
                       e.stopPropagation();
                       const rect = (e.target as HTMLElement).getBoundingClientRect();
-                      setConfigColumn(col);
+                      setConfigColumn(column);
                       setConfigPosition({ x: rect.left, y: rect.bottom + 4 });
                     }}
-                    className="opacity-0 group-hover:opacity-100 p-0.5 hover:bg-bone dark:hover:bg-surface-dark rounded transition-opacity"
-                    aria-label={`Configure ${col.name} column`}
-                  >
-                    <Settings className="w-2.5 h-2.5 text-charcoal/40 dark:text-cultured-white/40" />
-                  </button>
-                </div>
-                {/* Column resize handle */}
-                {index < columns.length && (
-                  <div
-                    className={`absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-gold/40 transition-colors ${
-                      resizingColumn === col.id ? 'bg-gold/60' : ''
-                    }`}
-                    onMouseDown={(e) => handleResizeStart(e, col.id)}
-                    onClick={(e) => e.stopPropagation()}
                   />
-                )}
-              </th>
-            ))}
-          </tr>
-        </thead>
+                ))}
+              </SortableContext>
+            </tr>
+          </thead>
         <tbody>
           <AnimatePresence mode="popLayout">
             {entries.length === 0 ? (
@@ -796,7 +925,17 @@ function DatabaseTableView({ database, sortBy, hiddenColumns, onSortChange }: Da
             )}
           </AnimatePresence>
         </tbody>
-      </table>
+        </table>
+
+        {/* Drag overlay for column being dragged */}
+        <DragOverlay>
+          {activeColumn ? (
+            <div className="px-1.5 py-1 text-[11px] font-medium text-charcoal dark:text-cultured-white bg-alabaster dark:bg-surface-dark border border-gold/60 rounded shadow-lg uppercase tracking-wide opacity-90">
+              {activeColumn.name}
+            </div>
+          ) : null}
+        </DragOverlay>
+      </DndContext>
 
       {/* Add row button */}
       <motion.button
