@@ -28,6 +28,7 @@ export const recentActivitiesInputSchema = z.object({
   page: z.number().int().positive().default(1),
   pageSize: z.number().int().positive().max(50).default(20),
   hoursBack: z.number().int().positive().max(168).default(48), // Max 7 days
+  excludeDismissed: z.boolean().default(true), // Filter out dismissed activities
 })
 
 export type RecentActivitiesInput = z.infer<typeof recentActivitiesInputSchema>
@@ -40,3 +41,13 @@ export const activitySummaryInputSchema = z.object({
 })
 
 export type ActivitySummaryInput = z.infer<typeof activitySummaryInputSchema>
+
+/**
+ * Update Activity Status Input - Mark as read or dismissed
+ */
+export const updateActivityStatusInputSchema = z.object({
+  activityId: z.string().cuid(),
+  status: z.enum(['READ', 'DISMISSED']), // Users can only set READ or DISMISSED, not ACTIVE
+})
+
+export type UpdateActivityStatusInput = z.infer<typeof updateActivityStatusInputSchema>

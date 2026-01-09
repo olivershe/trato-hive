@@ -21,6 +21,17 @@ export const ActivityType = {
 export type ActivityTypeValue = (typeof ActivityType)[keyof typeof ActivityType]
 
 /**
+ * ActivityStatus - Status of activity for inbox actions
+ */
+export const ActivityStatus = {
+  ACTIVE: 'ACTIVE',
+  READ: 'READ',
+  DISMISSED: 'DISMISSED',
+} as const
+
+export type ActivityStatusValue = (typeof ActivityStatus)[keyof typeof ActivityStatus]
+
+/**
  * Activity - Audit log entry (Layer 6: Governance)
  */
 export interface Activity {
@@ -30,6 +41,8 @@ export interface Activity {
   type: ActivityTypeValue
   description: string
   metadata: unknown | null // JSON metadata
+  status: ActivityStatusValue
+  statusChangedAt: Date | null
   createdAt: Date
 }
 

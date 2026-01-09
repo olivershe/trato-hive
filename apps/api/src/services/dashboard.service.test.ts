@@ -172,6 +172,7 @@ describe('DashboardService', () => {
         page: 1,
         pageSize: 20,
         hoursBack: 48,
+        excludeDismissed: false,
       });
 
       expect(result.items.length).toBe(1);
@@ -187,6 +188,7 @@ describe('DashboardService', () => {
         page: 1,
         pageSize: 20,
         hoursBack: 48,
+        excludeDismissed: false,
       });
 
       expect(mockPrisma.activity.findMany).toHaveBeenCalledWith(
@@ -207,6 +209,7 @@ describe('DashboardService', () => {
         page: 1,
         pageSize: 20,
         hoursBack: 24,
+        excludeDismissed: false,
       });
 
       expect(mockPrisma.activity.findMany).toHaveBeenCalledWith(
@@ -228,6 +231,7 @@ describe('DashboardService', () => {
         page: 1,
         pageSize: 20,
         hoursBack: 48,
+        excludeDismissed: false,
       });
 
       expect(mockPrisma.activity.findMany).toHaveBeenCalledWith(
@@ -254,6 +258,7 @@ describe('DashboardService', () => {
         page: 1,
         pageSize: 20,
         hoursBack: 48,
+        excludeDismissed: false,
       });
 
       expect(result.pagination.hasMore).toBe(true);
