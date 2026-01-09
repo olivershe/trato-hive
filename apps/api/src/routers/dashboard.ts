@@ -10,6 +10,7 @@ import {
   pipelineHealthInputSchema,
   recentActivitiesInputSchema,
   activitySummaryInputSchema,
+  updateActivityStatusInputSchema,
 } from '@trato-hive/shared';
 
 export const dashboardRouter = router({
@@ -47,5 +48,17 @@ export const dashboardRouter = router({
     .query(async ({ ctx, input }) => {
       const dashboardService = new DashboardService(ctx.db);
       return dashboardService.getActivitySummary(ctx.organizationId, input);
+    }),
+
+  /**
+   * dashboard.updateActivityStatus - Mark activity as read or dismissed
+   * Auth: organizationProtectedProcedure
+   * Returns: Updated Activity
+   */
+  updateActivityStatus: organizationProtectedProcedure
+    .input(updateActivityStatusInputSchema)
+    .mutation(async ({ ctx, input }) => {
+      const dashboardService = new DashboardService(ctx.db);
+      return dashboardService.updateActivityStatus(ctx.organizationId, input);
     }),
 });

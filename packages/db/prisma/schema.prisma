@@ -387,14 +387,24 @@ enum ActivityType {
   AI_SUGGESTION_DISMISSED
 }
 
+enum ActivityStatus {
+  ACTIVE
+  READ
+  DISMISSED
+}
+
 model Activity {
-  id             String       @id @default(cuid())
+  id             String         @id @default(cuid())
   userId         String?
   dealId         String?
 
   type           ActivityType
-  description    String       @db.Text
+  description    String         @db.Text
   metadata       Json?
+
+  // Status tracking for inbox actions
+  status          ActivityStatus @default(ACTIVE)
+  statusChangedAt DateTime?
 
   createdAt DateTime @default(now())
 
@@ -405,6 +415,7 @@ model Activity {
   @@index([dealId])
   @@index([type])
   @@index([createdAt])
+  @@index([status])
   @@map("activities")
 }
 

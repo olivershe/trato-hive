@@ -16,7 +16,10 @@ import {
     Sparkles,
     Database,
     KanbanSquare,
-    BookOpen
+    BookOpen,
+    BarChart3,
+    Inbox,
+    MessageSquare,
 } from "lucide-react";
 import { CommandListRenderer } from "./CommandListRenderer";
 
@@ -103,12 +106,29 @@ export const suggestionItems = [
     // Intelligent Blocks (Top Priority)
     {
         title: "Ask AI",
-        description: "Use AI to generate or edit content",
-        searchTerms: ["ai", "gpt", "generate"],
-        icon: <Sparkles size={18} className="text-gold" />,
+        description: "Ask questions about your deal documents",
+        searchTerms: ["ai", "query", "question", "ask", "search", "diligence"],
+        icon: <MessageSquare size={18} className="text-violet-600" />,
         command: ({ editor, range }: any) => {
-            editor.chain().focus().deleteRange(range).run();
-            window.alert("AI Sidebar would open here");
+            editor.chain().focus().deleteRange(range).setQueryBlock({}).run();
+        },
+    },
+    {
+        title: "Pipeline Health",
+        description: "View pipeline metrics chart",
+        searchTerms: ["pipeline", "chart", "health", "deals", "metrics", "funnel"],
+        icon: <BarChart3 size={18} className="text-gold" />,
+        command: ({ editor, range }: any) => {
+            editor.chain().focus().deleteRange(range).setPipelineHealthBlock({}).run();
+        },
+    },
+    {
+        title: "Activity Inbox",
+        description: "View recent activity with actions",
+        searchTerms: ["inbox", "activity", "feed", "notifications", "recent"],
+        icon: <Inbox size={18} className="text-orange" />,
+        command: ({ editor, range }: any) => {
+            editor.chain().focus().deleteRange(range).setInboxBlock({}).run();
         },
     },
     {

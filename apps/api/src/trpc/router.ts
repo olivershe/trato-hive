@@ -7,11 +7,12 @@
  * - block - Block synchronization for editor
  * - deal - Deal CRUD operations
  * - database - Inline database CRUD operations
+ * - dashboard - Pipeline health and activity metrics
+ * - diligence - AI Q&A with citations
  *
  * Future routers:
  * - companyRouter - Company management
  * - documentRouter - Document handling
- * - diligenceRouter - VDR and Q&A
  * - discoveryRouter - Company sourcing
  *
  * @see apps/api/CLAUDE.md for router patterns
@@ -21,6 +22,7 @@ import { blockRouter } from '../routers/block';
 import { dealsRouter } from '../routers/deals';
 import { databasesRouter } from '../routers/databases';
 import { dashboardRouter } from '../routers/dashboard';
+import { diligenceRouter } from '../routers/diligence';
 
 /**
  * Root application router
@@ -30,6 +32,7 @@ export const appRouter = router({
   deal: dealsRouter,
   database: databasesRouter,
   dashboard: dashboardRouter,
+  diligence: diligenceRouter,
 });
 
 /**

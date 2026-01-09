@@ -50,8 +50,14 @@ export type { Fact, FactWithSources, FactWithCompany } from './fact'
 export { FactType } from './fact'
 
 // Activity Types
-export type { Activity, ActivityWithUser, ActivityWithDeal, ActivityTypeValue } from './activity'
-export { ActivityType } from './activity'
+export type {
+  Activity,
+  ActivityWithUser,
+  ActivityWithDeal,
+  ActivityTypeValue,
+  ActivityStatusValue,
+} from './activity'
+export { ActivityType, ActivityStatus } from './activity'
 
 // API Types
 export type { ApiResponse, PaginatedResponse } from './api'

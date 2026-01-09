@@ -5,7 +5,8 @@
  * Provides pipeline health metrics and activity feeds for Command Center.
  * Enforces multi-tenancy via organizationId on all operations.
  */
-import type { PrismaClient, DealStage, DealType, ActivityType } from '@trato-hive/db';
+import type { PrismaClient, DealStage, DealType, ActivityType, ActivityStatus, Activity } from '@trato-hive/db';
+import { TRPCError } from '@trpc/server';
 import {
   DealStage as DealStageEnum,
   DealType as DealTypeEnum,
@@ -13,6 +14,7 @@ import {
   type PipelineHealthInput,
   type RecentActivitiesInput,
   type ActivitySummaryInput,
+  type UpdateActivityStatusInput,
 } from '@trato-hive/shared';
 
 // Local type definitions for dashboard aggregations
@@ -48,6 +50,8 @@ export interface ActivityFeedItem {
   type: ActivityType;
   description: string;
   metadata: unknown;
+  status: ActivityStatus;
+  statusChangedAt: Date | null;
   createdAt: Date;
   user: {
     id: string;
@@ -230,18 +234,27 @@ export class DashboardService {
     input: RecentActivitiesInput
   ): Promise<RecentActivitiesResult> {
     const { page, pageSize, hoursBack } = input;
+    const excludeDismissed = (input as { excludeDismissed?: boolean }).excludeDismissed ?? true;
     const skip = (page - 1) * pageSize;
 
     const since = new Date();
     since.setHours(since.getHours() - hoursBack);
 
+    // Build where clause
+    const where: Record<string, unknown> = {
+      createdAt: { gte: since },
+      deal: { organizationId },
+    };
+
+    // Exclude dismissed activities by default
+    if (excludeDismissed) {
+      where.status = { not: 'DISMISSED' };
+    }
+
     // Get activities for deals belonging to this organization
     const [activities, total] = await Promise.all([
       this.db.activity.findMany({
-        where: {
-          createdAt: { gte: since },
-          deal: { organizationId },
-        },
+        where,
         include: {
           user: {
             select: {
@@ -263,12 +276,7 @@ export class DashboardService {
         skip,
         take: pageSize,
       }),
-      this.db.activity.count({
-        where: {
-          createdAt: { gte: since },
-          deal: { organizationId },
-        },
-      }),
+      this.db.activity.count({ where }),
     ]);
 
     return {
@@ -277,6 +285,8 @@ export class DashboardService {
         type: a.type,
         description: a.description,
         metadata: a.metadata,
+        status: a.status,
+        statusChangedAt: a.statusChangedAt,
         createdAt: a.createdAt,
         user: a.user,
         deal: a.deal
@@ -294,6 +304,41 @@ export class DashboardService {
         hasMore: skip + activities.length < total,
       },
     };
+  }
+
+  /**
+   * Update activity status (mark as read or dismissed)
+   * Multi-tenancy: Validates activity belongs to organization via Deal
+   */
+  async updateActivityStatus(
+    organizationId: string,
+    input: UpdateActivityStatusInput
+  ): Promise<Activity> {
+    const { activityId, status } = input;
+
+    // Verify activity belongs to this organization (via Deal relation)
+    const activity = await this.db.activity.findFirst({
+      where: {
+        id: activityId,
+        deal: { organizationId },
+      },
+    });
+
+    if (!activity) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Activity not found or access denied',
+      });
+    }
+
+    // Update the activity status
+    return this.db.activity.update({
+      where: { id: activityId },
+      data: {
+        status,
+        statusChangedAt: new Date(),
+      },
+    });
   }
 
   /**
