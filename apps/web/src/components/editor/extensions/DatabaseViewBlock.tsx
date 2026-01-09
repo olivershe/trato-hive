@@ -6,8 +6,9 @@
  */
 import { Node, mergeAttributes } from "@tiptap/core";
 import { ReactNodeViewRenderer, NodeViewWrapper, NodeViewProps } from "@tiptap/react";
-import { useState, useCallback } from "react";
-import { Database, Table2, LayoutGrid, Plus, Link2, Loader2, MoreHorizontal, Trash2, Copy, Edit, Settings, X } from "lucide-react";
+import { useState, useCallback, useRef } from "react";
+import { Database, Table2, LayoutGrid, Plus, Link2, Loader2, Trash2, Copy, Edit, Settings, X, GripVertical } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { api } from "@/trpc/react";
 import {
   Sheet,
@@ -269,32 +270,32 @@ function DatabasePicker({ mode, onModeChange, onSelect }: DatabasePickerProps) {
   // Initial selection view
   if (mode === "select") {
     return (
-      <div className="rounded-lg border border-bone bg-alabaster p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <Database className="w-5 h-5 text-gold" />
-          <span className="font-medium text-charcoal">Add a Database</span>
+      <div className="rounded-lg border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-surface-dark p-3 shadow-sm">
+        <div className="flex items-center gap-2 mb-2.5">
+          <Database className="w-4 h-4 text-gold" />
+          <span className="font-medium text-sm text-charcoal dark:text-cultured-white">Add a Database</span>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-2">
           <button
             onClick={() => onModeChange("create")}
-            className="flex items-center gap-3 p-4 rounded-lg border border-bone bg-white hover:border-gold hover:bg-alabaster/50 transition-colors text-left"
+            className="flex items-center gap-2 p-2.5 rounded-md border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-deep-grey hover:border-gold/60 hover:bg-bone/50 dark:hover:bg-surface-dark hover:shadow-md transition-all duration-150 text-left group"
           >
-            <Plus className="w-5 h-5 text-gold" />
+            <Plus className="w-4 h-4 text-gold group-hover:scale-110 transition-transform" />
             <div>
-              <div className="font-medium text-charcoal">Create New</div>
-              <div className="text-sm text-charcoal/60">Start with a template</div>
+              <div className="font-medium text-xs text-charcoal dark:text-cultured-white">Create New</div>
+              <div className="text-[11px] text-charcoal/50 dark:text-cultured-white/50">Start with a template</div>
             </div>
           </button>
 
           <button
             onClick={() => onModeChange("link")}
-            className="flex items-center gap-3 p-4 rounded-lg border border-bone bg-white hover:border-gold hover:bg-alabaster/50 transition-colors text-left"
+            className="flex items-center gap-2 p-2.5 rounded-md border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-deep-grey hover:border-gold/60 hover:bg-bone/50 dark:hover:bg-surface-dark hover:shadow-md transition-all duration-150 text-left group"
           >
-            <Link2 className="w-5 h-5 text-gold" />
+            <Link2 className="w-4 h-4 text-gold group-hover:scale-110 transition-transform" />
             <div>
-              <div className="font-medium text-charcoal">Link Existing</div>
-              <div className="text-sm text-charcoal/60">Use an existing database</div>
+              <div className="font-medium text-xs text-charcoal dark:text-cultured-white">Link Existing</div>
+              <div className="text-[11px] text-charcoal/50 dark:text-cultured-white/50">Use an existing database</div>
             </div>
           </button>
         </div>
@@ -305,23 +306,23 @@ function DatabasePicker({ mode, onModeChange, onSelect }: DatabasePickerProps) {
   // Create new database view
   if (mode === "create") {
     return (
-      <div className="rounded-lg border border-bone bg-alabaster p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <Plus className="w-5 h-5 text-gold" />
-            <span className="font-medium text-charcoal">Create New Database</span>
+      <div className="rounded-lg border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-surface-dark p-3 shadow-sm">
+        <div className="flex items-center justify-between mb-2.5">
+          <div className="flex items-center gap-2">
+            <Plus className="w-4 h-4 text-gold" />
+            <span className="font-medium text-sm text-charcoal dark:text-cultured-white">Create New Database</span>
           </div>
           <button
             onClick={() => onModeChange("select")}
-            className="text-sm text-charcoal/60 hover:text-charcoal"
+            className="text-[11px] text-charcoal/50 dark:text-cultured-white/50 hover:text-charcoal dark:hover:text-cultured-white transition-colors"
           >
             Back
           </button>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-2.5">
           <div>
-            <label className="block text-sm font-medium text-charcoal mb-1">
+            <label className="block text-[11px] font-medium text-charcoal/70 dark:text-cultured-white/70 mb-1">
               Database Name
             </label>
             <input
@@ -329,27 +330,27 @@ function DatabasePicker({ mode, onModeChange, onSelect }: DatabasePickerProps) {
               value={newDbName}
               onChange={(e) => setNewDbName(e.target.value)}
               placeholder="e.g., Due Diligence Checklist"
-              className="w-full px-3 py-2 rounded-md border border-bone bg-white text-charcoal placeholder:text-charcoal/40 focus:border-gold focus:outline-none"
+              className="w-full px-2 py-1 text-xs rounded-md border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-deep-grey text-charcoal dark:text-cultured-white placeholder:text-charcoal/30 dark:placeholder:text-cultured-white/30 focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/20 transition-all"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-charcoal mb-2">
+            <label className="block text-[11px] font-medium text-charcoal/70 dark:text-cultured-white/70 mb-1">
               Choose a Template
             </label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-1">
               {templates.map((template) => (
                 <button
                   key={template.id}
                   onClick={() => setSelectedTemplate(template.id)}
-                  className={`p-3 rounded-md border text-left transition-colors ${
+                  className={`p-1.5 rounded-md border text-left transition-all duration-150 ${
                     selectedTemplate === template.id
-                      ? "border-gold bg-gold/10"
-                      : "border-bone bg-white hover:border-gold/50"
+                      ? "border-gold bg-gold/10 dark:bg-gold/20 shadow-sm"
+                      : "border-bone dark:border-charcoal/60 bg-alabaster dark:bg-deep-grey hover:border-gold/40 hover:shadow-sm"
                   }`}
                 >
-                  <div className="font-medium text-sm text-charcoal">{template.name}</div>
-                  <div className="text-xs text-charcoal/60">{template.description}</div>
+                  <div className="font-medium text-[11px] text-charcoal dark:text-cultured-white">{template.name}</div>
+                  <div className="text-[10px] text-charcoal/50 dark:text-cultured-white/50 truncate">{template.description}</div>
                 </button>
               ))}
             </div>
@@ -358,9 +359,9 @@ function DatabasePicker({ mode, onModeChange, onSelect }: DatabasePickerProps) {
           <button
             onClick={handleCreate}
             disabled={!newDbName.trim() || createMutation.isPending}
-            className="w-full px-4 py-2 rounded-md bg-gold text-white font-medium hover:bg-gold/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full px-2.5 py-1.5 text-xs rounded-md bg-gold text-white font-medium hover:bg-gold/90 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 transition-all duration-150"
           >
-            {createMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+            {createMutation.isPending && <Loader2 className="w-3 h-3 animate-spin" />}
             Create Database
           </button>
         </div>
@@ -370,48 +371,48 @@ function DatabasePicker({ mode, onModeChange, onSelect }: DatabasePickerProps) {
 
   // Link existing database view
   return (
-    <div className="rounded-lg border border-bone bg-alabaster p-6">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <Link2 className="w-5 h-5 text-gold" />
-          <span className="font-medium text-charcoal">Link Existing Database</span>
+    <div className="rounded-lg border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-surface-dark p-3 shadow-sm">
+      <div className="flex items-center justify-between mb-2.5">
+        <div className="flex items-center gap-2">
+          <Link2 className="w-4 h-4 text-gold" />
+          <span className="font-medium text-sm text-charcoal dark:text-cultured-white">Link Existing Database</span>
         </div>
         <button
           onClick={() => onModeChange("select")}
-          className="text-sm text-charcoal/60 hover:text-charcoal"
+          className="text-[11px] text-charcoal/50 dark:text-cultured-white/50 hover:text-charcoal dark:hover:text-cultured-white transition-colors"
         >
           Back
         </button>
       </div>
 
       {isLoadingDatabases ? (
-        <div className="flex items-center justify-center py-8">
-          <Loader2 className="w-6 h-6 animate-spin text-gold" />
+        <div className="flex items-center justify-center py-4">
+          <Loader2 className="w-4 h-4 animate-spin text-gold" />
         </div>
       ) : databases?.items.length === 0 ? (
-        <div className="text-center py-8 text-charcoal/60">
-          <Database className="w-8 h-8 mx-auto mb-2 opacity-50" />
-          <p>No databases found</p>
+        <div className="text-center py-4 text-charcoal/50 dark:text-cultured-white/50">
+          <Database className="w-5 h-5 mx-auto mb-1.5 opacity-40" />
+          <p className="text-xs">No databases found</p>
           <button
             onClick={() => onModeChange("create")}
-            className="mt-2 text-gold hover:underline"
+            className="mt-1.5 text-xs text-gold hover:underline"
           >
             Create your first database
           </button>
         </div>
       ) : (
-        <div className="space-y-2 max-h-60 overflow-y-auto">
+        <div className="space-y-1 max-h-40 overflow-y-auto">
           {databases?.items.map((db) => (
             <button
               key={db.id}
               onClick={() => onSelect(db.id)}
-              className="w-full p-3 rounded-md border border-bone bg-white hover:border-gold hover:bg-alabaster/50 transition-colors text-left"
+              className="w-full p-1.5 rounded-md border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-deep-grey hover:border-gold/60 hover:bg-bone/50 dark:hover:bg-surface-dark hover:shadow-md transition-all duration-150 text-left group"
             >
-              <div className="font-medium text-charcoal">{db.name}</div>
+              <div className="font-medium text-xs text-charcoal dark:text-cultured-white group-hover:text-gold transition-colors">{db.name}</div>
               {db.description && (
-                <div className="text-sm text-charcoal/60">{db.description}</div>
+                <div className="text-[10px] text-charcoal/50 dark:text-cultured-white/50 truncate">{db.description}</div>
               )}
-              <div className="text-xs text-charcoal/40 mt-1">
+              <div className="text-[10px] text-charcoal/30 dark:text-cultured-white/30 mt-0.5">
                 {db._count?.entries ?? 0} entries
               </div>
             </button>
@@ -471,9 +472,10 @@ function DatabaseView({
 
   if (isLoading) {
     return (
-      <div className="rounded-lg border border-bone bg-alabaster p-8">
-        <div className="flex items-center justify-center">
-          <Loader2 className="w-6 h-6 animate-spin text-gold" />
+      <div className="rounded-lg border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-surface-dark p-4 shadow-sm">
+        <div className="flex items-center justify-center gap-2">
+          <Loader2 className="w-4 h-4 animate-spin text-gold" />
+          <span className="text-[11px] text-charcoal/50 dark:text-cultured-white/50">Loading database...</span>
         </div>
       </div>
     );
@@ -481,12 +483,12 @@ function DatabaseView({
 
   if (error || !database) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-6">
-        <div className="text-red-600 font-medium">Failed to load database</div>
-        <div className="text-red-500 text-sm mt-1">{error?.message || "Database not found"}</div>
+      <div className="rounded-lg border border-red-200 dark:border-red-800/60 bg-red-50 dark:bg-red-900/10 p-3 shadow-sm">
+        <div className="text-red-600 dark:text-red-400 font-medium text-xs">Failed to load database</div>
+        <div className="text-red-500/80 dark:text-red-400/60 text-[11px] mt-0.5">{error?.message || "Database not found"}</div>
         <button
           onClick={onUnlink}
-          className="mt-3 text-sm text-red-600 hover:underline"
+          className="mt-1.5 text-[11px] text-red-600 dark:text-red-400 hover:underline transition-colors"
         >
           Unlink and try again
         </button>
@@ -495,45 +497,53 @@ function DatabaseView({
   }
 
   return (
-    <div className="rounded-lg border border-bone bg-white overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-bone bg-alabaster">
-        <div className="flex items-center gap-2">
-          <Database className="w-4 h-4 text-gold" />
-          <span className="font-medium text-charcoal">{database.name}</span>
+    <div className="rounded-lg border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-deep-grey overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200">
+      {/* Header with gold accent and subtle hexagon pattern */}
+      <div className="relative flex items-center justify-between px-2.5 py-1.5 border-b border-bone dark:border-charcoal/60 bg-alabaster dark:bg-surface-dark border-t-2 border-t-gold overflow-hidden">
+        {/* Subtle hexagon background pattern */}
+        <div
+          className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05] pointer-events-none"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='49' viewBox='0 0 28 49'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23D4AF37' fill-rule='nonzero'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+            backgroundSize: '14px 24px'
+          }}
+        />
+        <div className="relative flex items-center gap-1.5">
+          <Database className="w-3.5 h-3.5 text-gold" />
+          <span className="font-medium text-xs text-charcoal dark:text-cultured-white">{database.name}</span>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="relative flex items-center gap-1">
           {/* Import button */}
           <button
             onClick={() => setImportDialogOpen(true)}
-            className="flex items-center gap-1 px-2 py-1 text-xs text-charcoal/60 hover:text-charcoal hover:bg-bone rounded transition-colors"
+            className="flex items-center gap-1 px-1.5 py-0.5 text-[11px] text-charcoal/50 dark:text-cultured-white/50 hover:text-charcoal dark:hover:text-cultured-white hover:bg-bone/60 dark:hover:bg-surface-dark rounded transition-all duration-150"
             title="Import from CSV"
           >
-            <Plus className="w-3.5 h-3.5" />
+            <Plus className="w-3 h-3" />
             Import
           </button>
 
-          <div className="w-px h-4 bg-bone" />
+          <div className="w-px h-3 bg-bone dark:bg-charcoal/60" />
 
           {/* View switcher */}
           <button
             onClick={() => onViewTypeChange("table")}
-            className={`p-1.5 rounded ${
-              viewType === "table" ? "bg-gold/20 text-gold" : "text-charcoal/60 hover:bg-bone"
+            className={`p-1 rounded transition-all duration-150 ${
+              viewType === "table" ? "bg-gold/20 text-gold shadow-sm" : "text-charcoal/40 dark:text-cultured-white/40 hover:bg-bone/60 dark:hover:bg-surface-dark hover:text-charcoal dark:hover:text-cultured-white"
             }`}
             title="Table view"
           >
-            <Table2 className="w-4 h-4" />
+            <Table2 className="w-3 h-3" />
           </button>
           <button
             onClick={() => onViewTypeChange("kanban")}
-            className={`p-1.5 rounded ${
-              viewType === "kanban" ? "bg-gold/20 text-gold" : "text-charcoal/60 hover:bg-bone"
+            className={`p-1 rounded transition-all duration-150 ${
+              viewType === "kanban" ? "bg-gold/20 text-gold shadow-sm" : "text-charcoal/40 dark:text-cultured-white/40 hover:bg-bone/60 dark:hover:bg-surface-dark hover:text-charcoal dark:hover:text-cultured-white"
             }`}
             title="Kanban view"
           >
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <rect x="3" y="3" width="5" height="18" rx="1" />
               <rect x="10" y="3" width="5" height="12" rx="1" />
               <rect x="17" y="3" width="5" height="15" rx="1" />
@@ -541,12 +551,12 @@ function DatabaseView({
           </button>
           <button
             onClick={() => onViewTypeChange("gallery")}
-            className={`p-1.5 rounded ${
-              viewType === "gallery" ? "bg-gold/20 text-gold" : "text-charcoal/60 hover:bg-bone"
+            className={`p-1 rounded transition-all duration-150 ${
+              viewType === "gallery" ? "bg-gold/20 text-gold shadow-sm" : "text-charcoal/40 dark:text-cultured-white/40 hover:bg-bone/60 dark:hover:bg-surface-dark hover:text-charcoal dark:hover:text-cultured-white"
             }`}
             title="Gallery view"
           >
-            <LayoutGrid className="w-4 h-4" />
+            <LayoutGrid className="w-3 h-3" />
           </button>
         </div>
       </div>
@@ -606,6 +616,18 @@ function DatabaseTableView({ database, sortBy, hiddenColumns, onSortChange }: Da
   const [configColumn, setConfigColumn] = useState<DatabaseColumn | null>(null);
   const [configPosition, setConfigPosition] = useState<{ x: number; y: number } | null>(null);
 
+  // Column resize state
+  const [columnWidths, setColumnWidths] = useState<Record<string, number>>(() => {
+    const widths: Record<string, number> = {};
+    columns.forEach((col) => {
+      widths[col.id] = col.width || 150;
+    });
+    return widths;
+  });
+  const [resizingColumn, setResizingColumn] = useState<string | null>(null);
+  const resizeStartX = useRef<number>(0);
+  const resizeStartWidth = useRef<number>(0);
+
   const handleOpenNewForm = () => {
     setEditingEntry(null);
     setEntryFormOpen(true);
@@ -637,25 +659,58 @@ function DatabaseTableView({ database, sortBy, hiddenColumns, onSortChange }: Da
     }
   };
 
+  // Column resize handlers
+  const handleResizeStart = (e: React.MouseEvent, columnId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setResizingColumn(columnId);
+    resizeStartX.current = e.clientX;
+    resizeStartWidth.current = columnWidths[columnId] || 150;
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      const delta = moveEvent.clientX - resizeStartX.current;
+      const newWidth = Math.max(60, resizeStartWidth.current + delta);
+      setColumnWidths((prev) => ({ ...prev, [columnId]: newWidth }));
+    };
+
+    const handleMouseUp = () => {
+      setResizingColumn(null);
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  };
+
+  // Row animation variants
+  const rowVariants = {
+    initial: { opacity: 0, y: -8 },
+    animate: { opacity: 1, y: 0 },
+    exit: { opacity: 0, x: -20, transition: { duration: 0.15 } }
+  };
+
   return (
     <div className="overflow-x-auto">
-      <table className="w-full">
+      <table className="w-full border-collapse" role="grid">
         <thead>
-          <tr className="border-b border-bone bg-alabaster/50">
+          <tr className="border-b border-bone dark:border-charcoal/60 bg-bone/30 dark:bg-surface-dark/30">
             {/* Row actions column */}
-            <th className="w-10 px-1" />
-            {columns.map((col) => (
+            <th className="w-7 px-0.5" role="columnheader" />
+            {columns.map((col, index) => (
               <th
                 key={col.id}
-                className="px-3 py-2 text-left text-sm font-medium text-charcoal/80 cursor-pointer hover:bg-bone/50 group"
-                style={{ width: col.width || 150 }}
+                role="columnheader"
+                aria-sort={sortBy?.columnId === col.id ? (sortBy.direction === "asc" ? "ascending" : "descending") : undefined}
+                className="relative px-1.5 py-1 text-left text-[11px] font-medium text-charcoal/60 dark:text-cultured-white/60 cursor-pointer hover:bg-bone/40 dark:hover:bg-surface-dark/50 select-none group"
+                style={{ width: columnWidths[col.id] || 150, minWidth: 60 }}
                 onClick={(e) => handleColumnHeaderClick(e, col)}
                 onContextMenu={(e) => handleColumnHeaderClick(e, col)}
               >
-                <div className="flex items-center gap-1">
-                  <span className="flex-1">{col.name}</span>
+                <div className="flex items-center gap-0.5">
+                  <span className="flex-1 truncate uppercase tracking-wide">{col.name}</span>
                   {sortBy?.columnId === col.id && (
-                    <span className="text-gold">
+                    <span className="text-gold text-[10px] font-bold">
                       {sortBy.direction === "asc" ? "↑" : "↓"}
                     </span>
                   )}
@@ -666,57 +721,94 @@ function DatabaseTableView({ database, sortBy, hiddenColumns, onSortChange }: Da
                       setConfigColumn(col);
                       setConfigPosition({ x: rect.left, y: rect.bottom + 4 });
                     }}
-                    className="opacity-0 group-hover:opacity-100 p-0.5 hover:bg-bone rounded transition-opacity"
+                    className="opacity-0 group-hover:opacity-100 p-0.5 hover:bg-bone dark:hover:bg-surface-dark rounded transition-opacity"
+                    aria-label={`Configure ${col.name} column`}
                   >
-                    <Settings className="w-3 h-3 text-charcoal/50" />
+                    <Settings className="w-2.5 h-2.5 text-charcoal/40 dark:text-cultured-white/40" />
                   </button>
                 </div>
+                {/* Column resize handle */}
+                {index < columns.length && (
+                  <div
+                    className={`absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-gold/40 transition-colors ${
+                      resizingColumn === col.id ? 'bg-gold/60' : ''
+                    }`}
+                    onMouseDown={(e) => handleResizeStart(e, col.id)}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                )}
               </th>
             ))}
           </tr>
         </thead>
         <tbody>
-          {entries.length === 0 ? (
-            <tr>
-              <td colSpan={columns.length + 1} className="px-3 py-8 text-center text-charcoal/50">
-                No entries yet
-              </td>
-            </tr>
-          ) : (
-            entries.map((entry) => (
-              <tr key={entry.id} className="border-b border-bone/50 hover:bg-alabaster/30 group relative">
-                {/* Row actions */}
-                <td className="px-1 relative">
-                  <RowActionsMenu
-                    entry={entry}
-                    database={database}
-                    onEdit={() => handleEditEntry(entry)}
-                  />
+          <AnimatePresence mode="popLayout">
+            {entries.length === 0 ? (
+              <motion.tr
+                key="empty"
+                role="row"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <td colSpan={columns.length + 1} className="px-2 py-4 text-center text-xs text-charcoal/40 dark:text-cultured-white/40">
+                  No entries yet
                 </td>
-                {columns.map((col) => (
-                  <td key={col.id} className="px-3 py-2">
-                    <CellRenderer
-                      column={col}
-                      value={entry.properties[col.id]}
-                      entryId={entry.id}
-                      databaseId={database.id}
+              </motion.tr>
+            ) : (
+              entries.map((entry) => (
+                <motion.tr
+                  key={entry.id}
+                  role="row"
+                  layout
+                  variants={rowVariants}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                  transition={{ duration: 0.2, ease: "easeOut" }}
+                  className="border-b border-bone/40 dark:border-charcoal/40 hover:bg-bone/20 dark:hover:bg-surface-dark/40 group relative transition-colors duration-100"
+                >
+                  {/* Row actions */}
+                  <td className="px-0.5 relative" role="gridcell">
+                    <RowActionsMenu
+                      entry={entry}
+                      database={database}
+                      onEdit={() => handleEditEntry(entry)}
                     />
                   </td>
-                ))}
-              </tr>
-            ))
-          )}
+                  {columns.map((col) => (
+                    <td
+                      key={col.id}
+                      className="px-1.5 py-0.5"
+                      role="gridcell"
+                      style={{ width: columnWidths[col.id] || 150 }}
+                    >
+                      <CellRenderer
+                        column={col}
+                        value={entry.properties[col.id]}
+                        entryId={entry.id}
+                        databaseId={database.id}
+                      />
+                    </td>
+                  ))}
+                </motion.tr>
+              ))
+            )}
+          </AnimatePresence>
         </tbody>
       </table>
 
       {/* Add row button */}
-      <button
+      <motion.button
         onClick={handleOpenNewForm}
-        className="w-full px-3 py-2 text-left text-sm text-charcoal/50 hover:bg-alabaster/50 hover:text-charcoal flex items-center gap-2"
+        whileHover={{ backgroundColor: 'rgba(226, 217, 203, 0.3)' }}
+        whileTap={{ scale: 0.99 }}
+        className="w-full px-2 py-1 text-left text-[11px] text-charcoal/40 dark:text-cultured-white/40 hover:text-charcoal dark:hover:text-cultured-white flex items-center gap-1 transition-colors"
+        aria-label="Add new entry"
       >
-        <Plus className="w-4 h-4" />
+        <Plus className="w-3 h-3" />
         New
-      </button>
+      </motion.button>
 
       {/* Entry form sheet */}
       <EntryFormSheet
@@ -797,29 +889,33 @@ function CellRenderer({ column, value, entryId, databaseId }: CellRendererProps)
     }
   };
 
-  // Checkbox type
+  // Checkbox type - Notion-style compact checkbox
   if (column.type === "CHECKBOX") {
     return (
-      <input
-        type="checkbox"
-        checked={Boolean(value)}
-        onChange={(e) => {
-          updateCellMutation.mutate({
-            entryId,
-            columnId: column.id,
-            value: e.target.checked,
-          });
-        }}
-        className="w-4 h-4 rounded border-bone text-gold focus:ring-gold"
-      />
+      <div className="flex items-center justify-center h-5">
+        <input
+          type="checkbox"
+          checked={Boolean(value)}
+          onChange={(e) => {
+            updateCellMutation.mutate({
+              entryId,
+              columnId: column.id,
+              value: e.target.checked,
+            });
+          }}
+          className="w-3.5 h-3.5 rounded border-bone dark:border-charcoal/60 text-gold focus:ring-gold/30 focus:ring-1 focus:ring-offset-0 cursor-pointer transition-colors"
+          aria-label={column.name}
+        />
+      </div>
     );
   }
 
-  // Select type
+  // Select type - Notion-style pill/tag
   if (column.type === "SELECT" && column.options) {
+    const currentValue = String(value ?? "");
     return (
       <select
-        value={String(value ?? "")}
+        value={currentValue}
         onChange={(e) => {
           updateCellMutation.mutate({
             entryId,
@@ -827,7 +923,10 @@ function CellRenderer({ column, value, entryId, databaseId }: CellRendererProps)
             value: e.target.value || null,
           });
         }}
-        className="w-full px-2 py-1 text-sm rounded border-0 bg-transparent text-charcoal focus:ring-1 focus:ring-gold"
+        className={`w-full px-1.5 py-0.5 text-[11px] rounded-sm border-0 bg-transparent text-charcoal dark:text-cultured-white focus:ring-1 focus:ring-gold/30 cursor-pointer hover:bg-bone/30 dark:hover:bg-surface-dark/50 transition-colors ${
+          currentValue ? 'font-medium' : 'text-charcoal/30 dark:text-cultured-white/30'
+        }`}
+        aria-label={column.name}
       >
         <option value="">-</option>
         {column.options.map((opt) => (
@@ -839,21 +938,21 @@ function CellRenderer({ column, value, entryId, databaseId }: CellRendererProps)
     );
   }
 
-  // URL type
+  // URL type - Notion-style link
   if (column.type === "URL" && value) {
     return (
       <a
         href={String(value)}
         target="_blank"
         rel="noopener noreferrer"
-        className="text-gold hover:underline text-sm"
+        className="text-[11px] text-gold hover:text-gold/80 hover:underline truncate block px-0.5 py-0.5 transition-colors"
       >
         {String(value)}
       </a>
     );
   }
 
-  // Editable text/number/date
+  // Editable text/number/date - Notion-style inline edit
   if (isEditing) {
     return (
       <input
@@ -863,20 +962,35 @@ function CellRenderer({ column, value, entryId, databaseId }: CellRendererProps)
         onBlur={handleSave}
         onKeyDown={handleKeyDown}
         autoFocus
-        className="w-full px-2 py-1 text-sm rounded border border-gold bg-white text-charcoal focus:outline-none"
+        className="w-full px-1 py-0.5 text-[11px] rounded-sm border border-gold/60 bg-alabaster dark:bg-deep-grey text-charcoal dark:text-cultured-white focus:outline-none focus:ring-1 focus:ring-gold/30 focus:border-gold transition-all"
+        aria-label={`Edit ${column.name}`}
       />
     );
   }
 
+  // Display mode - Notion-style cell
   return (
     <div
       onClick={() => {
         setIsEditing(true);
         setEditValue(String(value ?? ""));
       }}
-      className="min-h-[24px] px-2 py-1 text-sm text-charcoal cursor-text hover:bg-alabaster/50 rounded"
+      className="min-h-[22px] px-0.5 py-0.5 text-[11px] text-charcoal dark:text-cultured-white cursor-text hover:bg-bone/30 dark:hover:bg-surface-dark/50 rounded-sm transition-colors flex items-center"
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          setIsEditing(true);
+          setEditValue(String(value ?? ""));
+        }
+      }}
+      aria-label={`${column.name}: ${value ?? "empty"}`}
     >
-      {value != null ? String(value) : <span className="text-charcoal/30">-</span>}
+      {value != null && value !== "" ? (
+        <span className="truncate">{String(value)}</span>
+      ) : (
+        <span className="text-charcoal/20 dark:text-cultured-white/20">-</span>
+      )}
     </div>
   );
 }
@@ -918,9 +1032,9 @@ function DatabaseKanbanView({ database, groupBy, onGroupByChange }: DatabaseKanb
 
   if (selectColumns.length === 0) {
     return (
-      <div className="p-8 text-center text-charcoal/50">
-        <p>Kanban view requires a SELECT column.</p>
-        <p className="text-sm mt-1">Add a SELECT column to enable this view.</p>
+      <div className="p-4 text-center text-charcoal/40 dark:text-cultured-white/40">
+        <p className="text-xs">Kanban view requires a SELECT column.</p>
+        <p className="text-[10px] mt-0.5 text-charcoal/30 dark:text-cultured-white/30">Add a SELECT column to enable this view.</p>
       </div>
     );
   }
@@ -929,15 +1043,15 @@ function DatabaseKanbanView({ database, groupBy, onGroupByChange }: DatabaseKanb
   const titleColumn = database.schema.columns.find((col) => col.type === "TEXT");
 
   return (
-    <div className="p-4">
+    <div className="p-2">
       {/* Group selector */}
       {selectColumns.length > 1 && (
-        <div className="mb-4 flex items-center gap-2">
-          <span className="text-sm text-charcoal/60">Group by:</span>
+        <div className="mb-2 flex items-center gap-1.5">
+          <span className="text-[10px] text-charcoal/50 dark:text-cultured-white/50 uppercase tracking-wide">Group by:</span>
           <select
             value={activeGroupBy || ""}
             onChange={(e) => onGroupByChange(e.target.value || null)}
-            className="text-sm px-2 py-1 rounded border border-bone bg-white text-charcoal"
+            className="text-[11px] px-1.5 py-0.5 rounded-sm border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-deep-grey text-charcoal dark:text-cultured-white focus:border-gold focus:ring-1 focus:ring-gold/20"
           >
             {selectColumns.map((col) => (
               <option key={col.id} value={col.id}>
@@ -949,37 +1063,49 @@ function DatabaseKanbanView({ database, groupBy, onGroupByChange }: DatabaseKanb
       )}
 
       {/* Kanban columns */}
-      <div className="flex gap-4 overflow-x-auto pb-4">
-        {[...groups, "Uncategorized"].map((group) => {
-          const entries = groupedEntries[group] || [];
-          if (group === "Uncategorized" && entries.length === 0) return null;
+      <div className="flex gap-2 overflow-x-auto pb-2">
+        <AnimatePresence>
+          {[...groups, "Uncategorized"].map((group) => {
+            const entries = groupedEntries[group] || [];
+            if (group === "Uncategorized" && entries.length === 0) return null;
 
-          return (
-            <div
-              key={group}
-              className="flex-shrink-0 w-64 bg-alabaster rounded-lg"
-            >
-              <div className="px-3 py-2 font-medium text-sm text-charcoal border-b border-bone">
-                {group}
-                <span className="ml-2 text-charcoal/50">{entries.length}</span>
-              </div>
-              <div className="p-2 space-y-2 min-h-[100px]">
-                {entries.map((entry) => (
-                  <div
-                    key={entry.id}
-                    className="p-3 bg-white rounded-md border border-bone shadow-sm hover:shadow-md transition-shadow"
-                  >
-                    <div className="font-medium text-sm text-charcoal">
-                      {titleColumn
-                        ? String(entry.properties[titleColumn.id] || "Untitled")
-                        : "Entry"}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          );
-        })}
+            return (
+              <motion.div
+                key={group}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="flex-shrink-0 w-48 bg-bone/30 dark:bg-surface-dark/50 rounded-md"
+              >
+                <div className="px-2 py-1 font-medium text-[10px] text-charcoal/60 dark:text-cultured-white/60 border-b border-bone/60 dark:border-charcoal/40 uppercase tracking-wide flex items-center justify-between">
+                  <span>{group}</span>
+                  <span className="text-charcoal/30 dark:text-cultured-white/30 font-normal">{entries.length}</span>
+                </div>
+                <div className="p-1 space-y-1 min-h-[60px]">
+                  <AnimatePresence>
+                    {entries.map((entry) => (
+                      <motion.div
+                        key={entry.id}
+                        layout
+                        initial={{ opacity: 0, y: -4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, x: -10 }}
+                        transition={{ duration: 0.15 }}
+                        className="p-1.5 bg-alabaster dark:bg-deep-grey rounded-sm border border-bone/60 dark:border-charcoal/40 shadow-sm hover:shadow-md hover:border-gold/30 transition-all duration-150 cursor-pointer group"
+                      >
+                        <div className="font-medium text-[11px] text-charcoal dark:text-cultured-white group-hover:text-gold transition-colors">
+                          {titleColumn
+                            ? String(entry.properties[titleColumn.id] || "Untitled")
+                            : "Entry"}
+                        </div>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                </div>
+              </motion.div>
+            );
+          })}
+        </AnimatePresence>
       </div>
     </div>
   );
@@ -999,37 +1125,44 @@ function DatabaseGalleryView({ database }: DatabaseGalleryViewProps) {
 
   if (entries.length === 0) {
     return (
-      <div className="p-8 text-center text-charcoal/50">
+      <div className="p-4 text-center text-xs text-charcoal/40 dark:text-cultured-white/40">
         No entries yet
       </div>
     );
   }
 
   return (
-    <div className="p-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-      {entries.map((entry) => (
-        <div
-          key={entry.id}
-          className="p-4 bg-alabaster rounded-lg border border-bone hover:border-gold/50 hover:shadow-md transition-all cursor-pointer"
-        >
-          <div className="font-medium text-charcoal mb-2">
-            {titleColumn
-              ? String(entry.properties[titleColumn.id] || "Untitled")
-              : "Entry"}
-          </div>
-          <div className="space-y-1">
-            {database.schema.columns.slice(1, 4).map((col) => {
-              const val = entry.properties[col.id];
-              if (val == null) return null;
-              return (
-                <div key={col.id} className="text-xs text-charcoal/60">
-                  <span className="font-medium">{col.name}:</span> {String(val)}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      ))}
+    <div className="p-2 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1.5">
+      <AnimatePresence>
+        {entries.map((entry) => (
+          <motion.div
+            key={entry.id}
+            layout
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            transition={{ duration: 0.15 }}
+            className="p-2 bg-bone/30 dark:bg-surface-dark/50 rounded-md border border-bone/60 dark:border-charcoal/40 hover:border-gold/40 hover:shadow-md hover:bg-bone/50 dark:hover:bg-surface-dark transition-all duration-150 cursor-pointer group"
+          >
+            <div className="font-medium text-[11px] text-charcoal dark:text-cultured-white mb-1 group-hover:text-gold transition-colors truncate">
+              {titleColumn
+                ? String(entry.properties[titleColumn.id] || "Untitled")
+                : "Entry"}
+            </div>
+            <div className="space-y-0.5">
+              {database.schema.columns.slice(1, 4).map((col) => {
+                const val = entry.properties[col.id];
+                if (val == null) return null;
+                return (
+                  <div key={col.id} className="text-[10px] text-charcoal/50 dark:text-cultured-white/50 truncate">
+                    <span className="font-medium text-charcoal/60 dark:text-cultured-white/60">{col.name}:</span> {String(val)}
+                  </div>
+                );
+              })}
+            </div>
+          </motion.div>
+        ))}
+      </AnimatePresence>
     </div>
   );
 }
@@ -1363,49 +1496,57 @@ function ColumnConfigPopover({ column, databaseId, onClose }: ColumnConfigPopove
 
   if (showDeleteConfirm) {
     return (
-      <div className="p-4 w-64 bg-white rounded-lg border border-bone shadow-lg">
-        <p className="text-sm text-charcoal mb-4">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="p-2.5 w-52 bg-alabaster dark:bg-deep-grey rounded-md border border-bone dark:border-charcoal/60 shadow-lg"
+      >
+        <p className="text-[11px] text-charcoal dark:text-cultured-white mb-2">
           Delete column "{column.name}"? This cannot be undone.
         </p>
-        <div className="flex gap-2 justify-end">
+        <div className="flex gap-1 justify-end">
           <button
             onClick={() => setShowDeleteConfirm(false)}
-            className="px-3 py-1.5 text-sm text-charcoal hover:bg-bone rounded"
+            className="px-1.5 py-0.5 text-[10px] text-charcoal dark:text-cultured-white hover:bg-bone dark:hover:bg-surface-dark rounded transition-colors"
           >
             Cancel
           </button>
           <button
             onClick={handleDelete}
             disabled={deleteColumnMutation.isPending}
-            className="px-3 py-1.5 text-sm text-white bg-red-500 hover:bg-red-600 rounded disabled:opacity-50"
+            className="px-1.5 py-0.5 text-[10px] text-white bg-red-500 hover:bg-red-600 rounded disabled:opacity-50 transition-colors"
           >
-            {deleteColumnMutation.isPending ? "Deleting..." : "Delete"}
+            {deleteColumnMutation.isPending ? "..." : "Delete"}
           </button>
         </div>
-      </div>
+      </motion.div>
     );
   }
 
   return (
-    <div className="p-4 w-72 bg-white rounded-lg border border-bone shadow-lg">
+    <motion.div
+      initial={{ opacity: 0, y: -4 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="p-2.5 w-56 bg-alabaster dark:bg-deep-grey rounded-md border border-bone dark:border-charcoal/60 shadow-lg"
+    >
       {/* Column Name */}
-      <div className="mb-4">
-        <label className="block text-xs font-medium text-charcoal/70 mb-1">Name</label>
+      <div className="mb-2">
+        <label className="block text-[10px] font-medium text-charcoal/60 dark:text-cultured-white/60 mb-0.5 uppercase tracking-wide">Name</label>
         <input
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-full px-2 py-1.5 text-sm rounded border border-bone focus:border-gold focus:ring-1 focus:ring-gold"
+          className="w-full px-1.5 py-0.5 text-[11px] rounded-sm border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-surface-dark text-charcoal dark:text-cultured-white focus:border-gold focus:ring-1 focus:ring-gold/20 transition-all"
         />
       </div>
 
       {/* Column Type */}
-      <div className="mb-4">
-        <label className="block text-xs font-medium text-charcoal/70 mb-1">Type</label>
+      <div className="mb-2">
+        <label className="block text-[10px] font-medium text-charcoal/60 dark:text-cultured-white/60 mb-0.5 uppercase tracking-wide">Type</label>
         <select
           value={type}
           onChange={(e) => setType(e.target.value)}
-          className="w-full px-2 py-1.5 text-sm rounded border border-bone focus:border-gold focus:ring-1 focus:ring-gold"
+          className="w-full px-1.5 py-0.5 text-[11px] rounded-sm border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-surface-dark text-charcoal dark:text-cultured-white focus:border-gold focus:ring-1 focus:ring-gold/20 transition-all"
         >
           {columnTypes.map((t) => (
             <option key={t.value} value={t.value}>{t.label}</option>
@@ -1415,30 +1556,30 @@ function ColumnConfigPopover({ column, databaseId, onClose }: ColumnConfigPopove
 
       {/* Options (for SELECT types) */}
       {(type === "SELECT" || type === "MULTI_SELECT") && (
-        <div className="mb-4">
-          <label className="block text-xs font-medium text-charcoal/70 mb-1">Options</label>
-          <div className="space-y-1 mb-2 max-h-32 overflow-y-auto">
+        <div className="mb-2">
+          <label className="block text-[10px] font-medium text-charcoal/60 dark:text-cultured-white/60 mb-0.5 uppercase tracking-wide">Options</label>
+          <div className="space-y-0.5 mb-1 max-h-20 overflow-y-auto">
             {options.map((opt) => (
-              <div key={opt} className="flex items-center justify-between px-2 py-1 bg-alabaster rounded text-sm">
-                <span>{opt}</span>
-                <button onClick={() => handleRemoveOption(opt)} className="text-charcoal/50 hover:text-red-500">
-                  <X className="w-3 h-3" />
+              <div key={opt} className="flex items-center justify-between px-1 py-0.5 bg-bone/40 dark:bg-surface-dark/60 rounded-sm text-[10px] text-charcoal dark:text-cultured-white">
+                <span className="truncate">{opt}</span>
+                <button onClick={() => handleRemoveOption(opt)} className="text-charcoal/40 dark:text-cultured-white/40 hover:text-red-500 transition-colors">
+                  <X className="w-2.5 h-2.5" />
                 </button>
               </div>
             ))}
           </div>
-          <div className="flex gap-1">
+          <div className="flex gap-0.5">
             <input
               type="text"
               value={newOption}
               onChange={(e) => setNewOption(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleAddOption()}
               placeholder="Add option..."
-              className="flex-1 px-2 py-1 text-sm rounded border border-bone focus:border-gold"
+              className="flex-1 px-1 py-0.5 text-[10px] rounded-sm border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-surface-dark text-charcoal dark:text-cultured-white placeholder:text-charcoal/30 dark:placeholder:text-cultured-white/30 focus:border-gold transition-all"
             />
             <button
               onClick={handleAddOption}
-              className="px-2 py-1 text-sm text-gold hover:bg-gold/10 rounded"
+              className="px-1.5 py-0.5 text-[10px] text-gold hover:bg-gold/10 rounded-sm transition-colors"
             >
               Add
             </button>
@@ -1447,30 +1588,30 @@ function ColumnConfigPopover({ column, databaseId, onClose }: ColumnConfigPopove
       )}
 
       {/* Actions */}
-      <div className="flex items-center justify-between pt-3 border-t border-bone">
+      <div className="flex items-center justify-between pt-1.5 border-t border-bone/60 dark:border-charcoal/40">
         <button
           onClick={() => setShowDeleteConfirm(true)}
-          className="text-sm text-red-500 hover:text-red-600"
+          className="text-[10px] text-red-500 hover:text-red-600 transition-colors"
         >
-          Delete column
+          Delete
         </button>
-        <div className="flex gap-2">
+        <div className="flex gap-1">
           <button
             onClick={onClose}
-            className="px-3 py-1.5 text-sm text-charcoal hover:bg-bone rounded"
+            className="px-1.5 py-0.5 text-[10px] text-charcoal dark:text-cultured-white hover:bg-bone dark:hover:bg-surface-dark rounded-sm transition-colors"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
             disabled={updateColumnMutation.isPending}
-            className="px-3 py-1.5 text-sm text-white bg-gold hover:bg-gold/90 rounded disabled:opacity-50"
+            className="px-1.5 py-0.5 text-[10px] text-white bg-gold hover:bg-gold/90 rounded-sm disabled:opacity-50 transition-colors"
           >
-            {updateColumnMutation.isPending ? "Saving..." : "Save"}
+            {updateColumnMutation.isPending ? "..." : "Save"}
           </button>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -1511,44 +1652,49 @@ function RowActionsMenu({ entry, database, onEdit }: RowActionsMenuProps) {
 
   if (showDeleteConfirm) {
     return (
-      <div className="absolute left-0 top-full mt-1 z-50 p-3 bg-white rounded-lg border border-bone shadow-lg">
-        <p className="text-sm text-charcoal mb-3">Delete this entry?</p>
-        <div className="flex gap-2">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        className="absolute left-0 top-full mt-0.5 z-50 p-2 bg-alabaster dark:bg-deep-grey rounded-md border border-bone dark:border-charcoal/60 shadow-lg"
+      >
+        <p className="text-[11px] text-charcoal dark:text-cultured-white mb-2">Delete this entry?</p>
+        <div className="flex gap-1.5">
           <button
             onClick={() => setShowDeleteConfirm(false)}
-            className="px-2 py-1 text-xs text-charcoal hover:bg-bone rounded"
+            className="px-1.5 py-0.5 text-[10px] text-charcoal dark:text-cultured-white hover:bg-bone dark:hover:bg-surface-dark rounded transition-colors"
           >
             Cancel
           </button>
           <button
             onClick={handleDelete}
             disabled={deleteMutation.isPending}
-            className="px-2 py-1 text-xs text-white bg-red-500 hover:bg-red-600 rounded disabled:opacity-50"
+            className="px-1.5 py-0.5 text-[10px] text-white bg-red-500 hover:bg-red-600 rounded disabled:opacity-50 transition-colors"
           >
             {deleteMutation.isPending ? "..." : "Delete"}
           </button>
         </div>
-      </div>
+      </motion.div>
     );
   }
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="p-1 rounded hover:bg-bone opacity-0 group-hover:opacity-100 transition-opacity">
-        <MoreHorizontal className="w-4 h-4 text-charcoal/50" />
+      <DropdownMenuTrigger className="p-0.5 rounded hover:bg-bone/60 dark:hover:bg-surface-dark/60 opacity-0 group-hover:opacity-100 transition-all duration-150 focus:opacity-100">
+        <GripVertical className="w-3 h-3 text-charcoal/30 dark:text-cultured-white/30" />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start">
-        <DropdownMenuItem onClick={onEdit}>
-          <Edit className="w-4 h-4 mr-2" />
+      <DropdownMenuContent align="start" className="min-w-[120px]">
+        <DropdownMenuItem onClick={onEdit} className="text-[11px] py-1">
+          <Edit className="w-3 h-3 mr-1.5" />
           Edit
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleDuplicate} disabled={duplicateMutation.isPending}>
-          <Copy className="w-4 h-4 mr-2" />
-          {duplicateMutation.isPending ? "Duplicating..." : "Duplicate"}
+        <DropdownMenuItem onClick={handleDuplicate} disabled={duplicateMutation.isPending} className="text-[11px] py-1">
+          <Copy className="w-3 h-3 mr-1.5" />
+          {duplicateMutation.isPending ? "..." : "Duplicate"}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => setShowDeleteConfirm(true)} destructive>
-          <Trash2 className="w-4 h-4 mr-2" />
+        <DropdownMenuItem onClick={() => setShowDeleteConfirm(true)} destructive className="text-[11px] py-1">
+          <Trash2 className="w-3 h-3 mr-1.5" />
           Delete
         </DropdownMenuItem>
       </DropdownMenuContent>
@@ -1571,20 +1717,11 @@ function BulkImportDialog({ database, open, onOpenChange }: BulkImportDialogProp
   const [headers, setHeaders] = useState<string[]>([]);
   const [columnMapping, setColumnMapping] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
+  const [isImporting, setIsImporting] = useState(false);
+  const [importProgress, setImportProgress] = useState(0);
 
   const utils = api.useUtils();
-  const bulkCreateMutation = api.database.bulkCreateEntries.useMutation({
-    onSuccess: (result) => {
-      utils.database.getById.invalidate({ id: database.id });
-      onOpenChange(false);
-      setCsvData([]);
-      setHeaders([]);
-      setColumnMapping({});
-    },
-    onError: (err) => {
-      setError(err.message);
-    },
-  });
+  const createEntryMutation = api.database.createEntry.useMutation();
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -1652,7 +1789,11 @@ function BulkImportDialog({ database, open, onOpenChange }: BulkImportDialogProp
     reader.readAsText(file);
   };
 
-  const handleImport = () => {
+  const handleImport = async () => {
+    setIsImporting(true);
+    setError(null);
+    setImportProgress(0);
+
     // Convert CSV data to database entry format
     const entries = csvData.map((row) => {
       const properties: Record<string, unknown> = {};
@@ -1678,10 +1819,28 @@ function BulkImportDialog({ database, open, onOpenChange }: BulkImportDialogProp
       return { properties };
     });
 
-    bulkCreateMutation.mutate({
-      databaseId: database.id,
-      entries,
-    });
+    // Create entries one by one with progress tracking
+    try {
+      for (let i = 0; i < entries.length; i++) {
+        await createEntryMutation.mutateAsync({
+          databaseId: database.id,
+          properties: entries[i].properties,
+        });
+        setImportProgress(Math.round(((i + 1) / entries.length) * 100));
+      }
+
+      // Success - refresh and close
+      utils.database.getById.invalidate({ id: database.id });
+      onOpenChange(false);
+      setCsvData([]);
+      setHeaders([]);
+      setColumnMapping({});
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to import entries");
+    } finally {
+      setIsImporting(false);
+      setImportProgress(0);
+    }
   };
 
   const mappedColumnCount = Object.values(columnMapping).filter(Boolean).length;
@@ -1813,10 +1972,10 @@ function BulkImportDialog({ database, open, onOpenChange }: BulkImportDialogProp
           {csvData.length > 0 && (
             <button
               onClick={handleImport}
-              disabled={bulkCreateMutation.isPending || mappedColumnCount === 0}
+              disabled={isImporting || mappedColumnCount === 0}
               className="px-4 py-2 text-sm font-medium text-white bg-gold hover:bg-gold/90 rounded-md transition-colors disabled:opacity-50"
             >
-              {bulkCreateMutation.isPending ? "Importing..." : `Import ${csvData.length} rows`}
+              {isImporting ? `Importing... ${importProgress}%` : `Import ${csvData.length} rows`}
             </button>
           )}
         </SheetFooter>
