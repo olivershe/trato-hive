@@ -21,6 +21,7 @@ import {
     Inbox,
     MessageSquare,
     FolderOpen,
+    Search,
 } from "lucide-react";
 import { CommandListRenderer } from "./CommandListRenderer";
 
@@ -139,6 +140,15 @@ export const suggestionItems = [
         icon: <FolderOpen size={18} className="text-gold" />,
         command: ({ editor, range }: any) => {
             editor.chain().focus().deleteRange(range).setVDRBlock({}).run();
+        },
+    },
+    {
+        title: "Search Companies",
+        description: "Search and discover companies to add to pipeline",
+        searchTerms: ["search", "discover", "company", "companies", "sourcing", "find", "prospect"],
+        icon: <Search size={18} className="text-gold" />,
+        command: ({ editor, range }: any) => {
+            editor.chain().focus().deleteRange(range).setSearchBlock({}).run();
         },
     },
     {

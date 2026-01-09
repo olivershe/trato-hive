@@ -497,16 +497,22 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
   - [x] generatorRouter with `exportPage` tRPC mutation
   - [x] Multi-tenancy enforcement via Page → Deal/Company → organizationId
 
-#### 10.5: features/discovery Integration
+#### 10.5: features/discovery Integration ✅ **COMPLETE**
 
 **Tasks:**
 
-- [ ] **[TASK-071] Sourcing Service** (4 hours)
-  - [ ] Backend search
+- [x] **[TASK-071] Sourcing Service** (4 hours) ✅ (January 9, 2026)
+  - [x] Discovery validators: companySearchInputSchema, companyListInputSchema, companyGetInputSchema
+  - [x] SourcingService: Company search with text filters (name, industry, description, sector, location)
+  - [x] sourcingRouter: 4 tRPC procedures (search, list, get, industries)
+  - [x] Multi-tenancy enforcement via organizationId
 
-- [ ] **[TASK-073] Discovery Template** (3 hours) 🆕
-  - [ ] `SearchBlock`: Natural language search input
-  - [ ] `ResultsBlock`: List of companies (addable to pipeline)
+- [x] **[TASK-073] Discovery Template** (3 hours) ✅ (January 9, 2026)
+  - [x] `SearchBlock`: Combined search input + results grid Tiptap extension
+  - [x] Industry filter dropdown, pagination support
+  - [x] Company cards with name, industry, location, employees, revenue, AI score
+  - [x] "Add to Pipeline" action opens Deal creation modal
+  - [x] Slash command `/search` for editor integration
 
 
 ---
@@ -530,35 +536,38 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
   - ✅ 9.2: packages/semantic-layer (3/3 core tasks) - January 5, 2026
   - ✅ 9.3: packages/data-plane (4/4 tasks) - January 5, 2026
   - ✅ 9.4: packages/agents (3/3 tasks) - January 5, 2026
-- Phase 10: Features - 🔄 87% (13/15 tasks, ~11 hours remaining) - Includes AI Suggestions, Inline Databases, VDR, Generator & Templates
+- Phase 10: Features - ✅ 100% (15/15 tasks, ~0 hours remaining) - All templates complete
 
 **Total Time:**
 
-- Completed: ~237 hours (Phases 1-8 + 9.1 + 9.2 + 9.3 + 9.4 + Phase 10 tasks)
-- Remaining: ~38 hours (Phases 9 remaining: TASK-038, TASK-022, Phase 10 remaining)
+- Completed: ~244 hours (Phases 1-8 + 9.1 + 9.2 + 9.3 + 9.4 + Phase 10 tasks)
+- Remaining: ~31 hours (Phases 9 remaining: TASK-038, TASK-022)
 - Total: ~275 hours
 
-**Overall Progress: 86% complete**
+**Overall Progress: 89% complete**
 
 ---
 
 ## 📍 Current Status & Next Actions
 
-**Current Phase:** Phase 10 - Features 🔄 IN PROGRESS
+**Current Phase:** Phase 10 - Features ✅ COMPLETE
 
 **Last Completed:**
-- ✅ [TASK-066] Generator Service (January 9, 2026)
-  - GeneratorService with PPTX and DOCX export
-  - Block-to-document mapping (headings, paragraphs, lists, citations)
-  - Citation preservation: Sources slide (PPTX) and footnotes (DOCX)
-  - generatorRouter with `exportPage` tRPC mutation
-  - Uses pptxgenjs and docx libraries
+- ✅ [TASK-071] Sourcing Service (January 9, 2026)
+  - SourcingService with company text search (name, industry, description, sector, location)
+  - sourcingRouter with 4 tRPC procedures (search, list, get, industries)
+  - Discovery validators in @trato-hive/shared
+- ✅ [TASK-073] Discovery Template (January 9, 2026)
+  - SearchBlock Tiptap extension with search input + results grid
+  - Company cards with "Add to Pipeline" action
+  - Deal creation modal for pipeline addition
+  - Slash command `/search` registered
 
-**Remaining Phase 9 Tasks:**
+**Remaining Tasks (Low Priority):**
 - [ ] [TASK-038] Knowledge Graph (Neo4j) - LOW PRIORITY
 - [ ] [TASK-022] Mobile Experience - LOW PRIORITY
 
-**Next Actions:**
+**Completed Phase 10 Tasks:**
 
 1. ~~[TASK-047] Deal Service Backend~~ ✅ DONE (Phase 8)
 2. ~~[TASK-048] Deal Template (Block Config)~~ ✅ DONE
@@ -567,8 +576,8 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 5. ~~[TASK-060] VDR Service~~ ✅ DONE
 6. ~~[TASK-063] Diligence Template~~ ✅ DONE
 7. ~~[TASK-066] Generator Service~~ ✅ DONE
-8. [TASK-071] Sourcing Service - Backend search for Discovery
-9. [TASK-073] Discovery Template - SearchBlock & ResultsBlock
+8. ~~[TASK-071] Sourcing Service~~ ✅ DONE
+9. ~~[TASK-073] Discovery Template~~ ✅ DONE
 
 **After Each Completed Task:**
 

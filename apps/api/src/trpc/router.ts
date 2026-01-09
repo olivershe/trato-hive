@@ -11,10 +11,10 @@
  * - diligence - AI Q&A with citations
  * - vdr - Virtual Data Room document management
  * - generator - Document export (PPTX/DOCX)
+ * - sourcing - Company search and discovery
  *
  * Future routers:
- * - companyRouter - Company management
- * - discoveryRouter - Company sourcing
+ * - companyRouter - Company CRUD operations
  *
  * @see apps/api/CLAUDE.md for router patterns
  */
@@ -26,6 +26,7 @@ import { dashboardRouter } from '../routers/dashboard';
 import { diligenceRouter } from '../routers/diligence';
 import { vdrRouter } from '../routers/vdr';
 import { generatorRouter } from '../routers/generator';
+import { sourcingRouter } from '../routers/sourcing';
 
 /**
  * Root application router
@@ -38,6 +39,7 @@ export const appRouter = router({
   diligence: diligenceRouter,
   vdr: vdrRouter,
   generator: generatorRouter,
+  sourcing: sourcingRouter,
 });
 
 /**
