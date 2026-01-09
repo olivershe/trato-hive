@@ -20,6 +20,7 @@ import { PipelineHealthBlock } from "./extensions/PipelineHealthBlock";
 import { InboxBlock } from "./extensions/InboxBlock";
 import { QueryBlock } from "./extensions/QueryBlock";
 import { VDRBlock } from "./extensions/VDRBlock";
+import { SearchBlock } from "./extensions/SearchBlock";
 import GlobalDragHandle from "tiptap-extension-global-drag-handle";
 import AutoJoiner from "tiptap-extension-auto-joiner";
 import Focus from "@tiptap/extension-focus";
@@ -150,6 +151,7 @@ export const defaultExtensions = [
     InboxBlock,
     QueryBlock,
     VDRBlock,
+    SearchBlock,
     GlobalDragHandle.configure({
         dragHandleWidth: 20, // Match CSS width
         scrollTreshold: 100, // Auto scroll speed/threshold
