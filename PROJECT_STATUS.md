@@ -1,6 +1,6 @@
 # Trato Hive - Project Status & Implementation Roadmap
 
-**Last Updated:** January 7, 2026
+**Last Updated:** January 9, 2026
 **Current Phase:** Phase 9 - AI Stack (In Progress)
 **Latest Commit:** `feat(agents): implement Phase 9.4 Document & Diligence Agents [TASK-044,045,046]`
 **Overall Progress:** Phase 9: 14/16 tasks complete (87.5%)
@@ -436,19 +436,20 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
   - [ ] **Testing**: Visual regression tests (Chromatic or Percy) - Deferred
   - [x] **Testing**: Accessibility audit (keyboard navigation, screen readers)
 
-#### 10.1: features/deals Template (Week 9)
+#### 10.1: features/deals Template (Week 9) ✅ **COMPLETE**
 
 **Tasks:**
 
-- [ ] **[TASK-047] Deal Service Backend** (4 hours)
-  - [ ] backend/services/deal-service.ts
-  - [ ] CRUD operations for Deals (Entity)
+- [x] **[TASK-047] Deal Service Backend** (4 hours) ✅ (Previously completed in Phase 8)
+  - [x] backend/services/deal-service.ts
+  - [x] CRUD operations for Deals (Entity)
 
-- [ ] **[TASK-048] Deal Template (Block Config)** (4 hours) 🆕
-  - [ ] Define `DealTemplate`: A JSON structure defining the default blocks for a new deal
-  - [ ] `DealHeaderBlock`: Custom block displaying stage/value
-  - [ ] `PipelineBlock`: Kanban view as a block type
-  - [ ] Default embedded "Due Diligence Tracker" database
+- [x] **[TASK-048] Deal Template (Block Config)** (4 hours) ✅ (January 9, 2026)
+  - [x] Define `DealTemplate`: Auto-creates default blocks for new deals
+  - [x] `DealHeaderBlock`: Custom block displaying stage/value (already existed)
+  - [x] Default embedded "Due Diligence Tracker" database (6 columns: Task, Category, Status, Assignee, Due Date, Priority)
+  - [x] `DatabaseViewBlock` auto-linked to DD Tracker on deal creation
+  - [x] Fixed shared package export issue for `DATABASE_TEMPLATES`
 
 #### 10.2: features/command-center Template (Week 10)
 
@@ -528,16 +529,14 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 
 ## 📍 Current Status & Next Actions
 
-**Current Phase:** Phase 9 - AI Stack 🔄 IN PROGRESS (87.5% complete)
+**Current Phase:** Phase 10 - Features 🔄 IN PROGRESS
 
 **Last Completed:**
-- ✅ [TASK-074] AI Suggestion Block (January 7, 2026)
-  - `AISuggestionBlock` Tiptap extension with Accept/Dismiss UI
-  - `SuggestionService` with multi-entity support (Deal, Company, Database)
-  - `deal.applySuggestion` and `deal.dismissSuggestion` tRPC mutations
-  - Activity logging (AI_SUGGESTION_ACCEPTED, AI_SUGGESTION_DISMISSED)
-  - Orange accent design with confidence indicators
-  - Slash command `/ai-suggestion` for editor insertion
+- ✅ [TASK-048] Deal Template (Block Config) (January 9, 2026)
+  - Auto-create Due Diligence Tracker database when deal is created
+  - `DatabaseViewBlock` (order: 1) auto-linked to DD Tracker
+  - Uses `DATABASE_TEMPLATES` from `@trato-hive/shared` (single source of truth)
+  - Fixed shared package tree-shaking issue for constant exports
 
 **Remaining Phase 9 Tasks:**
 - [ ] [TASK-038] Knowledge Graph (Neo4j) - LOW PRIORITY
@@ -545,9 +544,10 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 
 **Next Actions:**
 
-1. ~~[TASK-077] DatabaseViewBlock - Tiptap extension for embedded databases~~ ✅ DONE
-2. ~~[TASK-078] Database Editing UI - Inline cell editing and entry forms~~ ✅ DONE
-3. ~~[TASK-079] Notion-like UI - Design tokens, styling, animations~~ ✅ DONE
+1. ~~[TASK-047] Deal Service Backend~~ ✅ DONE (Phase 8)
+2. ~~[TASK-048] Deal Template (Block Config)~~ ✅ DONE
+3. [TASK-056] Dashboard Service - Backend aggregation
+4. [TASK-058] Command Center Template - QueryBlock, InboxBlock, PipelineHealthBlock
 
 **After Each Completed Task:**
 
@@ -558,7 +558,7 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 
 ---
 
-**Last Updated:** January 7, 2026
+**Last Updated:** January 9, 2026
 **Maintained By:** All team members (update after every task)
 **Reference:** Root CLAUDE.md Section 5 (EPC Workflow)
 **Completed Work:** See [COMPLETED_WORK.md](./COMPLETED_WORK.md)

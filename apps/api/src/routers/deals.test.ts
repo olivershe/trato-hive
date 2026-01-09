@@ -94,11 +94,13 @@ describe('Deals Router Integration', () => {
       const mockPage = { id: TEST_IDS.page, dealId: TEST_IDS.deal, title: 'New Deal' };
       const mockBlock = { id: TEST_IDS.block, pageId: TEST_IDS.page };
 
+      const mockDatabase = { id: 'clqddtracker12345678901234', name: 'New Deal - Due Diligence Tracker' };
       mockPrisma.$transaction.mockImplementation(async (fn) => {
         const tx = {
           deal: { create: vi.fn().mockResolvedValue(mockDeal) },
           page: { create: vi.fn().mockResolvedValue(mockPage) },
           block: { create: vi.fn().mockResolvedValue(mockBlock) },
+          database: { create: vi.fn().mockResolvedValue(mockDatabase) },
         };
         return fn(tx);
       });

@@ -4,3 +4,10 @@
  */
 
 export * from './types'
+
+// Explicit exports to ensure constants survive bundling
+export {
+  DATABASE_TEMPLATES,
+  DatabaseViewType,
+  DatabaseFilterOperator,
+} from './types/database'

@@ -142,6 +142,7 @@ describe('DealService', () => {
       const mockDeal = createMockDeal();
       const mockPage = { id: TEST_IDS.page, dealId: TEST_IDS.deal, title: 'Test Deal' };
       const mockBlock = { id: TEST_IDS.block, pageId: TEST_IDS.page };
+      const mockDatabase = { id: 'clqddtracker12345678901234', name: 'Test Deal - Due Diligence Tracker' };
 
       // Mock transaction
       mockPrisma.$transaction.mockImplementation(async (fn) => {
@@ -149,6 +150,7 @@ describe('DealService', () => {
           deal: { create: vi.fn().mockResolvedValue(mockDeal) },
           page: { create: vi.fn().mockResolvedValue(mockPage) },
           block: { create: vi.fn().mockResolvedValue(mockBlock) },
+          database: { create: vi.fn().mockResolvedValue(mockDatabase) },
         };
         return fn(tx);
       });
@@ -165,6 +167,72 @@ describe('DealService', () => {
       );
 
       expect(result.id).toBe(TEST_IDS.deal);
+    });
+
+    it('should create DD Tracker database and DatabaseViewBlock', async () => {
+      const mockDeal = createMockDeal({ name: 'Acme Acquisition' });
+      const mockPage = { id: TEST_IDS.page, dealId: TEST_IDS.deal, title: 'Acme Acquisition' };
+      const mockBlock = { id: TEST_IDS.block, pageId: TEST_IDS.page };
+      const mockDatabase = { id: 'clqddtracker12345678901234', name: 'Acme Acquisition - Due Diligence Tracker' };
+
+      const dealCreate = vi.fn().mockResolvedValue(mockDeal);
+      const pageCreate = vi.fn().mockResolvedValue(mockPage);
+      const blockCreate = vi.fn().mockResolvedValue(mockBlock);
+      const databaseCreate = vi.fn().mockResolvedValue(mockDatabase);
+
+      mockPrisma.$transaction.mockImplementation(async (fn) => {
+        const tx = {
+          deal: { create: dealCreate },
+          page: { create: pageCreate },
+          block: { create: blockCreate },
+          database: { create: databaseCreate },
+        };
+        return fn(tx);
+      });
+
+      await service.create(
+        {
+          name: 'Acme Acquisition',
+          type: 'ACQUISITION' as DealType,
+          stage: 'SOURCING' as DealStage,
+          currency: 'USD',
+        },
+        TEST_IDS.org,
+        TEST_IDS.user
+      );
+
+      // Verify database creation
+      expect(databaseCreate).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          name: 'Acme Acquisition - Due Diligence Tracker',
+          description: 'Track due diligence tasks for this deal',
+          organizationId: TEST_IDS.org,
+          createdById: TEST_IDS.user,
+        }),
+      });
+
+      // Verify two blocks created: DealHeaderBlock (order 0) and DatabaseViewBlock (order 1)
+      expect(blockCreate).toHaveBeenCalledTimes(2);
+
+      // First call: DealHeaderBlock
+      expect(blockCreate).toHaveBeenNthCalledWith(1, {
+        data: expect.objectContaining({
+          type: 'deal_header',
+          order: 0,
+        }),
+      });
+
+      // Second call: DatabaseViewBlock
+      expect(blockCreate).toHaveBeenNthCalledWith(2, {
+        data: expect.objectContaining({
+          type: 'databaseViewBlock',
+          order: 1,
+          properties: expect.objectContaining({
+            databaseId: mockDatabase.id,
+            viewType: 'table',
+          }),
+        }),
+      });
     });
   });
 

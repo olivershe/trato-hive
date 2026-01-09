@@ -6,7 +6,7 @@
  */
 import { TRPCError } from '@trpc/server';
 import type { PrismaClient, Deal, Prisma, DealStage, DealType } from '@trato-hive/db';
-import type { DealListInput, RouterCreateDealInput } from '@trato-hive/shared';
+import { DATABASE_TEMPLATES, type DealListInput, type RouterCreateDealInput } from '@trato-hive/shared';
 
 export interface DealListResult {
   items: Deal[];
@@ -205,6 +205,36 @@ export class DealService {
             stage: deal.stage,
             type: deal.type,
             value: deal.value,
+          },
+          createdBy: userId,
+        },
+      });
+
+      // 4. Create Due Diligence Tracker Database
+      const ddTemplate = DATABASE_TEMPLATES.find(t => t.id === 'dd-tracker')!;
+      const ddTrackerDb = await tx.database.create({
+        data: {
+          name: `${deal.name} - Due Diligence Tracker`,
+          description: 'Track due diligence tasks for this deal',
+          schema: ddTemplate.schema as unknown as Prisma.InputJsonValue,
+          organizationId,
+          createdById: userId,
+        },
+      });
+
+      // 5. Create DatabaseViewBlock linking to DD Tracker
+      await tx.block.create({
+        data: {
+          pageId: page.id,
+          type: 'databaseViewBlock',
+          order: 1,
+          properties: {
+            databaseId: ddTrackerDb.id,
+            viewType: 'table',
+            filters: [],
+            sortBy: null,
+            groupBy: null,
+            hiddenColumns: [],
           },
           createdBy: userId,
         },
