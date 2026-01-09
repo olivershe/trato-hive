@@ -9,10 +9,10 @@
  * - database - Inline database CRUD operations
  * - dashboard - Pipeline health and activity metrics
  * - diligence - AI Q&A with citations
+ * - vdr - Virtual Data Room document management
  *
  * Future routers:
  * - companyRouter - Company management
- * - documentRouter - Document handling
  * - discoveryRouter - Company sourcing
  *
  * @see apps/api/CLAUDE.md for router patterns
@@ -23,6 +23,7 @@ import { dealsRouter } from '../routers/deals';
 import { databasesRouter } from '../routers/databases';
 import { dashboardRouter } from '../routers/dashboard';
 import { diligenceRouter } from '../routers/diligence';
+import { vdrRouter } from '../routers/vdr';
 
 /**
  * Root application router
@@ -33,6 +34,7 @@ export const appRouter = router({
   database: databasesRouter,
   dashboard: dashboardRouter,
   diligence: diligenceRouter,
+  vdr: vdrRouter,
 });
 
 /**

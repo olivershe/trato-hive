@@ -469,17 +469,22 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
   - [x] `ActivityStatus` enum: ACTIVE, READ, DISMISSED (migration pending DB)
   - [x] Slash commands: `/ask`, `/pipeline`, `/inbox`
 
-#### 10.3: features/diligence Template (Week 11)
+#### 10.3: features/diligence Template (Week 11) ✅ **COMPLETE**
 
 **Tasks:**
 
-- [ ] **[TASK-060] VDR Service** (4 hours)
-  - [ ] Backend file processing
+- [x] **[TASK-060] VDR Service** (4 hours) ✅ (January 9, 2026)
+  - [x] VDR Validators: 9 Zod schemas for file/folder operations
+  - [x] VDRService: Document listing, folder tree, presigned URLs (upload/download)
+  - [x] vdrRouter: 10 tRPC procedures with organizationProtectedProcedure
+  - [x] Prisma: Added `folderPath` field to Document model with compound index
 
-- [ ] **[TASK-063] Diligence Template** (4 hours) 🆕
-  - [ ] `VDRBlock`: File explorer block
-  - [ ] `QABlock`: Chat interface block
-  - [ ] Default embedded "Document Review" database
+- [x] **[TASK-063] Diligence Template** (4 hours) ✅ (January 9, 2026)
+  - [x] `VDRBlock`: File tree explorer Tiptap extension with folder navigation
+  - [x] File upload/download via presigned S3 URLs
+  - [x] Slash command `/vdr` for Data Room insertion
+  - [x] `QABlock`: Uses existing QueryBlock (RAG-based Q&A from TASK-058)
+  - [x] "Document Review" database template with AI fields (linkedFacts, confidence, summary)
 
 #### 10.4: features/generator Integration (Week 11-12)
 
@@ -521,15 +526,15 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
   - ✅ 9.2: packages/semantic-layer (3/3 core tasks) - January 5, 2026
   - ✅ 9.3: packages/data-plane (4/4 tasks) - January 5, 2026
   - ✅ 9.4: packages/agents (3/3 tasks) - January 5, 2026
-- Phase 10: Features - 🔄 57% (4/7 core tasks, ~80 hours remaining) - Includes AI Suggestions, Inline Databases & Command Center
+- Phase 10: Features - 🔄 80% (12/15 tasks, ~16 hours remaining) - Includes AI Suggestions, Inline Databases, VDR & Templates
 
 **Total Time:**
 
-- Completed: ~224 hours (Phases 1-8 + 9.1 + 9.2 + 9.3 + 9.4)
-- Remaining: ~51 hours (Phases 9 remaining: TASK-038, TASK-022, Phase 10)
+- Completed: ~232 hours (Phases 1-8 + 9.1 + 9.2 + 9.3 + 9.4 + Phase 10 tasks)
+- Remaining: ~43 hours (Phases 9 remaining: TASK-038, TASK-022, Phase 10 remaining)
 - Total: ~275 hours
 
-**Overall Progress: 81% complete**
+**Overall Progress: 84% complete**
 
 ---
 
@@ -538,14 +543,13 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 **Current Phase:** Phase 10 - Features 🔄 IN PROGRESS
 
 **Last Completed:**
-- ✅ [TASK-058] Command Center Template (January 9, 2026)
-  - Created 3 new Tiptap blocks: QueryBlock, InboxBlock, PipelineHealthBlock
-  - QueryBlock: AI Q&A using DiligenceAgent with RAG and citations
-  - InboxBlock: Activity feed with dismiss/mark-read actions
-  - PipelineHealthBlock: Recharts bar chart with pipeline metrics
-  - Created `diligenceRouter` tRPC router for DiligenceAgent
-  - Added ActivityStatus enum (ACTIVE, READ, DISMISSED) to schema
-  - Slash commands: `/ask`, `/pipeline`, `/inbox`
+- ✅ [TASK-060] VDR Service & [TASK-063] Diligence Template (January 9, 2026)
+  - VDR backend: 10 tRPC procedures for document/folder management
+  - VDRService with presigned S3 URLs (upload/download)
+  - VDRBlock: File tree explorer Tiptap extension
+  - "Document Review" database template with AI fields
+  - Prisma schema: Added `folderPath` field to Document model
+  - Slash command `/vdr` (Data Room)
 
 **Remaining Phase 9 Tasks:**
 - [ ] [TASK-038] Knowledge Graph (Neo4j) - LOW PRIORITY
@@ -557,7 +561,9 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 2. ~~[TASK-048] Deal Template (Block Config)~~ ✅ DONE
 3. ~~[TASK-056] Dashboard Service~~ ✅ DONE
 4. ~~[TASK-058] Command Center Template~~ ✅ DONE
-5. [TASK-060] VDR Service - Backend file processing for Diligence Template
+5. ~~[TASK-060] VDR Service~~ ✅ DONE
+6. ~~[TASK-063] Diligence Template~~ ✅ DONE
+7. [TASK-066] Generator Service - Generate PPTX/DOCX from Page content
 
 **After Each Completed Task:**
 

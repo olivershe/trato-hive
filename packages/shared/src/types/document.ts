@@ -43,6 +43,7 @@ export interface Document {
   name: string
   type: DocumentTypeValue
   status: DocumentStatusValue
+  folderPath: string | null // VDR folder path e.g., "/Legal/Contracts"
   fileSize: number // bytes
   mimeType: string
   fileUrl: string // S3 URL

@@ -265,6 +265,9 @@ model Document {
   type           DocumentType   @default(OTHER)
   status         DocumentStatus @default(UPLOADING)
 
+  // VDR folder organization (virtual folders via path)
+  folderPath     String?        // e.g., "/Legal/Contracts"
+
   // File metadata
   fileSize       Int            // bytes
   mimeType       String
@@ -295,6 +298,7 @@ model Document {
   @@index([companyId])
   @@index([dealId])
   @@index([status])
+  @@index([organizationId, folderPath])
   @@map("documents")
 }
 

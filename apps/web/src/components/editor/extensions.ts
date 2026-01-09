@@ -19,6 +19,7 @@ import { DatabaseViewBlock } from "./extensions/DatabaseViewBlock";
 import { PipelineHealthBlock } from "./extensions/PipelineHealthBlock";
 import { InboxBlock } from "./extensions/InboxBlock";
 import { QueryBlock } from "./extensions/QueryBlock";
+import { VDRBlock } from "./extensions/VDRBlock";
 import GlobalDragHandle from "tiptap-extension-global-drag-handle";
 import AutoJoiner from "tiptap-extension-auto-joiner";
 import Focus from "@tiptap/extension-focus";
@@ -148,6 +149,7 @@ export const defaultExtensions = [
     PipelineHealthBlock,
     InboxBlock,
     QueryBlock,
+    VDRBlock,
     GlobalDragHandle.configure({
         dragHandleWidth: 20, // Match CSS width
         scrollTreshold: 100, // Auto scroll speed/threshold
