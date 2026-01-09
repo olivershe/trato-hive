@@ -19,3 +19,13 @@ export {
   type ApplySuggestionResult,
   type DismissSuggestionResult,
 } from './suggestion.service';
+export {
+  DashboardService,
+  type StageMetric,
+  type TypeMetric,
+  type PipelineHealthResult,
+  type ActivityFeedItem,
+  type RecentActivitiesResult,
+  type ActivitySummary,
+  type ActivitySummaryResult,
+} from './dashboard.service';

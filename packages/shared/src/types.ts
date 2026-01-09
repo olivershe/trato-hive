@@ -11,3 +11,9 @@ export {
   DatabaseViewType,
   DatabaseFilterOperator,
 } from './types/database'
+
+// Explicit exports for deal constants
+export { DealStage, DealType } from './types/deal'
+
+// Explicit exports for activity constants
+export { ActivityType } from './types/activity'
