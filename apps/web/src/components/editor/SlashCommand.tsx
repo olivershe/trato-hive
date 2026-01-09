@@ -20,6 +20,7 @@ import {
     BarChart3,
     Inbox,
     MessageSquare,
+    FolderOpen,
 } from "lucide-react";
 import { CommandListRenderer } from "./CommandListRenderer";
 
@@ -129,6 +130,15 @@ export const suggestionItems = [
         icon: <Inbox size={18} className="text-orange" />,
         command: ({ editor, range }: any) => {
             editor.chain().focus().deleteRange(range).setInboxBlock({}).run();
+        },
+    },
+    {
+        title: "Data Room",
+        description: "Virtual Data Room file explorer",
+        searchTerms: ["vdr", "dataroom", "files", "documents", "upload", "folder", "explorer"],
+        icon: <FolderOpen size={18} className="text-gold" />,
+        command: ({ editor, range }: any) => {
+            editor.chain().focus().deleteRange(range).setVDRBlock({}).run();
         },
     },
     {

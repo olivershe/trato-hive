@@ -195,6 +195,26 @@ export const DATABASE_TEMPLATES: DatabaseTemplate[] = [
       ],
     },
   },
+  {
+    id: 'document-review',
+    name: 'Document Review',
+    description: 'Track document review status with AI-extracted insights',
+    schema: {
+      columns: [
+        { id: 'document', name: 'Document', type: 'TEXT' },
+        { id: 'reviewer', name: 'Reviewer', type: 'PERSON' },
+        { id: 'status', name: 'Status', type: 'SELECT', options: ['Pending', 'In Review', 'Approved', 'Flagged', 'Rejected'] },
+        { id: 'reviewDate', name: 'Review Date', type: 'DATE' },
+        { id: 'findings', name: 'Findings', type: 'TEXT' },
+        { id: 'priority', name: 'Priority', type: 'SELECT', options: ['Low', 'Medium', 'High', 'Critical'] },
+        { id: 'category', name: 'Category', type: 'SELECT', options: ['Legal', 'Financial', 'Technical', 'Commercial', 'HR', 'Other'] },
+        // AI Fields - populated by EntityFactMapper
+        { id: 'linkedFacts', name: 'Linked Facts', type: 'TEXT' },
+        { id: 'confidenceScore', name: 'AI Confidence', type: 'NUMBER' },
+        { id: 'aiSummary', name: 'AI Summary', type: 'TEXT' },
+      ],
+    },
+  },
 ]
 
 // =============================================================================
