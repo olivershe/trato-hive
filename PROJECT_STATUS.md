@@ -428,7 +428,7 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
   - [x] Design tokens: Alabaster backgrounds, Gold accents, Bone borders
   - [x] Compact grid layout matching Notion table density
   - [x] Hover states with subtle shadow elevation
-  - [x] Column resize handles (drag-to-reorder deferred to future task)
+  - [x] Column resize handles and drag-to-reorder columns (dnd-kit)
   - [x] Dark mode support (Surface Dark, Cultured White text)
   - [x] Framer Motion animations for row add/delete/reorder
   - [x] "Intelligent Hive" polish: subtle hexagon patterns, premium feel
