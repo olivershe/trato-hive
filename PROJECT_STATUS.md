@@ -2,8 +2,8 @@
 
 **Last Updated:** January 9, 2026
 **Current Phase:** Phase 9 - AI Stack (In Progress)
-**Latest Commit:** `feat(agents): implement Phase 9.4 Document & Diligence Agents [TASK-044,045,046]`
-**Overall Progress:** Phase 9: 14/16 tasks complete (87.5%)
+**Latest Commit:** `feat(semantic-layer): add KnowledgeGraphService with Neo4j integration [TASK-038]`
+**Overall Progress:** Phase 9: 15/16 tasks complete (93.75%)
 **Completed Work Archive:** See [COMPLETED_WORK.md](./COMPLETED_WORK.md) for Phases 1-5 & completed tasks
 
 ---
@@ -307,12 +307,18 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
   - [x] Database storage with Prisma integration
   - [x] Utility functions: formatFact, groupFactsByType, sortFactsByConfidence
 
-- [ ] **[TASK-038] Knowledge Graph (Neo4j)** (6 hours - LOW PRIORITY)
-  - Deferred for future implementation
+- [x] **[TASK-038] Knowledge Graph (Neo4j)** (6 hours) ✅ (January 9, 2026)
+  - [x] KnowledgeGraphService with Neo4j integration
+  - [x] Node upserts for Deal, Company, Document, Fact entities
+  - [x] Relationship creation (OWNS, HAS, CONTAINS, ABOUT, SOURCE_DOCUMENT)
+  - [x] Query methods: getCompanyFacts, getFactsByType, getRelatedCompanies
+  - [x] Traversal methods: findCompanyRisks, findKeyPersonsAcrossDeals, getFactChain
+  - [x] Auto-sync hook in FactExtractor.storeFacts()
+  - [x] 27 unit tests with mocked neo4j-driver
 
 - [x] **[TASK-039] Semantic Layer Testing** (3 hours) ✅
-  - [x] 66 unit tests (22 vector-store, 20 embeddings, 24 facts)
-  - [x] Mock Pinecone, OpenAI, and Prisma clients
+  - [x] 93 unit tests (22 vector-store, 20 embeddings, 24 facts, 27 knowledge-graph)
+  - [x] Mock Pinecone, OpenAI, Neo4j, and Prisma clients
   - [x] vitest configured with 70% coverage thresholds
 
 #### 9.3: packages/data-plane Implementation ✅ **COMPLETE** (January 5, 2026)
@@ -531,20 +537,20 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 - Phase 6: Foundation Packages - ✅ 100% (40 hours) - [Archive](./COMPLETED_WORK.md#phase-6-foundation-packages)
 - Phase 7: Frontend - ✅ 91% (10/11 tasks, ~50 hours) - TASK-022 (Mobile) remaining
 - Phase 8: Backend - ✅ 100% (17 hours) **COMPLETE January 3, 2026**
-- Phase 9: AI Stack - 🔄 87.5% (14/16 tasks, ~79 hours) **IN PROGRESS**
+- Phase 9: AI Stack - 🔄 93.75% (15/16 tasks, ~85 hours) **IN PROGRESS**
   - ✅ 9.1: packages/ai-core (4/4 core tasks) - January 5, 2026
-  - ✅ 9.2: packages/semantic-layer (3/3 core tasks) - January 5, 2026
+  - ✅ 9.2: packages/semantic-layer (4/4 tasks) - January 9, 2026 (TASK-038 complete!)
   - ✅ 9.3: packages/data-plane (4/4 tasks) - January 5, 2026
   - ✅ 9.4: packages/agents (3/3 tasks) - January 5, 2026
 - Phase 10: Features - ✅ 100% (15/15 tasks, ~0 hours remaining) - All templates complete
 
 **Total Time:**
 
-- Completed: ~244 hours (Phases 1-8 + 9.1 + 9.2 + 9.3 + 9.4 + Phase 10 tasks)
-- Remaining: ~31 hours (Phases 9 remaining: TASK-038, TASK-022)
+- Completed: ~250 hours (Phases 1-8 + 9.1 + 9.2 + 9.3 + 9.4 + Phase 10 tasks)
+- Remaining: ~25 hours (Remaining: TASK-022 Mobile)
 - Total: ~275 hours
 
-**Overall Progress: 89% complete**
+**Overall Progress: 91% complete**
 
 ---
 
@@ -553,6 +559,11 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 **Current Phase:** Phase 10 - Features ✅ COMPLETE
 
 **Last Completed:**
+- ✅ [TASK-038] Knowledge Graph (Neo4j) (January 9, 2026)
+  - KnowledgeGraphService with Neo4j integration in semantic-layer
+  - Node upserts, relationship operations, query and traversal methods
+  - Auto-sync hook in FactExtractor.storeFacts()
+  - 27 unit tests (93 total in semantic-layer)
 - ✅ [TASK-071] Sourcing Service (January 9, 2026)
   - SourcingService with company text search (name, industry, description, sector, location)
   - sourcingRouter with 4 tRPC procedures (search, list, get, industries)
@@ -564,7 +575,6 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
   - Slash command `/search` registered
 
 **Remaining Tasks (Low Priority):**
-- [ ] [TASK-038] Knowledge Graph (Neo4j) - LOW PRIORITY
 - [ ] [TASK-022] Mobile Experience - LOW PRIORITY
 
 **Completed Phase 10 Tasks:**
