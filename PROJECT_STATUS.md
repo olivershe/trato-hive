@@ -424,17 +424,17 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
   - [x] **Bulk import**: CSV upload → batch create entries
   - [x] Sheet & DropdownMenu components in @trato-hive/ui
 
-- [ ] **[TASK-079] Notion-like UI with Trato Hive Styling** (8 hours) 🆕
-  - [ ] Design tokens: Alabaster backgrounds, Gold accents, Bone borders
-  - [ ] Compact grid layout matching Notion table density
-  - [ ] Hover states with subtle shadow elevation
-  - [ ] Column resize handles and drag-to-reorder columns
-  - [ ] Dark mode support (Surface Dark, Cultured White text)
-  - [ ] Framer Motion animations for row add/delete/reorder
-  - [ ] "Intelligent Hive" polish: subtle hexagon patterns, premium feel
-  - [ ] **Testing**: Playwright E2E tests for database table interactions
-  - [ ] **Testing**: Visual regression tests (Chromatic or Percy)
-  - [ ] **Testing**: Accessibility audit (keyboard navigation, screen readers)
+- [x] **[TASK-079] Notion-like UI with Trato Hive Styling** (8 hours) ✅
+  - [x] Design tokens: Alabaster backgrounds, Gold accents, Bone borders
+  - [x] Compact grid layout matching Notion table density
+  - [x] Hover states with subtle shadow elevation
+  - [x] Column resize handles (drag-to-reorder deferred to future task)
+  - [x] Dark mode support (Surface Dark, Cultured White text)
+  - [x] Framer Motion animations for row add/delete/reorder
+  - [x] "Intelligent Hive" polish: subtle hexagon patterns, premium feel
+  - [x] **Testing**: Playwright E2E tests for database table interactions
+  - [ ] **Testing**: Visual regression tests (Chromatic or Percy) - Deferred
+  - [x] **Testing**: Accessibility audit (keyboard navigation, screen readers)
 
 #### 10.1: features/deals Template (Week 9)
 
@@ -547,7 +547,7 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 
 1. ~~[TASK-077] DatabaseViewBlock - Tiptap extension for embedded databases~~ ✅ DONE
 2. ~~[TASK-078] Database Editing UI - Inline cell editing and entry forms~~ ✅ DONE
-3. [TASK-079] Notion-like UI - Design tokens, styling, animations
+3. ~~[TASK-079] Notion-like UI - Design tokens, styling, animations~~ ✅ DONE
 
 **After Each Completed Task:**
 
