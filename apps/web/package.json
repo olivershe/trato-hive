@@ -48,6 +48,8 @@
     "@tiptap/starter-kit": "^3.14.0",
     "@tiptap/suggestion": "^3.14.0",
     "@trato-hive/api": "workspace:^",
+    "@trato-hive/auth": "workspace:*",
+    "@trato-hive/db": "workspace:*",
     "@trato-hive/shared": "workspace:*",
     "@trato-hive/ui": "workspace:*",
     "@trpc/client": "^11.0.0-rc.653",
@@ -79,6 +81,7 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.48.2",
+    "@tailwindcss/postcss": "^4.1.18",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.0.1",
     "@types/node": "^22.10.2",
