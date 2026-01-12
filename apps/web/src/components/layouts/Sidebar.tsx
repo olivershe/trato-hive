@@ -1,15 +1,36 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useParams } from "next/navigation";
 import {
   LayoutDashboard,
   Briefcase,
   Search,
-  ChevronLeft,
-  ChevronRight,
+  Plus,
+  Loader2,
+  PanelLeftClose,
+  PanelLeft,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useCallback } from "react";
+import { api } from "@/trpc/react";
+import { PageTreeNode, type PageTreeNodeData } from "../deals/PageTreeNode";
+import { useSidebar } from "./SidebarContext";
+import {
+  DndContext,
+  DragOverlay,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+  type DragStartEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 
 const navigation = [
   {
@@ -29,9 +50,42 @@ const navigation = [
   },
 ];
 
+/**
+ * Flatten tree to get all page IDs for SortableContext
+ */
+function flattenTree(nodes: PageTreeNodeData[]): string[] {
+  const ids: string[] = [];
+  for (const node of nodes) {
+    ids.push(node.id);
+    if (node.children?.length) {
+      ids.push(...flattenTree(node.children));
+    }
+  }
+  return ids;
+}
+
+/**
+ * Find a node by ID in the tree
+ */
+function findNode(nodes: PageTreeNodeData[], id: string): PageTreeNodeData | null {
+  for (const node of nodes) {
+    if (node.id === id) return node;
+    if (node.children?.length) {
+      const found = findNode(node.children, id);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
 export function Sidebar() {
   const pathname = usePathname();
-  const [collapsed, setCollapsed] = useState(false);
+  const params = useParams();
+  const { collapsed, setCollapsed } = useSidebar();
+
+  // Check if we're on a deal page
+  const dealId = params?.id as string | undefined;
+  const isOnDealPage = pathname.startsWith("/deals/") && dealId;
 
   const isActive = (href: string) => {
     if (href === "/") {
@@ -40,34 +94,71 @@ export function Sidebar() {
     return pathname.startsWith(href);
   };
 
-  return (
-    <aside
-      className={`
-        fixed left-0 top-0 z-40 h-screen
-        bg-alabaster border-r border-gold/20
-        transition-all duration-300 ease-in-out
-        ${collapsed ? "w-16" : "w-60"}
-      `}
-    >
-      {/* Logo */}
-      <div className="flex h-16 items-center justify-between px-4 border-b border-gold/20">
-        {!collapsed && (
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-orange rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">TH</span>
-            </div>
-            <span className="font-semibold text-charcoal">Trato Hive</span>
-          </Link>
-        )}
-        {collapsed && (
-          <div className="w-8 h-8 bg-orange rounded-lg flex items-center justify-center mx-auto">
-            <span className="text-white font-bold text-sm">TH</span>
+  if (collapsed) {
+    return (
+      <aside className="fixed left-0 top-0 z-40 h-screen w-12 bg-alabaster border-r border-gold/10 flex flex-col">
+        {/* Expand button */}
+        <button
+          onClick={() => setCollapsed(false)}
+          className="p-3 hover:bg-bone transition-colors"
+          title="Expand sidebar"
+        >
+          <PanelLeft className="w-5 h-5 text-charcoal/60" />
+        </button>
+
+        {/* Collapsed nav icons */}
+        <nav className="flex-1 py-2">
+          {navigation.map((item) => {
+            const Icon = item.icon;
+            const active = isActive(item.href);
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                className={`
+                  flex items-center justify-center p-3
+                  transition-colors duration-200
+                  ${active ? "text-orange" : "text-charcoal/60 hover:text-charcoal hover:bg-bone"}
+                `}
+                title={item.name}
+              >
+                <Icon className="w-5 h-5" />
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* User avatar */}
+        <div className="p-3 border-t border-gold/10">
+          <div className="w-6 h-6 bg-orange/20 rounded-full flex items-center justify-center mx-auto">
+            <span className="text-orange text-xs font-medium">D</span>
           </div>
-        )}
+        </div>
+      </aside>
+    );
+  }
+
+  return (
+    <aside className="fixed left-0 top-0 z-40 h-screen w-60 bg-alabaster border-r border-gold/10 flex flex-col">
+      {/* Header with workspace name */}
+      <div className="flex items-center justify-between px-3 py-2 border-b border-gold/10">
+        <Link href="/" className="flex items-center gap-2 hover:bg-bone rounded px-2 py-1.5 -ml-2 transition-colors">
+          <div className="w-6 h-6 bg-orange rounded flex items-center justify-center">
+            <span className="text-white font-bold text-xs">TH</span>
+          </div>
+          <span className="text-sm font-medium text-charcoal">Trato Hive</span>
+        </Link>
+        <button
+          onClick={() => setCollapsed(true)}
+          className="p-1.5 hover:bg-bone rounded transition-colors"
+          title="Collapse sidebar"
+        >
+          <PanelLeftClose className="w-4 h-4 text-charcoal/50" />
+        </button>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 px-2 py-4 space-y-1">
+      {/* Main Navigation */}
+      <nav className="px-2 py-2 space-y-0.5">
         {navigation.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.href);
@@ -77,69 +168,192 @@ export function Sidebar() {
               key={item.name}
               href={item.href}
               className={`
-                flex items-center gap-3 px-3 py-2.5 rounded-lg
-                transition-colors duration-200
+                flex items-center gap-2.5 px-2 py-1.5 rounded-md text-sm
+                transition-colors duration-150
                 ${
                   active
-                    ? "bg-orange/10 text-orange font-medium"
+                    ? "bg-orange/10 text-charcoal font-medium"
                     : "text-charcoal/70 hover:bg-bone hover:text-charcoal"
                 }
-                ${collapsed ? "justify-center" : ""}
               `}
-              title={collapsed ? item.name : undefined}
             >
-              <Icon className={`w-5 h-5 flex-shrink-0 ${active ? "text-orange" : ""}`} />
-              {!collapsed && <span>{item.name}</span>}
+              <Icon className={`w-4 h-4 flex-shrink-0 ${active ? "text-orange" : "text-charcoal/50"}`} />
+              <span>{item.name}</span>
             </Link>
           );
         })}
       </nav>
 
-      {/* Collapse toggle */}
-      <div className="absolute bottom-4 left-0 right-0 px-2">
+      {/* Deal Pages Section - shows when viewing a deal */}
+      {isOnDealPage && (
+        <DealPagesSection dealId={dealId} />
+      )}
+
+      {/* Spacer */}
+      <div className="flex-1" />
+
+      {/* User section */}
+      <div className="px-2 py-2 border-t border-gold/10">
+        <div className="flex items-center gap-2.5 px-2 py-1.5 rounded-md hover:bg-bone transition-colors cursor-pointer">
+          <div className="w-6 h-6 bg-orange/20 rounded-full flex items-center justify-center flex-shrink-0">
+            <span className="text-orange text-xs font-medium">D</span>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm text-charcoal truncate">Demo User</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+  );
+}
+
+/**
+ * Deal Pages Section - Shows page tree for current deal
+ */
+function DealPagesSection({ dealId }: { dealId: string }) {
+  const [isCreating, setIsCreating] = useState(false);
+  const [activeId, setActiveId] = useState<string | null>(null);
+
+  // DnD sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 8 },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  // Fetch deal info for title
+  const { data: dealData } = api.deal.get.useQuery(
+    { id: dealId },
+    { enabled: !!dealId }
+  );
+
+  // Fetch page tree
+  const { data: tree, isLoading, refetch } = api.page.getTree.useQuery(
+    { dealId },
+    { enabled: !!dealId }
+  );
+
+  // Create page mutation
+  const createPageMutation = api.page.create.useMutation({
+    onSuccess: () => {
+      refetch();
+      setIsCreating(false);
+    },
+  });
+
+  // Move page mutation
+  const movePageMutation = api.page.move.useMutation({
+    onSuccess: () => refetch(),
+  });
+
+  const handleCreatePage = async () => {
+    setIsCreating(true);
+    try {
+      const rootPage = tree?.[0];
+      await createPageMutation.mutateAsync({
+        dealId,
+        parentPageId: rootPage?.id,
+        title: "New Page",
+      });
+    } catch (error) {
+      console.error("Failed to create page:", error);
+      setIsCreating(false);
+    }
+  };
+
+  const handleDragStart = useCallback((event: DragStartEvent) => {
+    setActiveId(event.active.id as string);
+  }, []);
+
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
+    const { active, over } = event;
+    setActiveId(null);
+
+    if (!over || active.id === over.id) return;
+
+    const allIds = tree ? flattenTree(tree) : [];
+    const oldIndex = allIds.indexOf(active.id as string);
+    const newIndex = allIds.indexOf(over.id as string);
+
+    if (oldIndex !== -1 && newIndex !== -1) {
+      movePageMutation.mutate({
+        id: active.id as string,
+        order: newIndex,
+        parentPageId: null,
+      });
+    }
+  }, [tree, movePageMutation]);
+
+  const allPageIds = tree ? flattenTree(tree) : [];
+  const activeNode = activeId && tree ? findNode(tree, activeId) : null;
+
+  return (
+    <div className="border-t border-gold/10 mt-2">
+      {/* Section Header */}
+      <div className="flex items-center justify-between px-4 py-2">
+        <span className="text-xs font-medium text-charcoal/40 uppercase tracking-wider">
+          {dealData?.name || "Deal Pages"}
+        </span>
         <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="
-            w-full flex items-center justify-center gap-2 px-3 py-2
-            text-charcoal/50 hover:text-charcoal hover:bg-bone
-            rounded-lg transition-colors
-          "
+          onClick={handleCreatePage}
+          disabled={isCreating || createPageMutation.isPending}
+          className="p-1 hover:bg-bone rounded transition-colors disabled:opacity-50"
+          title="New page"
         >
-          {collapsed ? (
-            <ChevronRight className="w-5 h-5" />
+          {isCreating || createPageMutation.isPending ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin text-charcoal/40" />
           ) : (
-            <>
-              <ChevronLeft className="w-5 h-5" />
-              <span className="text-sm">Collapse</span>
-            </>
+            <Plus className="w-3.5 h-3.5 text-charcoal/40 hover:text-charcoal" />
           )}
         </button>
       </div>
 
-      {/* User section */}
-      <div
-        className={`
-          absolute bottom-16 left-0 right-0 px-2 py-3
-          border-t border-gold/20
-        `}
-      >
-        <div
-          className={`
-            flex items-center gap-3 px-3 py-2
-            ${collapsed ? "justify-center" : ""}
-          `}
-        >
-          <div className="w-8 h-8 bg-orange/20 rounded-full flex items-center justify-center">
-            <span className="text-orange text-sm font-medium">D</span>
+      {/* Page Tree */}
+      <div className="px-2 pb-2 max-h-[calc(100vh-300px)] overflow-y-auto">
+        {isLoading ? (
+          <div className="flex items-center justify-center py-4">
+            <Loader2 className="w-4 h-4 animate-spin text-orange" />
           </div>
-          {!collapsed && (
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-charcoal truncate">Demo User</p>
-              <p className="text-xs text-charcoal/50 truncate">demo@tratohive.com</p>
-            </div>
-          )}
-        </div>
+        ) : !tree?.length ? (
+          <div className="px-2 py-3 text-charcoal/40 text-xs">
+            No pages yet
+          </div>
+        ) : (
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={allPageIds}
+              strategy={verticalListSortingStrategy}
+            >
+              <div className="space-y-0.5">
+                {tree.map((node) => (
+                  <PageTreeNode
+                    key={node.id}
+                    node={node as PageTreeNodeData}
+                    onRefetch={refetch}
+                  />
+                ))}
+              </div>
+            </SortableContext>
+
+            <DragOverlay>
+              {activeNode && (
+                <div className="flex items-center gap-2 px-2 py-1 bg-white rounded shadow-lg border border-gold/20 text-sm">
+                  <span>{activeNode.icon || "📄"}</span>
+                  <span className="truncate">{activeNode.title || "Untitled"}</span>
+                </div>
+              )}
+            </DragOverlay>
+          </DndContext>
+        )}
       </div>
-    </aside>
+    </div>
   );
 }

@@ -158,9 +158,8 @@ export const defaultExtensions: any[] = [
     VDRBlock,
     SearchBlock,
     GlobalDragHandle.configure({
-        dragHandleWidth: 20, // Match CSS width
-        scrollTreshold: 100, // Auto scroll speed/threshold
-        // excludedTags: ['pre', 'code'], // Optional exclusions
+        dragHandleWidth: 24,
+        scrollTreshold: 100,
     }),
     AutoJoiner.configure({
         elementsToJoin: ["bulletList", "orderedList"], // Join lists when adjacent

@@ -1,58 +1,110 @@
-/* Global Drag Handle */
+/* Notion-like Global Drag Handle */
+
+/* The drag handle container - positioned to the left of blocks */
 .drag-handle {
-    width: 1.5rem;
-    height: 1.5rem;
+    position: fixed;
+    width: 24px;
+    height: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: theme('colors.charcoal');
+    border-radius: 4px;
     cursor: grab;
-    border-radius: 0.25rem;
     opacity: 0;
-    transition: opacity 0.2s, background-color 0.2s;
+    transition: opacity 0.15s ease, background-color 0.15s ease;
+    z-index: 50;
+}
+
+/* Show drag handle on hover */
+.drag-handle.show,
+.drag-handle:hover {
+    opacity: 1;
 }
 
 .drag-handle:hover {
-    background-color: theme('colors.gold / 20%');
+    background-color: rgba(0, 0, 0, 0.05);
 }
 
-.dark .drag-handle {
-    color: theme('colors.cultured-white');
+.drag-handle:active {
+    cursor: grabbing;
+    background-color: rgba(0, 0, 0, 0.08);
 }
 
+/* Dark mode */
 .dark .drag-handle:hover {
-    background-color: theme('colors.gold / 30%');
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
-.ProseMirror-focused .drag-handle {
-    /* Keep visible if needed, logic handled by extension usually */
+.dark .drag-handle:active {
+    background-color: rgba(255, 255, 255, 0.15);
 }
 
-/* Ensure container allows overflow for negative margin handles if used */
+/* Grip icon using SVG (6 dots pattern like Notion) */
+.drag-handle::before {
+    content: "";
+    width: 14px;
+    height: 14px;
+    background-color: rgba(55, 53, 47, 0.35);
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 16'%3E%3Ccircle cx='2' cy='2' r='1.5' fill='currentColor'/%3E%3Ccircle cx='8' cy='2' r='1.5' fill='currentColor'/%3E%3Ccircle cx='2' cy='8' r='1.5' fill='currentColor'/%3E%3Ccircle cx='8' cy='8' r='1.5' fill='currentColor'/%3E%3Ccircle cx='2' cy='14' r='1.5' fill='currentColor'/%3E%3Ccircle cx='8' cy='14' r='1.5' fill='currentColor'/%3E%3C/svg%3E");
+    mask-repeat: no-repeat;
+    mask-position: center;
+    mask-size: contain;
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 16'%3E%3Ccircle cx='2' cy='2' r='1.5' fill='currentColor'/%3E%3Ccircle cx='8' cy='2' r='1.5' fill='currentColor'/%3E%3Ccircle cx='2' cy='8' r='1.5' fill='currentColor'/%3E%3Ccircle cx='8' cy='8' r='1.5' fill='currentColor'/%3E%3Ccircle cx='2' cy='14' r='1.5' fill='currentColor'/%3E%3Ccircle cx='8' cy='14' r='1.5' fill='currentColor'/%3E%3C/svg%3E");
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    -webkit-mask-size: contain;
+}
+
+.dark .drag-handle::before {
+    background-color: rgba(255, 255, 255, 0.45);
+}
+
+/* Ensure ProseMirror container allows handle positioning */
 .ProseMirror {
     position: relative;
 }
 
-/* Notion-like handle position */
-.drag-handle::before {
-    content: "";
-    /* Grip Icon (6 dots) using CSS or similar, but extension usually inserts an element. 
-     We will check what the extension inserts. 
-     Usually it inserts a div with class drag-handle. 
-     We can set background-image to a grip icon or use SVG in the extension config?
-     The extension allows custom template?
-     If not, we style the div.
-  */
-    width: 16px;
-    height: 16px;
-    mask-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1" /><circle cx="9" cy="5" r="1" /><circle cx="9" cy="19" r="1" /><circle cx="15" cy="12" r="1" /><circle cx="15" cy="5" r="1" /><circle cx="15" cy="19" r="1" /></svg>');
-    mask-repeat: no-repeat;
-    mask-position: center;
-    background-color: currentColor;
+/* Add some left padding to content so handle has space */
+.ProseMirror > * {
+    position: relative;
 }
 
+/* When dragging, show visual feedback */
+.ProseMirror-selectednode {
+    outline: 2px solid #EE8D1D;
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+/* Drop indicator line */
+.ProseMirror .drop-cursor {
+    border-left: 2px solid #EE8D1D;
+}
+
+/* Hide on touch devices */
 @media (hover: none) {
     .drag-handle {
         display: none !important;
     }
+}
+
+/* Plus button that appears with drag handle (if extension supports it) */
+.drag-handle + .add-block-btn,
+.drag-handle-menu {
+    position: fixed;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    z-index: 50;
+}
+
+.drag-handle.show + .add-block-btn,
+.drag-handle:hover + .add-block-btn {
+    opacity: 1;
 }

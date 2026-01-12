@@ -110,6 +110,7 @@ export default function DealDetailPage() {
 
   return (
     <>
+    <div className="p-6">
       {/* Header */}
       <div className="mb-6">
         <Link
@@ -313,20 +314,24 @@ export default function DealDetailPage() {
         </div>
       )}
 
-      {activeTab === "notes" && (
-        <div className="bg-alabaster rounded-xl p-1 border border-gold/10 overflow-hidden">
-          {deal.page?.id ? (
-            <BlockEditor
-              pageId={deal.page.id}
-              className="w-full"
-            />
-          ) : (
-            <div className="p-5">
-              <p className="text-charcoal/50 italic">No page associated with this deal</p>
-            </div>
-          )}
-        </div>
-      )}
-    </>
+      {activeTab === "overview" && null}
+    </div>
+
+    {/* Editor Tab - Full Width (Outside padding container) */}
+    {activeTab === "notes" && (
+      <>
+        {deal.page?.id ? (
+          <BlockEditor
+            pageId={deal.page.id}
+            className="w-full"
+          />
+        ) : (
+          <div className="p-6">
+            <p className="text-charcoal/50 italic">No page associated with this deal</p>
+          </div>
+        )}
+      </>
+    )}
+  </>
   );
 }

@@ -12,24 +12,24 @@ const BlockEditor = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="flex items-center justify-center h-[400px] bg-alabaster rounded-xl border border-gold/10">
+      <div className="flex items-center justify-center h-[400px]">
         <Loader2 className="w-6 h-6 animate-spin text-orange" />
       </div>
     ),
   }
 );
 
-// Breadcrumb component
+// Breadcrumb component - Notion style (subtle, at very top)
 function Breadcrumbs({ pageId, dealId }: { pageId: string; dealId: string }) {
   const { data: breadcrumbs } = api.page.getBreadcrumbs.useQuery({ pageId });
 
   if (!breadcrumbs?.length) return null;
 
   return (
-    <nav className="flex items-center gap-1 text-sm text-charcoal/60 mb-4">
+    <nav className="flex items-center gap-1 text-xs text-charcoal/50 px-24 py-2">
       {breadcrumbs.map((crumb, index) => (
         <span key={crumb.id} className="flex items-center gap-1">
-          {index > 0 && <ChevronRight className="w-3.5 h-3.5" />}
+          {index > 0 && <ChevronRight className="w-3 h-3" />}
           <Link
             href={`/deals/${dealId}/pages/${crumb.id}`}
             className="hover:text-charcoal transition-colors"
@@ -42,30 +42,17 @@ function Breadcrumbs({ pageId, dealId }: { pageId: string; dealId: string }) {
   );
 }
 
-// Backlinks panel
+// Backlinks panel - collapsed by default like Notion
 function BacklinksPanel({ pageId }: { pageId: string }) {
-  const params = useParams();
-  const dealId = params.id as string;
   const { data: backlinks } = api.page.getBacklinks.useQuery({ pageId });
 
   if (!backlinks?.length) return null;
 
   return (
-    <div className="bg-alabaster/50 rounded-lg p-3 mb-4 border border-gold/10">
-      <div className="flex items-center gap-2 text-xs font-medium text-charcoal/50 uppercase tracking-wider mb-2">
-        <Link2 className="w-3.5 h-3.5" />
-        {backlinks.length} backlink{backlinks.length !== 1 ? "s" : ""}
-      </div>
-      <div className="space-y-1">
-        {backlinks.map((link) => (
-          <Link
-            key={`${link.sourcePageId}-${link.blockId}`}
-            href={`/deals/${dealId}/pages/${link.sourcePageId}`}
-            className="block text-sm text-charcoal/70 hover:text-orange transition-colors"
-          >
-            {link.sourcePageTitle || "Untitled"}
-          </Link>
-        ))}
+    <div className="px-24 mb-2">
+      <div className="inline-flex items-center gap-1.5 text-xs text-charcoal/40 hover:text-charcoal/60 cursor-pointer transition-colors">
+        <Link2 className="w-3 h-3" />
+        <span>{backlinks.length} backlink{backlinks.length !== 1 ? "s" : ""}</span>
       </div>
     </div>
   );
@@ -97,54 +84,48 @@ export default function PageView() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
-      {/* Breadcrumbs */}
+    <div className="min-h-screen">
+      {/* Breadcrumbs - subtle at top */}
       <Breadcrumbs pageId={pageId} dealId={dealId} />
 
-      {/* Backlinks */}
-      <BacklinksPanel pageId={pageId} />
-
-      {/* Page Header */}
-      <div className="mb-6">
+      {/* Page Header - Notion style */}
+      <div className="px-24 pt-8 pb-4">
         <div className="flex items-center gap-3">
-          {page.icon && <span className="text-4xl">{page.icon}</span>}
-          <h1 className="text-3xl font-bold text-charcoal">
+          {page.icon && <span className="text-5xl">{page.icon}</span>}
+          <h1 className="text-4xl font-bold text-charcoal">
             {page.title || "Untitled"}
           </h1>
         </div>
-        {page.coverImage && (
-          <div
-            className="mt-4 h-48 bg-cover bg-center rounded-xl"
-            style={{ backgroundImage: `url(${page.coverImage})` }}
-          />
-        )}
       </div>
+
+      {/* Backlinks - subtle indicator */}
+      <BacklinksPanel pageId={pageId} />
 
       {/* Database properties (if this is a database entry page) */}
       {page.databaseEntry && page.databaseEntry.database && (
-        <div className="mb-6 p-4 bg-alabaster rounded-xl border border-gold/10">
-          <p className="text-xs font-medium text-charcoal/50 uppercase tracking-wider mb-3">
-            Properties
-          </p>
-          <div className="grid grid-cols-2 gap-4">
-            {Object.entries(page.databaseEntry.properties as Record<string, unknown>).map(
-              ([key, value]) => (
-                <div key={key}>
-                  <p className="text-xs text-charcoal/50">{key}</p>
-                  <p className="text-sm text-charcoal">
-                    {String(value ?? "-")}
-                  </p>
-                </div>
-              )
-            )}
+        <div className="px-24 mb-4">
+          <div className="p-4 bg-alabaster/50 rounded-lg">
+            <p className="text-xs font-medium text-charcoal/50 uppercase tracking-wider mb-3">
+              Properties
+            </p>
+            <div className="grid grid-cols-2 gap-4">
+              {Object.entries(page.databaseEntry.properties as Record<string, unknown>).map(
+                ([key, value]) => (
+                  <div key={key}>
+                    <p className="text-xs text-charcoal/50">{key}</p>
+                    <p className="text-sm text-charcoal">
+                      {String(value ?? "-")}
+                    </p>
+                  </div>
+                )
+              )}
+            </div>
           </div>
         </div>
       )}
 
-      {/* Block Editor */}
-      <div className="bg-white rounded-xl border border-gold/10 p-6">
-        <BlockEditor pageId={pageId} />
-      </div>
+      {/* Block Editor - full width, no border */}
+      <BlockEditor pageId={pageId} />
     </div>
   );
 }

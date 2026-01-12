@@ -2,7 +2,6 @@
 
 import { useState, useCallback } from "react";
 import { useParams } from "next/navigation";
-import { PageTreeSidebar } from "@/components/deals/PageTreeSidebar";
 import { QuickSearch } from "@/components/deals/QuickSearch";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { api } from "@/trpc/react";
@@ -47,11 +46,8 @@ export default function DealLayout({
   });
 
   return (
-    <div className="flex h-full -m-6">
-      <PageTreeSidebar dealId={dealId} />
-      <main className="flex-1 overflow-auto p-6">
-        {children}
-      </main>
+    <>
+      {children}
 
       {/* Quick Search Modal */}
       <QuickSearch
@@ -59,6 +55,6 @@ export default function DealLayout({
         isOpen={showQuickSearch}
         onClose={() => setShowQuickSearch(false)}
       />
-    </div>
+    </>
   );
 }

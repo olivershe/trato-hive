@@ -1,4 +1,25 @@
+"use client";
+
 import { Sidebar } from "@/components/layouts/Sidebar";
+import { SidebarProvider, useSidebar } from "@/components/layouts/SidebarContext";
+
+function DashboardContent({ children }: { children: React.ReactNode }) {
+  const { collapsed } = useSidebar();
+
+  return (
+    <div className="min-h-screen bg-white">
+      <Sidebar />
+      <main
+        className={`
+          transition-all duration-300 ease-in-out min-h-screen
+          ${collapsed ? "pl-12" : "pl-60"}
+        `}
+      >
+        {children}
+      </main>
+    </div>
+  );
+}
 
 export default function DashboardLayout({
   children,
@@ -6,13 +27,8 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-bone">
-      <Sidebar />
-      <main className="pl-60 transition-all duration-300">
-        <div className="p-6 max-w-7xl mx-auto">
-          {children}
-        </div>
-      </main>
-    </div>
+    <SidebarProvider>
+      <DashboardContent>{children}</DashboardContent>
+    </SidebarProvider>
   );
 }

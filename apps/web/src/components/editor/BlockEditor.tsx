@@ -115,7 +115,7 @@ function BlockEditorInner({
     // Show loading state if not ready
     if (!doc || !provider || !userInfo) {
         return (
-            <div className="flex h-[500px] w-full items-center justify-center p-12 bg-white dark:bg-surface-dark rounded-xl border border-gold/10">
+            <div className="flex min-h-[calc(100vh-200px)] w-full items-center justify-center">
                 <div className="flex flex-col items-center gap-2">
                     <HexagonSpinner size={32} className="text-orange" />
                     <p className="text-xs text-charcoal/50">Connecting to Hive...</p>
@@ -125,11 +125,11 @@ function BlockEditorInner({
     }
 
     return (
-        <div className={`relative w-full max-w-screen-lg group ${className}`}>
+        <div className={`relative w-full ${className}`}>
             {/* Collaboration Header / Status */}
-            <div className="absolute -top-10 right-0 flex items-center gap-4">
+            <div className="fixed top-3 right-6 flex items-center gap-3 z-10">
                 {/* 1. Save Status (DB) */}
-                <div className="flex items-center space-x-2 text-xs font-medium text-charcoal/50 transition-opacity opacity-0 group-hover:opacity-100 duration-300">
+                <div className="flex items-center space-x-2 text-xs font-medium text-charcoal/50">
                     <StatusIcon status={status} />
                     <span>{status}</span>
                 </div>
@@ -144,7 +144,7 @@ function BlockEditorInner({
                     extensions={collabExtensions as any}
                     editorProps={{
                         attributes: {
-                            class: `prose prose-lg dark:prose-invert prose-headings:font-serif prose-headings:text-charcoal dark:prose-headings:text-cultured-white focus:outline-none max-w-full min-h-[500px] p-12 bg-white dark:bg-surface-dark border border-gold/10 rounded-xl shadow-sm transition-shadow duration-200 focus-within:shadow-md focus-within:border-gold/30`,
+                            class: `prose prose-lg dark:prose-invert prose-headings:font-serif prose-headings:text-charcoal dark:prose-headings:text-cultured-white focus:outline-none max-w-none min-h-[calc(100vh-200px)] px-24 py-2`,
                         },
                         handleDOMEvents: {
                             keydown: (_view, _event) => {
