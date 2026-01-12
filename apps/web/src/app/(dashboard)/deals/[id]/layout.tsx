@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { PageTreeSidebar } from "@/components/deals/PageTreeSidebar";
 import { QuickSearch } from "@/components/deals/QuickSearch";
@@ -15,9 +15,6 @@ export default function DealLayout({
   const params = useParams();
   const dealId = params?.id as string;
   const [showQuickSearch, setShowQuickSearch] = useState(false);
-
-  // Reference to sidebar for creating new page
-  const sidebarRef = useRef<{ createPage: () => void } | null>(null);
 
   // Create page mutation for keyboard shortcut
   const utils = api.useUtils();

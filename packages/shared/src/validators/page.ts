@@ -7,8 +7,8 @@ import { z } from 'zod'
  * Create Page Input
  */
 export const createPageSchema = z.object({
-  dealId: z.string().cuid({ message: 'Invalid deal ID' }),
-  parentPageId: z.string().cuid({ message: 'Invalid parent page ID' }).optional(),
+  dealId: z.string().min(1, { message: 'Deal ID is required' }),
+  parentPageId: z.string().min(1, { message: 'Parent page ID is required' }).optional(),
   title: z.string().min(1, 'Title is required').max(255),
   icon: z.string().optional(),
   isDatabase: z.boolean().default(false),
@@ -50,7 +50,7 @@ export type MovePageInput = z.infer<typeof movePageSchema>
  * Get Page Tree Input
  */
 export const getPageTreeSchema = z.object({
-  dealId: z.string().cuid({ message: 'Invalid deal ID' }),
+  dealId: z.string().min(1, { message: 'Deal ID is required' }),
 })
 
 export type GetPageTreeInput = z.infer<typeof getPageTreeSchema>

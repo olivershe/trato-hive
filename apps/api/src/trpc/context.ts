@@ -23,13 +23,14 @@ import { prisma } from '@trato-hive/db';
 
 /**
  * Demo session for development/testing without OAuth setup
+ * Uses real IDs from seed data
  */
 const DEMO_SESSION = {
   user: {
-    id: 'demo-user-id',
-    name: 'Demo User',
-    email: 'demo@tratohive.com',
-    organizationId: 'demo-org-id',
+    id: 'cmjg56sim0003vla8l0vx2bs2', // sarah.chen@acmecapital.com
+    name: 'Sarah Chen',
+    email: 'sarah.chen@acmecapital.com',
+    organizationId: 'cmjg56shz0000vla8yayi619g', // Acme Capital Partners
     role: 'ADMIN' as const,
   },
   expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),

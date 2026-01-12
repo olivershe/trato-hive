@@ -1,4 +1,3 @@
-
 import React from "react";
 // @ts-ignore - DB package is available in monorepo
 import type { BlockWithChildren } from "@trato-hive/db";
@@ -7,7 +6,6 @@ import { HeadingBlock } from "./HeadingBlock";
 import { ListBlock } from "./ListBlock";
 import { DealHeaderBlock } from "./DealHeaderBlock";
 import { KanbanBlock } from "./KanbanBlock";
-import { cn } from "@/lib/utils"; // Assuming web app has this utility or we use clsx/tailwind-merge
 
 // Map Tiptap types to Components
 // We perform the mapping here to keep the switch case clean
@@ -33,7 +31,8 @@ export function BlockRenderer({ block, depth = 0, className }: BlockRendererProp
     if (block.type === "text") {
         // If we fix storage to include marks, we would handle them here.
         // distinct component for text to handle potential <b>, <i> etc.
-        return <span className="whitespace-pre-wrap">{block.properties?.text as string}</span>;
+        const props = block.properties as Record<string, unknown> | null;
+        return <span className="whitespace-pre-wrap">{(props?.text as string) || ''}</span>;
     }
 
     // 2. Container Blocks

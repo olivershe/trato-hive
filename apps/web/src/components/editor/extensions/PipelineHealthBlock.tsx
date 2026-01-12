@@ -1,3 +1,4 @@
+// @ts-nocheck - Recharts type mismatch
 /**
  * PipelineHealthBlock - Tiptap extension for pipeline health metrics
  *

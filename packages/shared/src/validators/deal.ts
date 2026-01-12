@@ -59,7 +59,7 @@ export type DealListInput = z.infer<typeof dealListInputSchema>
  * Deal Get Input - Single deal by ID
  */
 export const dealGetInputSchema = z.object({
-  id: z.string().cuid({ message: 'Invalid deal ID' }),
+  id: z.string().min(1, { message: 'Deal ID is required' }),
 })
 
 export type DealGetInput = z.infer<typeof dealGetInputSchema>

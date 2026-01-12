@@ -122,6 +122,8 @@ export function PageTreeSidebar({ dealId }: PageTreeSidebarProps) {
       movePageMutation.mutate({
         id: active.id as string,
         order: newIndex,
+        // Pass null to keep in same parent (root level for now)
+        parentPageId: null,
       });
     }
   }, [tree, movePageMutation]);

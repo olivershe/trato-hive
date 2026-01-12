@@ -9,7 +9,7 @@ interface KanbanBlockProps {
     className?: string;
 }
 
-export function KanbanBlock({ block, className }: KanbanBlockProps) {
+export function KanbanBlock({ block: _block, className }: KanbanBlockProps) {
     return (
         <div className={`my-8 p-8 border-2 border-dashed border-charcoal/20 rounded-lg flex flex-col items-center justify-center bg-charcoal/5 dark:bg-white/5 ${className}`}>
             <KanbanSquare className="w-12 h-12 text-charcoal/40 dark:text-white/40 mb-4" />

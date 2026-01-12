@@ -10,7 +10,7 @@ interface TextMessageProps {
     className?: string;
 }
 
-export function TextMessage({ block, children, className }: TextMessageProps) {
+export function TextMessage({ block: _block, children, className }: TextMessageProps) {
     // Paragraph block
     return (
         <p className={cn("leading-7 [&:not(:first-child)]:mt-6 text-charcoal dark:text-cultured-white", className)}>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
     DndContext,
     DragOverlay,
@@ -17,7 +18,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
-import { DollarSign, Calendar } from "lucide-react";
+import { DollarSign, Calendar, GripVertical } from "lucide-react";
 import { useView } from "./ViewContext";
 import { Deal } from "./mock-data";
 
@@ -119,6 +120,7 @@ function KanbanColumn({ id, title, deals }: { id: string; title: string; deals: 
 }
 
 function SortableDealCard({ deal }: { deal: Deal }) {
+    const router = useRouter();
     const {
         attributes,
         listeners,
@@ -134,19 +136,45 @@ function SortableDealCard({ deal }: { deal: Deal }) {
         opacity: isDragging ? 0.4 : 1,
     };
 
+    const handleClick = () => {
+        router.push(`/deals/${deal.id}`);
+    };
+
     return (
-        <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-            <DealCard deal={deal} />
+        <div ref={setNodeRef} style={style} {...attributes}>
+            <DealCard
+                deal={deal}
+                onClick={handleClick}
+                dragHandleProps={listeners}
+            />
         </div>
     );
 }
 
-function DealCard({ deal, isOverlay }: { deal: Deal, isOverlay?: boolean }) {
+function DealCard({ deal, isOverlay, onClick, dragHandleProps }: {
+    deal: Deal,
+    isOverlay?: boolean,
+    onClick?: () => void,
+    dragHandleProps?: Record<string, unknown>
+}) {
     return (
-        <div className={cn(
-            "bg-white dark:bg-deep-grey p-4 rounded-md border border-gold/20 shadow-sm hover:shadow-md transition-shadow cursor-grab active:cursor-grabbing group",
-            isOverlay && "shadow-xl border-gold rotate-2 cursor-grabbing"
-        )}>
+        <div
+            className={cn(
+                "bg-white dark:bg-deep-grey p-4 rounded-md border border-gold/20 shadow-sm hover:shadow-md transition-shadow group relative",
+                isOverlay ? "shadow-xl border-gold rotate-2 cursor-grabbing" : "cursor-pointer hover:border-orange/50"
+            )}
+            onClick={onClick}
+        >
+            {/* Drag handle - only this area triggers drag */}
+            {dragHandleProps && (
+                <div
+                    className="absolute top-2 right-2 p-1 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity"
+                    {...dragHandleProps}
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    <GripVertical className="w-4 h-4 text-charcoal/40" />
+                </div>
+            )}
             <div className="flex justify-between items-start mb-2">
                 <span className="text-xs font-bold text-gold uppercase tracking-wider">{deal.company}</span>
                 {isOverlay && <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />}

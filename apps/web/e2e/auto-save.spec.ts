@@ -21,10 +21,7 @@ test.describe('Auto-Save Behavior', () => {
         await editor.click();
         await page.keyboard.type('Testing auto-save');
 
-        // After typing, status should change from "Saved" 
-        // The status indicator contains the status text
-        const statusText = editorContainer.locator('text=Unsaved, text=Saving..., text=Saved, text=Error');
-
+        // After typing, status should change from "Saved"
         // Wait a moment for state to update
         await page.waitForTimeout(500);
 

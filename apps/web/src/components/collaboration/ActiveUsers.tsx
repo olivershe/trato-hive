@@ -1,10 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import {
     useOthers,
     useSelf,
-    useMyPresence,
 } from "@liveblocks/react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -23,9 +21,9 @@ export function ActiveUsers() {
                 {others.slice(0, 3).map(({ connectionId, info }) => (
                     <Avatar
                         key={connectionId}
-                        name={info?.name}
-                        src={info?.avatar}
-                        color={info?.color || undefined}
+                        name={info?.name as string | undefined}
+                        src={info?.avatar as string | undefined}
+                        color={(info?.color as string) || undefined}
                     />
                 ))}
 
@@ -38,9 +36,9 @@ export function ActiveUsers() {
                 {self && (
                     <div className="relative">
                         <Avatar
-                            name={self.info?.name + " (You)"}
-                            src={self.info?.avatar}
-                            color={self.info?.color || undefined}
+                            name={(self.info?.name as string || "You") + " (You)"}
+                            src={self.info?.avatar as string | undefined}
+                            color={(self.info?.color as string) || undefined}
                         />
                         <span className="absolute bottom-0 right-0 h-2 w-2 rounded-full bg-green-500 ring-2 ring-white dark:ring-deep-grey" />
                     </div>

@@ -23,9 +23,6 @@ test.describe("Page Hierarchy", () => {
       // Navigate to deals list first (may need auth in real scenario)
       await page.goto("/deals");
 
-      // Look for deal cards or list
-      const dealsList = page.locator('[data-testid="deals-list"], .deals-grid');
-
       // If we have deals, click the first one
       const firstDeal = page.locator('a[href^="/deals/"]').first();
       if (await firstDeal.isVisible({ timeout: 5000 }).catch(() => false)) {

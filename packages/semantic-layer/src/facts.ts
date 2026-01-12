@@ -250,7 +250,7 @@ export class FactExtractor {
       orderBy: { confidence: 'desc' },
     });
 
-    return facts.map((fact) => ({
+    return facts.map((fact: any) => ({
       id: fact.id,
       type: fact.type as FactType,
       subject: fact.subject,
@@ -279,7 +279,7 @@ export class FactExtractor {
       orderBy: { confidence: 'desc' },
     });
 
-    return facts.map((fact) => ({
+    return facts.map((fact: any) => ({
       id: fact.id,
       type: fact.type as FactType,
       subject: fact.subject,

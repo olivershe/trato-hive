@@ -116,7 +116,7 @@ export const dealsRouter = router({
    * Joins: Deal → Company → Facts → Documents
    */
   getFactSheet: organizationProtectedProcedure
-    .input(z.object({ dealId: z.string().cuid() }))
+    .input(z.object({ dealId: z.string().min(1) }))
     .query(async ({ ctx, input }) => {
       const dealService = new DealService(ctx.db);
       return dealService.getFactSheet(input.dealId, ctx.organizationId);

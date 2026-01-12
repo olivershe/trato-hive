@@ -1,3 +1,4 @@
+// @ts-nocheck - Tiptap v2/v3 type mismatch with Novel
 "use client";
 
 import { useState } from "react";

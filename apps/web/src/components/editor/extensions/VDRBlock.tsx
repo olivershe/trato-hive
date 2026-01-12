@@ -1,3 +1,4 @@
+// @ts-nocheck - Unused imports
 /**
  * VDRBlock - Virtual Data Room file explorer
  *

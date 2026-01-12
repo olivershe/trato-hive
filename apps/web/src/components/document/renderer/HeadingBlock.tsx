@@ -11,7 +11,8 @@ interface HeadingBlockProps {
 }
 
 export function HeadingBlock({ block, children, className }: HeadingBlockProps) {
-    const level = (block.properties?.level as number) || 1;
+    const props = block.properties as Record<string, unknown> | null;
+    const level = (props?.level as number) || 1;
 
     // Modern Typography styles matching 'packages/ui' tokens implicitly via Tailwind
     // and ensuring consistency with Novel editor styles.

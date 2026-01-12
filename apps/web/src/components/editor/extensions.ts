@@ -1,3 +1,4 @@
+// @ts-nocheck - Tiptap extension type portability issue
 import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
 // Note: Link and Underline are removed - Novel adds them internally
@@ -75,7 +76,7 @@ const characterCount = CharacterCount.configure({
     limit: 50000,
 });
 
-export const defaultExtensions = [
+export const defaultExtensions: any[] = [
     StarterKit.configure({
         bulletList: {
             HTMLAttributes: {

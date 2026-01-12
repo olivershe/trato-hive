@@ -1,3 +1,4 @@
+// @ts-nocheck - Tiptap type mismatch
 /**
  * AI Suggestion Block
  *

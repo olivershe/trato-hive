@@ -19,7 +19,7 @@ export const blockRouter = router({
     sync: organizationProtectedProcedure
         .input(
             z.object({
-                pageId: z.string().cuid(),
+                pageId: z.string().min(1),
                 content: z.record(z.any()), // Tiptap JSON doc
             })
         )
@@ -47,11 +47,11 @@ export const blockRouter = router({
                     id,
                     type,
                     properties,
-                    parentId,
-                    pageId,
                     order,
                     syncGroupId: syncGroupId || null, // Preserve sync group ID
-                    createdById: userId, // Use authenticated user from session
+                    page: { connect: { id: pageId } },
+                    creator: { connect: { id: userId } },
+                    ...(parentId ? { parent: { connect: { id: parentId } } } : {}),
                 });
 
                 if (node.content && Array.isArray(node.content)) {
