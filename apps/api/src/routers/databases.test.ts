@@ -9,6 +9,7 @@ import { appRouter } from '../trpc/router';
 import {
   createMockDatabase,
   createMockDatabaseEntry,
+  createMockDeal,
   createMockPrisma,
   createMockSession,
   resetMocks,
@@ -132,13 +133,28 @@ describe('Databases Router Integration', () => {
 
   describe('database.create', () => {
     it('should create database with organizationId from context', async () => {
+      const mockDeal = createMockDeal();
       const mockDatabase = createMockDatabase();
-      mockPrisma.database.create.mockResolvedValue(mockDatabase);
+      const mockPage = { id: TEST_IDS.page, dealId: TEST_IDS.deal, title: 'New Database', isDatabase: true };
+
+      // Mock deal lookup
+      mockPrisma.deal.findUnique.mockResolvedValue(mockDeal);
       mockPrisma.activity.create.mockResolvedValue({});
+
+      // Mock transaction
+      const databaseCreate = vi.fn().mockResolvedValue(mockDatabase);
+      mockPrisma.$transaction.mockImplementation(async (fn) => {
+        const tx = {
+          page: { create: vi.fn().mockResolvedValue(mockPage) },
+          database: { create: databaseCreate },
+        };
+        return fn(tx);
+      });
 
       const caller = createCaller();
       const result = await caller.database.create({
         name: 'New Database',
+        dealId: TEST_IDS.deal,
         schema: {
           columns: [
             { name: 'Name', type: 'TEXT' },
@@ -148,7 +164,7 @@ describe('Databases Router Integration', () => {
       });
 
       expect(result.id).toBe(TEST_IDS.database);
-      expect(mockPrisma.database.create).toHaveBeenCalledWith(
+      expect(databaseCreate).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({
             name: 'New Database',
@@ -162,19 +178,34 @@ describe('Databases Router Integration', () => {
     });
 
     it('should generate column IDs if not provided', async () => {
+      const mockDeal = createMockDeal();
       const mockDatabase = createMockDatabase();
-      mockPrisma.database.create.mockResolvedValue(mockDatabase);
+      const mockPage = { id: TEST_IDS.page, dealId: TEST_IDS.deal, title: 'Test DB', isDatabase: true };
+
+      // Mock deal lookup
+      mockPrisma.deal.findUnique.mockResolvedValue(mockDeal);
       mockPrisma.activity.create.mockResolvedValue({});
+
+      // Mock transaction
+      const databaseCreate = vi.fn().mockResolvedValue(mockDatabase);
+      mockPrisma.$transaction.mockImplementation(async (fn) => {
+        const tx = {
+          page: { create: vi.fn().mockResolvedValue(mockPage) },
+          database: { create: databaseCreate },
+        };
+        return fn(tx);
+      });
 
       const caller = createCaller();
       await caller.database.create({
         name: 'Test DB',
+        dealId: TEST_IDS.deal,
         schema: {
           columns: [{ name: 'Task', type: 'TEXT' }],
         },
       });
 
-      expect(mockPrisma.database.create).toHaveBeenCalledWith(
+      expect(databaseCreate).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({
             schema: expect.objectContaining({
@@ -367,11 +398,21 @@ describe('Databases Router Integration', () => {
 
   describe('database.createEntry', () => {
     it('should create entry with properties', async () => {
-      const existingDb = { ...createMockDatabase(), entries: [] };
+      const existingDb = { ...createMockDatabase(), dealId: TEST_IDS.deal, pageId: TEST_IDS.page, entries: [] };
       const mockEntry = createMockDatabaseEntry();
+      const mockPage = { id: 'clqentrypage12345678901234', dealId: TEST_IDS.deal, title: 'New Task' };
 
       mockPrisma.database.findUnique.mockResolvedValue(existingDb);
-      mockPrisma.databaseEntry.create.mockResolvedValue(mockEntry);
+
+      // Mock transaction
+      const entryCreate = vi.fn().mockResolvedValue(mockEntry);
+      mockPrisma.$transaction.mockImplementation(async (fn) => {
+        const tx = {
+          page: { create: vi.fn().mockResolvedValue(mockPage) },
+          databaseEntry: { create: entryCreate },
+        };
+        return fn(tx);
+      });
 
       const caller = createCaller();
       const result = await caller.database.createEntry({
@@ -383,7 +424,7 @@ describe('Databases Router Integration', () => {
       });
 
       expect(result.id).toBe(TEST_IDS.entry);
-      expect(mockPrisma.databaseEntry.create).toHaveBeenCalledWith(
+      expect(entryCreate).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({
             databaseId: TEST_IDS.database,
@@ -394,14 +435,23 @@ describe('Databases Router Integration', () => {
     });
 
     it('should create entry with AI suggestion metadata', async () => {
-      const existingDb = { ...createMockDatabase(), entries: [] };
+      const existingDb = { ...createMockDatabase(), dealId: TEST_IDS.deal, pageId: TEST_IDS.page, entries: [] };
       const mockEntry = createMockDatabaseEntry({
         suggestedBy: 'document-agent',
         factIds: [TEST_IDS.fact],
       });
+      const mockPage = { id: 'clqentrypage12345678901234', dealId: TEST_IDS.deal, title: 'Extracted Data' };
 
       mockPrisma.database.findUnique.mockResolvedValue(existingDb);
-      mockPrisma.databaseEntry.create.mockResolvedValue(mockEntry);
+
+      // Mock transaction
+      mockPrisma.$transaction.mockImplementation(async (fn) => {
+        const tx = {
+          page: { create: vi.fn().mockResolvedValue(mockPage) },
+          databaseEntry: { create: vi.fn().mockResolvedValue(mockEntry) },
+        };
+        return fn(tx);
+      });
 
       const caller = createCaller();
       const result = await caller.database.createEntry({

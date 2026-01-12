@@ -29,3 +29,8 @@ export {
   type ActivitySummary,
   type ActivitySummaryResult,
 } from './dashboard.service';
+export {
+  PageService,
+  type PageTreeNode,
+  type BreadcrumbItem,
+} from './page.service';

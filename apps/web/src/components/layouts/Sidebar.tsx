@@ -6,8 +6,6 @@ import {
   LayoutDashboard,
   Briefcase,
   Search,
-  FileText,
-  Download,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";

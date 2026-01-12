@@ -192,14 +192,26 @@ export class DatabaseService {
   }
 
   /**
-   * Create new database
-   * Multi-tenancy: Sets organizationId from context
+   * Create new database with associated page
+   * Multi-tenancy: Validates deal belongs to organization
    */
   async create(
     input: RouterCreateDatabaseInput,
     organizationId: string,
     userId: string
   ) {
+    // Validate deal exists and belongs to org
+    const deal = await this.db.deal.findUnique({
+      where: { id: input.dealId },
+    })
+
+    if (!deal || deal.organizationId !== organizationId) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Deal not found',
+      })
+    }
+
     // Generate column IDs if not provided
     const schemaWithIds: DatabaseSchema = {
       columns: input.schema.columns.map((col) => ({
@@ -211,14 +223,33 @@ export class DatabaseService {
       })),
     }
 
-    const database = await this.db.database.create({
-      data: {
-        name: input.name,
-        description: input.description,
-        schema: schemaWithIds as unknown as Prisma.JsonObject,
-        organizationId,
-        createdById: userId,
-      },
+    // Use transaction to create page and database together
+    const database = await this.db.$transaction(async (tx) => {
+      // Create page for the database
+      const databasePage = await tx.page.create({
+        data: {
+          dealId: input.dealId,
+          parentPageId: input.parentPageId,
+          title: input.name,
+          icon: '📊',
+          isDatabase: true,
+        },
+      })
+
+      // Create database linked to page
+      const newDatabase = await tx.database.create({
+        data: {
+          name: input.name,
+          description: input.description,
+          schema: schemaWithIds as unknown as Prisma.JsonObject,
+          organizationId,
+          dealId: input.dealId,
+          pageId: databasePage.id,
+          createdById: userId,
+        },
+      })
+
+      return newDatabase
     })
 
     return {
@@ -437,17 +468,58 @@ export class DatabaseService {
     organizationId: string,
     userId: string
   ) {
-    // Validate database access
-    await this.getById(input.databaseId, organizationId)
+    // Get database with page info
+    const database = await this.db.database.findUnique({
+      where: { id: input.databaseId },
+      include: { page: true },
+    })
 
-    const entry = await this.db.databaseEntry.create({
-      data: {
-        databaseId: input.databaseId,
-        properties: input.properties as Prisma.JsonObject,
-        suggestedBy: input.suggestedBy,
-        factIds: input.factIds || [],
-        createdById: userId,
-      },
+    if (!database) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Database not found',
+      })
+    }
+
+    if (database.organizationId !== organizationId) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Database not found',
+      })
+    }
+
+    // Use transaction to create both page and entry
+    const entry = await this.db.$transaction(async (tx) => {
+      // Create page for the entry (if database has dealId)
+      let entryPage = null
+      if (database.dealId && database.pageId) {
+        const entryTitle = (input.properties as Record<string, unknown>)?.name as string
+          || (input.properties as Record<string, unknown>)?.title as string
+          || 'Untitled'
+
+        entryPage = await tx.page.create({
+          data: {
+            dealId: database.dealId,
+            parentPageId: database.pageId, // Entry pages are children of database page
+            title: entryTitle,
+            icon: '📄',
+          },
+        })
+      }
+
+      // Create the entry with page link
+      const newEntry = await tx.databaseEntry.create({
+        data: {
+          databaseId: input.databaseId,
+          properties: input.properties as Prisma.JsonObject,
+          suggestedBy: input.suggestedBy,
+          factIds: input.factIds || [],
+          pageId: entryPage?.id,
+          createdById: userId,
+        },
+      })
+
+      return newEntry
     })
 
     return {

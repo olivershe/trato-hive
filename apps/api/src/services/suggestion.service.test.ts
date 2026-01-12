@@ -360,11 +360,12 @@ describe('SuggestionService', () => {
     it('should create new database entry when no entryId', async () => {
       const mockDatabase = createMockDatabase();
       mockPrisma.database.findUnique.mockResolvedValue(mockDatabase);
-      mockPrisma.databaseEntry.create.mockResolvedValue(
-        createMockDatabaseEntry({
-          properties: { [TEST_IDS.column]: 'New Value' },
-        })
-      );
+
+      // Mock the transaction to return the expected entry
+      const mockEntry = createMockDatabaseEntry({
+        properties: { [TEST_IDS.column]: 'New Value' },
+      });
+      mockPrisma.$transaction.mockResolvedValue(mockEntry);
 
       const result = await service.applySuggestion(
         {
@@ -383,12 +384,8 @@ describe('SuggestionService', () => {
       expect(result.previousValue).toBeUndefined();
       expect(result.newValue).toBe('New Value');
 
-      expect(mockPrisma.databaseEntry.create).toHaveBeenCalledWith({
-        data: expect.objectContaining({
-          databaseId: TEST_IDS.database,
-          createdById: TEST_IDS.user,
-        }),
-      });
+      // Verify transaction was called for creating new entry with page
+      expect(mockPrisma.$transaction).toHaveBeenCalled();
     });
 
     it('should throw BAD_REQUEST when columnId is missing', async () => {

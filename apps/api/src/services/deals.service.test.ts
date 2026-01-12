@@ -148,7 +148,7 @@ describe('DealService', () => {
       mockPrisma.$transaction.mockImplementation(async (fn) => {
         const tx = {
           deal: { create: vi.fn().mockResolvedValue(mockDeal) },
-          page: { create: vi.fn().mockResolvedValue(mockPage) },
+          page: { create: vi.fn().mockResolvedValue(mockPage), createMany: vi.fn().mockResolvedValue({ count: 3 }) },
           block: { create: vi.fn().mockResolvedValue(mockBlock) },
           database: { create: vi.fn().mockResolvedValue(mockDatabase) },
         };
@@ -183,7 +183,7 @@ describe('DealService', () => {
       mockPrisma.$transaction.mockImplementation(async (fn) => {
         const tx = {
           deal: { create: dealCreate },
-          page: { create: pageCreate },
+          page: { create: pageCreate, createMany: vi.fn().mockResolvedValue({ count: 3 }) },
           block: { create: blockCreate },
           database: { create: databaseCreate },
         };
@@ -201,36 +201,25 @@ describe('DealService', () => {
         TEST_IDS.user
       );
 
-      // Verify database creation
+      // Verify database creation with new format (DD Tracker as page)
       expect(databaseCreate).toHaveBeenCalledWith({
         data: expect.objectContaining({
-          name: 'Acme Acquisition - Due Diligence Tracker',
+          name: 'DD Tracker',
           description: 'Track due diligence tasks for this deal',
           organizationId: TEST_IDS.org,
+          dealId: TEST_IDS.deal,
           createdById: TEST_IDS.user,
         }),
       });
 
-      // Verify two blocks created: DealHeaderBlock (order 0) and DatabaseViewBlock (order 1)
-      expect(blockCreate).toHaveBeenCalledTimes(2);
+      // Verify only DealHeaderBlock created (database is now a page, not a block)
+      expect(blockCreate).toHaveBeenCalledTimes(1);
 
-      // First call: DealHeaderBlock
-      expect(blockCreate).toHaveBeenNthCalledWith(1, {
+      // DealHeaderBlock on root page
+      expect(blockCreate).toHaveBeenCalledWith({
         data: expect.objectContaining({
           type: 'deal_header',
           order: 0,
-        }),
-      });
-
-      // Second call: DatabaseViewBlock
-      expect(blockCreate).toHaveBeenNthCalledWith(2, {
-        data: expect.objectContaining({
-          type: 'databaseViewBlock',
-          order: 1,
-          properties: expect.objectContaining({
-            databaseId: mockDatabase.id,
-            viewType: 'table',
-          }),
         }),
       });
     });

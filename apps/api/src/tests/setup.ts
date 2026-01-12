@@ -253,7 +253,9 @@ export function createMockPrisma() {
     },
     page: {
       findFirst: vi.fn(),
+      findUnique: vi.fn(),
       create: vi.fn(),
+      createMany: vi.fn(),
     },
     block: {
       create: vi.fn(),

@@ -61,13 +61,16 @@ export type DatabaseSchemaCreateInput = z.infer<typeof databaseSchemaInputSchema
 // =============================================================================
 
 /**
- * Create Database - Full schema with organizationId
+ * Create Database - Full schema with organizationId and dealId
+ * Databases are now scoped to deals and backed by pages
  */
 export const createDatabaseSchema = z.object({
   organizationId: z.string().cuid({ message: 'Invalid organization ID' }),
+  dealId: z.string().cuid({ message: 'Invalid deal ID' }),
   name: z.string().min(1, 'Name is required').max(200, 'Name too long'),
   description: z.string().max(1000, 'Description too long').nullable().optional(),
   schema: databaseSchemaInputSchema, // IDs optional, generated server-side
+  parentPageId: z.string().cuid({ message: 'Invalid parent page ID' }).optional(),
 })
 
 export type CreateDatabaseInput = z.infer<typeof createDatabaseSchema>

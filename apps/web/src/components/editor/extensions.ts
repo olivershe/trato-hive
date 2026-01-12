@@ -25,6 +25,10 @@ import GlobalDragHandle from "tiptap-extension-global-drag-handle";
 import AutoJoiner from "tiptap-extension-auto-joiner";
 import Focus from "@tiptap/extension-focus";
 
+// Re-export for dynamic configuration
+export { PageMention } from "./extensions/PageMention";
+export { createWikiLinkSuggestion } from "./WikiLinkSuggestion";
+
 // @ts-ignore
 const uniqueId = UniqueID.configure({
     types: ['paragraph', 'heading', 'taskItem', 'blockquote', 'image'],

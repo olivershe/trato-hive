@@ -98,7 +98,7 @@ describe('Deals Router Integration', () => {
       mockPrisma.$transaction.mockImplementation(async (fn) => {
         const tx = {
           deal: { create: vi.fn().mockResolvedValue(mockDeal) },
-          page: { create: vi.fn().mockResolvedValue(mockPage) },
+          page: { create: vi.fn().mockResolvedValue(mockPage), createMany: vi.fn().mockResolvedValue({ count: 3 }) },
           block: { create: vi.fn().mockResolvedValue(mockBlock) },
           database: { create: vi.fn().mockResolvedValue(mockDatabase) },
         };

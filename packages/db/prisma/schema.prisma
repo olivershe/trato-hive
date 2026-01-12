@@ -32,8 +32,8 @@ model User {
   documents       Document[]
   activities      Activity[]
   createdBlocks   Block[]
-  databases       Database[]      @relation("DatabaseCreator")
-  databaseEntries DatabaseEntry[] @relation("DatabaseEntryCreator")
+  databases       Database[]           @relation("DatabaseCreator")
+  databaseEntries DatabaseEntry[]      @relation("DatabaseEntryCreator")
 
   @@map("users")
 }
@@ -83,9 +83,9 @@ model VerificationToken {
 // =============================================================================
 
 model Organization {
-  id          String   @id @default(cuid())
+  id          String  @id @default(cuid())
   name        String
-  slug        String   @unique
+  slug        String  @unique
   description String?
   image       String?
 
@@ -138,26 +138,26 @@ enum CompanyStatus {
 }
 
 model Company {
-  id             String        @id @default(cuid())
+  id             String @id @default(cuid())
   organizationId String
 
-  name           String
-  domain         String?
-  description    String?       @db.Text
-  industry       String?
-  sector         String?
-  founded        Int?
-  employees      Int?
-  revenue        Decimal?      @db.Decimal(15, 2)
-  location       String?
-  website        String?
-  linkedin       String?
+  name        String
+  domain      String?
+  description String?  @db.Text
+  industry    String?
+  sector      String?
+  founded     Int?
+  employees   Int?
+  revenue     Decimal? @db.Decimal(15, 2)
+  location    String?
+  website     String?
+  linkedin    String?
 
-  status         CompanyStatus @default(PROSPECT)
+  status CompanyStatus @default(PROSPECT)
 
   // AI-generated metadata
-  aiSummary      String?       @db.Text
-  aiScore        Float?
+  aiSummary String? @db.Text
+  aiScore   Float?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -168,7 +168,6 @@ model Company {
   deals     Deal[]
   documents Document[]
   facts     Fact[]
-  page      Page?
 
   @@index([organizationId])
   @@index([status])
@@ -198,22 +197,22 @@ enum DealType {
 }
 
 model Deal {
-  id             String    @id @default(cuid())
+  id             String  @id @default(cuid())
   organizationId String
   companyId      String?
 
-  name           String
-  type           DealType
-  stage          DealStage @default(SOURCING)
-  value          Decimal?  @db.Decimal(15, 2)
-  currency       String    @default("USD")
-  probability    Int?      // 0-100
+  name        String
+  type        DealType
+  stage       DealStage @default(SOURCING)
+  value       Decimal?  @db.Decimal(15, 2)
+  currency    String    @default("USD")
+  probability Int? // 0-100
 
   expectedCloseDate DateTime?
   actualCloseDate   DateTime?
 
-  description    String?   @db.Text
-  notes          String?   @db.Text
+  description String? @db.Text
+  notes       String? @db.Text
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -222,9 +221,10 @@ model Deal {
   company      Company?     @relation(fields: [companyId], references: [id], onDelete: SetNull)
 
   // Relations
-  documents Document[]
+  documents  Document[]
   activities Activity[]
-  page      Page?
+  pages      Page[] // Deals have multiple nested pages
+  databases  Database[] // Databases scoped to this deal
 
   @@index([organizationId])
   @@index([stage])
@@ -255,32 +255,32 @@ enum DocumentStatus {
 }
 
 model Document {
-  id             String         @id @default(cuid())
+  id             String  @id @default(cuid())
   organizationId String
   companyId      String?
   dealId         String?
   uploadedById   String
 
-  name           String
-  type           DocumentType   @default(OTHER)
-  status         DocumentStatus @default(UPLOADING)
+  name   String
+  type   DocumentType   @default(OTHER)
+  status DocumentStatus @default(UPLOADING)
 
   // VDR folder organization (virtual folders via path)
-  folderPath     String?        // e.g., "/Legal/Contracts"
+  folderPath String? // e.g., "/Legal/Contracts"
 
   // File metadata
-  fileSize       Int            // bytes
-  mimeType       String
-  fileUrl        String         // S3 or storage URL
+  fileSize Int // bytes
+  mimeType String
+  fileUrl  String // S3 or storage URL
 
   // Processing metadata
-  parsedAt       DateTime?
-  indexedAt      DateTime?
-  errorMessage   String?        @db.Text
+  parsedAt     DateTime?
+  indexedAt    DateTime?
+  errorMessage String?   @db.Text
 
   // Reducto AI metadata
-  reductoJobId   String?
-  reductoData    Json?          // Structured data from Reducto
+  reductoJobId String?
+  reductoData  Json? // Structured data from Reducto
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -307,10 +307,10 @@ model Document {
 // =============================================================================
 
 model DocumentChunk {
-  id         String   @id @default(cuid())
+  id         String @id @default(cuid())
   documentId String
 
-  content    String   @db.Text
+  content    String @db.Text
   pageNumber Int?
   chunkIndex Int
 
@@ -318,7 +318,7 @@ model DocumentChunk {
   boundingBox Json?
 
   // Vector embedding reference (stored in Pinecone)
-  vectorId    String?  @unique
+  vectorId String? @unique
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -345,23 +345,23 @@ enum FactType {
 }
 
 model Fact {
-  id         String   @id @default(cuid())
+  id         String  @id @default(cuid())
   documentId String?
   companyId  String?
 
-  type       FactType
-  subject    String
-  predicate  String
-  object     String   @db.Text
+  type      FactType
+  subject   String
+  predicate String
+  object    String   @db.Text
 
-  confidence Float    @default(0.0) // 0.0 - 1.0
+  confidence Float @default(0.0) // 0.0 - 1.0
 
   // Source citation
   sourceChunkId String?
   sourceText    String? @db.Text
 
   // AI metadata
-  extractedBy   String  // e.g., "claude-sonnet-4.5", "gpt-4"
+  extractedBy String // e.g., "claude-sonnet-4.5", "gpt-4"
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -398,13 +398,13 @@ enum ActivityStatus {
 }
 
 model Activity {
-  id             String         @id @default(cuid())
-  userId         String?
-  dealId         String?
+  id     String  @id @default(cuid())
+  userId String?
+  dealId String?
 
-  type           ActivityType
-  description    String         @db.Text
-  metadata       Json?
+  type        ActivityType
+  description String       @db.Text
+  metadata    Json?
 
   // Status tracking for inbox actions
   status          ActivityStatus @default(ACTIVE)
@@ -439,47 +439,57 @@ enum DatabaseColumnType {
 }
 
 model Database {
-  id              String   @id @default(cuid())
-  organizationId  String
-  name            String
-  description     String?  @db.Text
+  id             String  @id @default(cuid())
+  organizationId String
+  dealId         String // Database scoped to deal
+  pageId         String  @unique // Database IS a page
+  name           String
+  description    String? @db.Text
 
   // Column definitions stored as JSONB array:
   // [{ id: string, name: string, type: DatabaseColumnType, options?: string[], width?: number }]
-  schema          Json     @db.JsonB
-
-  createdById     String
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  creator         User         @relation("DatabaseCreator", fields: [createdById], references: [id])
-  entries         DatabaseEntry[]
-
-  @@index([organizationId])
-  @@index([createdById])
-  @@map("databases")
-}
-
-model DatabaseEntry {
-  id          String   @id @default(cuid())
-  databaseId  String
-
-  // Row values stored as JSONB object: { "col_id_1": "value", "col_id_2": 123 }
-  properties  Json     @db.JsonB
-
-  // AI suggestion tracking (for EntityFactMapper integration)
-  suggestedBy String?              // e.g., "entity-fact-mapper", "document-agent"
-  factIds     String[] @default([]) // Source fact IDs for citation trail
+  schema Json @db.JsonB
 
   createdById String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  database    Database @relation(fields: [databaseId], references: [id], onDelete: Cascade)
-  creator     User     @relation("DatabaseEntryCreator", fields: [createdById], references: [id])
+  organization Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  deal         Deal            @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  page         Page            @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  creator      User            @relation("DatabaseCreator", fields: [createdById], references: [id])
+  entries      DatabaseEntry[]
+
+  @@index([organizationId])
+  @@index([dealId])
+  @@index([createdById])
+  @@map("databases")
+}
+
+model DatabaseEntry {
+  id         String @id @default(cuid())
+  databaseId String
+
+  // Row values stored as JSONB object: { "col_id_1": "value", "col_id_2": 123 }
+  properties Json @db.JsonB
+
+  // AI suggestion tracking (for EntityFactMapper integration)
+  suggestedBy String? // e.g., "entity-fact-mapper", "document-agent"
+  factIds     String[] @default([]) // Source fact IDs for citation trail
+
+  // Every row has a page for full content
+  pageId String? @unique
+  page   Page?   @relation("EntryPage", fields: [pageId], references: [id], onDelete: SetNull)
+
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  database Database @relation(fields: [databaseId], references: [id], onDelete: Cascade)
+  creator  User     @relation("DatabaseEntryCreator", fields: [createdById], references: [id])
 
   @@index([databaseId])
+  @@index([pageId])
   @@index([createdById])
   @@map("database_entries")
 }
@@ -489,55 +499,96 @@ model DatabaseEntry {
 // =============================================================================
 
 model Page {
-  id          String   @id @default(cuid())
-  title       String?  // Optional title for page context
+  id         String  @id @default(cuid())
+  title      String?
+  icon       String? // Emoji or image URL
+  coverImage String?
 
-  // Polymorphic Relations (Nullable Foreign Keys)
-  // A Page can belong to ONE entity (enforced by app logic)
-  dealId      String?  @unique
-  deal        Deal?    @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  // Hierarchy - Pages nest infinitely within a Deal
+  dealId       String
+  parentPageId String?
+  order        Int     @default(0)
+  isDatabase   Boolean @default(false)
 
-  companyId   String?  @unique
-  company     Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  // Self-referential hierarchy
+  parent   Page?  @relation("PageHierarchy", fields: [parentPageId], references: [id], onDelete: Cascade)
+  children Page[] @relation("PageHierarchy")
 
-  // Children
-  blocks      Block[]  @relation("PageBlocks")
+  // Deal relation (required - all pages belong to a deal)
+  deal Deal @relation(fields: [dealId], references: [id], onDelete: Cascade)
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  // Children blocks
+  blocks Block[] @relation("PageBlocks")
 
+  // Wiki link tracking
+  incomingLinks PageLink[] @relation("TargetPage")
+  outgoingLinks PageLink[] @relation("SourcePage")
+
+  // Database relation (when this page IS a database)
+  database Database?
+
+  // Entry page relation (when this page is a database entry's content)
+  databaseEntry DatabaseEntry? @relation("EntryPage")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([dealId])
+  @@index([parentPageId])
+  @@index([dealId, parentPageId])
   @@map("pages")
 }
 
+// Wiki link tracking for backlinks
+model PageLink {
+  id           String @id @default(cuid())
+  sourcePageId String
+  targetPageId String
+  blockId      String // The block containing the link
+
+  sourcePage Page @relation("SourcePage", fields: [sourcePageId], references: [id], onDelete: Cascade)
+  targetPage Page @relation("TargetPage", fields: [targetPageId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([sourcePageId, targetPageId, blockId])
+  @@index([targetPageId])
+  @@map("page_links")
+}
+
 model Block {
-  id          String   @id @default(cuid())
-  type        String   // "paragraph", "heading", "image", "task_list", "deal_card", etc.
+  id   String @id @default(cuid())
+  type String // "paragraph", "heading", "image", "task_list", "deal_card", etc.
 
   // Content storage - Flexible JSONB
   // Example: { "text": "Hello world", "level": 1, "checked": true, "url": "https://example.com" }
-  properties  Json     @db.JsonB
+  properties Json @db.JsonB
 
   // Tree Structure (Adjacency List)
-  parentId    String?
-  parent      Block?   @relation("BlockHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
-  children    Block[]  @relation("BlockHierarchy")
+  parentId String?
+  parent   Block?  @relation("BlockHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children Block[] @relation("BlockHierarchy")
 
   // Ordering
-  order       Int      @default(0) // Rank for sorting siblings
+  order Int @default(0) // Rank for sorting siblings
 
   // Context
-  pageId      String
-  page        Page     @relation("PageBlocks", fields: [pageId], references: [id], onDelete: Cascade)
+  pageId String
+  page   Page   @relation("PageBlocks", fields: [pageId], references: [id], onDelete: Cascade)
+
+  // Synced blocks - blocks with same syncGroupId stay in sync
+  syncGroupId String?
 
   // Metadata
-  createdBy   String
-  creator     User     @relation(fields: [createdBy], references: [id])
+  createdBy String
+  creator   User   @relation(fields: [createdBy], references: [id])
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([pageId])
   @@index([parentId])
   @@index([pageId, order])
+  @@index([syncGroupId])
   @@map("blocks")
 }

@@ -7,6 +7,7 @@
 import { Node, mergeAttributes } from "@tiptap/core";
 import { ReactNodeViewRenderer, NodeViewWrapper, NodeViewProps } from "@tiptap/react";
 import { useState, useCallback, useRef } from "react";
+import { useParams } from "next/navigation";
 import { Database, Table2, LayoutGrid, Plus, Link2, Loader2, Trash2, Copy, Edit, Settings, X, GripVertical } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -189,6 +190,10 @@ function DatabaseViewCard({ node, updateAttributes }: NodeViewProps) {
   const attrs = node.attrs as DatabaseViewBlockAttributes;
   const { databaseId, viewType, filters, sortBy, groupBy, hiddenColumns } = attrs;
 
+  // Get dealId from URL params
+  const params = useParams();
+  const dealId = params?.id as string | undefined;
+
   // State for database picker mode
   const [pickerMode, setPickerMode] = useState<"select" | "create" | "link">("select");
 
@@ -208,6 +213,7 @@ function DatabaseViewCard({ node, updateAttributes }: NodeViewProps) {
           mode={pickerMode}
           onModeChange={setPickerMode}
           onSelect={(id) => updateBlockAttrs({ databaseId: id })}
+          dealId={dealId}
         />
       </NodeViewWrapper>
     );
@@ -241,9 +247,10 @@ interface DatabasePickerProps {
   mode: "select" | "create" | "link";
   onModeChange: (mode: "select" | "create" | "link") => void;
   onSelect: (databaseId: string) => void;
+  dealId?: string;
 }
 
-function DatabasePicker({ mode, onModeChange, onSelect }: DatabasePickerProps) {
+function DatabasePicker({ mode, onModeChange, onSelect, dealId }: DatabasePickerProps) {
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [newDbName, setNewDbName] = useState("");
 
@@ -270,7 +277,7 @@ function DatabasePicker({ mode, onModeChange, onSelect }: DatabasePickerProps) {
   ];
 
   const handleCreate = () => {
-    if (!newDbName.trim()) return;
+    if (!newDbName.trim() || !dealId) return;
 
     // Get template schema or empty schema
     const schema =
@@ -280,6 +287,7 @@ function DatabasePicker({ mode, onModeChange, onSelect }: DatabasePickerProps) {
 
     createMutation.mutate({
       name: newDbName,
+      dealId,
       schema,
     });
   };

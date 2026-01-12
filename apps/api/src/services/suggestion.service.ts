@@ -114,7 +114,8 @@ export class SuggestionService {
           entryId,
           value,
           organizationId,
-          userId
+          userId,
+          factIds
         )
         break
 
@@ -348,12 +349,13 @@ export class SuggestionService {
     entryId: string | undefined,
     value: unknown,
     organizationId: string,
-    userId: string
+    userId: string,
+    factIds?: string[]
   ): Promise<unknown> {
     // Validate database access
     const database = await this.db.database.findUnique({
       where: { id: databaseId },
-      select: { id: true, organizationId: true, schema: true },
+      select: { id: true, organizationId: true, schema: true, dealId: true, pageId: true },
     })
 
     if (!database) {
@@ -387,16 +389,89 @@ export class SuggestionService {
 
       return previousValue
     } else {
-      // Create new entry
-      await this.db.databaseEntry.create({
-        data: {
-          databaseId,
-          properties: { [columnId]: value } as Prisma.JsonObject,
-          createdById: userId,
-        },
+      // Create new entry with optional page population
+      const entryTitle = typeof value === 'string' ? value : 'Untitled'
+
+      // Use transaction to create entry, page, and blocks
+      const entry = await this.db.$transaction(async (tx) => {
+        // Create page for the entry if database has dealId
+        let entryPage = null
+        if (database.dealId && database.pageId) {
+          entryPage = await tx.page.create({
+            data: {
+              dealId: database.dealId,
+              parentPageId: database.pageId,
+              title: entryTitle,
+              icon: '📄',
+            },
+          })
+        }
+
+        // Create the entry
+        const newEntry = await tx.databaseEntry.create({
+          data: {
+            databaseId,
+            properties: { [columnId]: value } as Prisma.JsonObject,
+            suggestedBy: 'fact-mapper',
+            factIds: factIds || [],
+            pageId: entryPage?.id,
+            createdById: userId,
+          },
+        })
+
+        // If we have facts and a page, populate the page with citations
+        if (factIds && factIds.length > 0 && entryPage) {
+          const facts = await this.factMapperService.getFactsByIds(factIds, organizationId)
+
+          if (facts.length > 0) {
+            const pageContent = this.factMapperService.generateEntryPageContent(
+              entryTitle,
+              facts
+            )
+
+            // Create blocks from page content
+            await this.createBlocksFromContent(tx, entryPage.id, pageContent, userId)
+          }
+        }
+
+        return newEntry
       })
 
       return undefined
+    }
+  }
+
+  /**
+   * Create Block records from Tiptap document JSON
+   * Recursively creates blocks for nested content
+   */
+  private async createBlocksFromContent(
+    tx: Prisma.TransactionClient,
+    pageId: string,
+    content: Record<string, unknown>,
+    userId: string,
+    parentId: string | null = null,
+    startOrder: number = 0
+  ): Promise<void> {
+    const docContent = content.content as Array<Record<string, unknown>> | undefined
+    if (!docContent) return
+
+    for (let i = 0; i < docContent.length; i++) {
+      const node = docContent[i]
+      const blockId = (node.attrs as Record<string, unknown>)?.id as string
+        || `block_${Date.now()}_${i}`
+
+      await tx.block.create({
+        data: {
+          id: blockId,
+          type: node.type as string,
+          properties: node as Prisma.JsonObject,
+          pageId,
+          parentId,
+          order: startOrder + i,
+          createdBy: userId,
+        },
+      })
     }
   }
 

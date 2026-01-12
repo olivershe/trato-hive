@@ -95,7 +95,7 @@ export function ViewProvider({
         error,
         refetch,
     } = api.deal.list.useQuery({
-        limit: 100,
+        pageSize: 100,
     });
 
     // Update deal mutation
@@ -106,8 +106,10 @@ export function ViewProvider({
     });
 
     // Transform API data to view model
+    // Note: API returns Deal with company relation included
     const deals: Deal[] =
-        dealsData?.deals.map((deal) => ({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        dealsData?.items.map((deal: any) => ({
             id: deal.id,
             title: deal.name,
             value: formatValue(deal.value ? Number(deal.value) : null),

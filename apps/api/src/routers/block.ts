@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { router, organizationProtectedProcedure } from "../trpc/init";
+import { SyncGroupService } from "../services/sync-group.service";
 
 /**
  * Block Router - Handles Tiptap editor content synchronization
@@ -33,7 +34,7 @@ export const blockRouter = router({
             const processNode = (node: any, parentId: string | null, order: number) => {
                 const id = node.attrs?.id || crypto.randomUUID();
                 const type = node.type;
-                const { id: _id, ...attrs } = node.attrs || {};
+                const { id: _id, syncGroupId, ...attrs } = node.attrs || {};
 
                 // Prepare properties
                 const properties = {
@@ -49,6 +50,7 @@ export const blockRouter = router({
                     parentId,
                     pageId,
                     order,
+                    syncGroupId: syncGroupId || null, // Preserve sync group ID
                     createdById: userId, // Use authenticated user from session
                 });
 
@@ -111,6 +113,26 @@ export const blockRouter = router({
                     });
                 }
             });
+
+            // 3. Propagate changes to synced blocks in other pages
+            const syncedBlocks = nodesToCreate.filter((n) => n.syncGroupId);
+            if (syncedBlocks.length > 0) {
+                const syncService = new SyncGroupService(db);
+                // Group by syncGroupId and propagate each
+                const syncGroups = new Map<string, typeof syncedBlocks[0]>();
+                for (const block of syncedBlocks) {
+                    syncGroups.set(block.syncGroupId, block);
+                }
+                // Propagate each sync group's changes
+                for (const [syncGroupId, block] of syncGroups) {
+                    await syncService.propagateSyncGroupChanges(
+                        syncGroupId,
+                        pageId,
+                        block.properties,
+                        block.type
+                    );
+                }
+            }
 
             return { success: true, count: nodesToCreate.length };
         }),

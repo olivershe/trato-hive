@@ -123,7 +123,6 @@ export class GeneratorService {
       where: { id: pageId },
       include: {
         deal: { select: { organizationId: true } },
-        company: { select: { organizationId: true } },
       },
     })
 
@@ -134,9 +133,8 @@ export class GeneratorService {
       })
     }
 
-    // Verify organization access via Deal or Company
-    const pageOrgId = page.deal?.organizationId || page.company?.organizationId
-    if (pageOrgId && pageOrgId !== organizationId) {
+    // Verify organization access via Deal
+    if (page.deal.organizationId !== organizationId) {
       throw new TRPCError({
         code: 'FORBIDDEN',
         message: 'Access denied to this page',

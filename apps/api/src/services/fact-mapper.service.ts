@@ -36,6 +36,23 @@ export interface FactSuggestionOptions {
   factTypes?: FactType[] // Filter by specific fact types
 }
 
+/**
+ * CitationBlock JSON structure for Tiptap editor
+ */
+export interface CitationBlockJSON {
+  type: 'citationBlock'
+  attrs: {
+    id: string
+    factId: string
+    sourceText: string
+    confidence: number
+    documentName: string
+    subject: string
+    predicate: string
+    object: string
+  }
+}
+
 export interface FactWithSource extends Fact {
   document?: { id: string; name: string } | null
 }
@@ -273,6 +290,106 @@ export class FactMapperService {
     // Map facts to entries
     const schema = database.schema as unknown as DatabaseSchema
     return this.mapFactsToEntries(facts, schema, options)
+  }
+
+  /**
+   * Get full facts by IDs for populating entry pages
+   */
+  async getFactsByIds(
+    factIds: string[],
+    organizationId: string
+  ): Promise<FactWithSource[]> {
+    if (factIds.length === 0) return []
+
+    const facts = await this.db.fact.findMany({
+      where: { id: { in: factIds } },
+      include: {
+        document: { select: { id: true, name: true } },
+      },
+    })
+
+    // Validate facts belong to org (via document -> deal or company)
+    const validatedFacts: FactWithSource[] = []
+    for (const fact of facts) {
+      if (fact.documentId) {
+        const doc = await this.db.document.findUnique({
+          where: { id: fact.documentId },
+          include: {
+            deal: { select: { organizationId: true } },
+            company: { select: { organizationId: true } },
+          },
+        })
+        const docOrgId = doc?.deal?.organizationId || doc?.company?.organizationId
+        if (docOrgId === organizationId) {
+          validatedFacts.push(fact)
+        }
+      } else if (fact.companyId) {
+        const company = await this.db.company.findUnique({
+          where: { id: fact.companyId },
+          select: { organizationId: true },
+        })
+        if (company?.organizationId === organizationId) {
+          validatedFacts.push(fact)
+        }
+      }
+    }
+
+    return validatedFacts
+  }
+
+  /**
+   * Generate CitationBlock JSON content from facts
+   * Used to populate entry pages with fact citations
+   */
+  generateCitationBlocks(facts: FactWithSource[]): CitationBlockJSON[] {
+    return facts.map((fact) => ({
+      type: 'citationBlock' as const,
+      attrs: {
+        id: `citation_${fact.id}`,
+        factId: fact.id,
+        sourceText: fact.sourceText || 'Source text unavailable',
+        confidence: fact.confidence,
+        documentName: fact.document?.name || 'Unknown Document',
+        subject: fact.subject,
+        predicate: fact.predicate,
+        object: fact.object,
+      },
+    }))
+  }
+
+  /**
+   * Generate Tiptap document JSON for populating an entry page with citations
+   * Creates a structured document with header and citation blocks
+   */
+  generateEntryPageContent(
+    entryTitle: string,
+    facts: FactWithSource[]
+  ): Record<string, unknown> {
+    const citationBlocks = this.generateCitationBlocks(facts)
+
+    return {
+      type: 'doc',
+      content: [
+        // Header paragraph
+        {
+          type: 'paragraph',
+          attrs: { id: `para_header_${Date.now()}` },
+          content: [
+            {
+              type: 'text',
+              text: `Evidence for "${entryTitle}"`,
+              marks: [{ type: 'bold' }],
+            },
+          ],
+        },
+        // Divider
+        {
+          type: 'horizontalRule',
+        },
+        // Citation blocks for each fact
+        ...citationBlocks,
+      ],
+    }
   }
 
   // ===========================================================================

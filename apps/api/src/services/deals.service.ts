@@ -159,8 +159,19 @@ export class DealService {
   }
 
   /**
-   * Create new deal with Notion-style page
+   * Create new deal with Notion-style page tree
    * Multi-tenancy: Sets organizationId from context
+   *
+   * Creates the following page structure:
+   * - Root Page (deal name)
+   *   - Due Diligence (folder)
+   *     - Financial Analysis
+   *     - Legal Review
+   *     - Technical DD
+   *   - DD Tracker (database)
+   *   - Data Room
+   *   - Meeting Notes
+   *   - Key Questions
    */
   async create(
     input: RouterCreateDealInput,
@@ -168,7 +179,7 @@ export class DealService {
     userId: string
   ): Promise<Deal> {
     return this.db.$transaction(async (tx) => {
-      // 1. Create the deal - cast enum fields
+      // 1. Create the deal
       const deal = await tx.deal.create({
         data: {
           name: input.name,
@@ -185,18 +196,75 @@ export class DealService {
         },
       });
 
-      // 2. Create the associated Page (Notion-style)
-      const page = await tx.page.create({
+      // 2. Create root page
+      const rootPage = await tx.page.create({
         data: {
           dealId: deal.id,
           title: deal.name,
+          icon: '📊',
+          order: 0,
         },
       });
 
-      // 3. Create default DealHeaderBlock
+      // 3. Create Due Diligence section
+      const dueDiligencePage = await tx.page.create({
+        data: {
+          dealId: deal.id,
+          parentPageId: rootPage.id,
+          title: 'Due Diligence',
+          icon: '🔍',
+          order: 0,
+        },
+      });
+
+      // 4. Create DD sub-pages
+      await tx.page.createMany({
+        data: [
+          { dealId: deal.id, parentPageId: dueDiligencePage.id, title: 'Financial Analysis', icon: '💰', order: 0 },
+          { dealId: deal.id, parentPageId: dueDiligencePage.id, title: 'Legal Review', icon: '⚖️', order: 1 },
+          { dealId: deal.id, parentPageId: dueDiligencePage.id, title: 'Technical DD', icon: '🔧', order: 2 },
+        ],
+      });
+
+      // 5. Create DD Tracker database page
+      const ddTrackerPage = await tx.page.create({
+        data: {
+          dealId: deal.id,
+          parentPageId: rootPage.id,
+          title: 'DD Tracker',
+          icon: '📋',
+          isDatabase: true,
+          order: 1,
+        },
+      });
+
+      // 6. Create the Database linked to DD Tracker page
+      const ddTemplate = DATABASE_TEMPLATES.find(t => t.id === 'dd-tracker')!;
+      await tx.database.create({
+        data: {
+          name: 'DD Tracker',
+          description: 'Track due diligence tasks for this deal',
+          schema: ddTemplate.schema as unknown as Prisma.InputJsonValue,
+          organizationId,
+          dealId: deal.id,
+          pageId: ddTrackerPage.id,
+          createdById: userId,
+        },
+      });
+
+      // 7. Create other top-level pages
+      await tx.page.createMany({
+        data: [
+          { dealId: deal.id, parentPageId: rootPage.id, title: 'Data Room', icon: '📁', order: 2 },
+          { dealId: deal.id, parentPageId: rootPage.id, title: 'Meeting Notes', icon: '📝', order: 3 },
+          { dealId: deal.id, parentPageId: rootPage.id, title: 'Key Questions', icon: '❓', order: 4 },
+        ],
+      });
+
+      // 8. Create deal header block on root page
       await tx.block.create({
         data: {
-          pageId: page.id,
+          pageId: rootPage.id,
           type: 'deal_header',
           order: 0,
           properties: {
@@ -205,36 +273,6 @@ export class DealService {
             stage: deal.stage,
             type: deal.type,
             value: deal.value,
-          },
-          createdBy: userId,
-        },
-      });
-
-      // 4. Create Due Diligence Tracker Database
-      const ddTemplate = DATABASE_TEMPLATES.find(t => t.id === 'dd-tracker')!;
-      const ddTrackerDb = await tx.database.create({
-        data: {
-          name: `${deal.name} - Due Diligence Tracker`,
-          description: 'Track due diligence tasks for this deal',
-          schema: ddTemplate.schema as unknown as Prisma.InputJsonValue,
-          organizationId,
-          createdById: userId,
-        },
-      });
-
-      // 5. Create DatabaseViewBlock linking to DD Tracker
-      await tx.block.create({
-        data: {
-          pageId: page.id,
-          type: 'databaseViewBlock',
-          order: 1,
-          properties: {
-            databaseId: ddTrackerDb.id,
-            viewType: 'table',
-            filters: [],
-            sortBy: null,
-            groupBy: null,
-            hiddenColumns: [],
           },
           createdBy: userId,
         },

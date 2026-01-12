@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { useParams } from "next/navigation";
 import { EditorRoot, EditorContent, JSONContent } from "novel";
 import { type Editor } from "@tiptap/core";
-import { defaultExtensions } from "./extensions";
+import { defaultExtensions, PageMention, createWikiLinkSuggestion } from "./extensions";
 import { slashCommand } from "./SlashCommand";
 import { useBlockSync, type SaveStatus } from "../../hooks/useBlockSync";
 import { CheckCircle2, Cloud, AlertCircle } from "lucide-react";
@@ -24,7 +25,8 @@ import CollaborationCursor from "@tiptap/extension-collaboration-cursor";
 
 const getRandomColor = () => '#' + Math.floor(Math.random() * 16777215).toString(16);
 
-const extensions = [...defaultExtensions, slashCommand];
+// Base extensions without PageMention (configured per-instance with dealId)
+const baseExtensions = [...defaultExtensions, slashCommand];
 
 interface BlockEditorProps {
     pageId: string; // Required for sync/room
@@ -57,6 +59,10 @@ function BlockEditorInner({
     className,
     editable = true,
 }: BlockEditorProps) {
+    // Get dealId from route params for wiki link suggestions
+    const params = useParams();
+    const dealId = params?.id as string | undefined;
+
     // 1. Sync Hook (Persistence to DB)
     const { updateContent, status } = useBlockSync(pageId, initialContent);
 
@@ -91,10 +97,15 @@ function BlockEditorInner({
         );
     }
 
-    // 3. Configure Tiptap Extensions with Yjs
+    // 3. Configure Tiptap Extensions with Yjs + Wiki Links
     const collabExtensions = useMemo(() => {
+        const wikiLinkSuggestion = createWikiLinkSuggestion(dealId);
         return [
-            ...extensions,
+            ...baseExtensions,
+            // Wiki links with [[ trigger
+            PageMention.configure({
+                suggestion: wikiLinkSuggestion,
+            }),
             Collaboration.configure({
                 document: doc,
             }),
@@ -106,7 +117,7 @@ function BlockEditorInner({
                 },
             }),
         ];
-    }, [doc, provider, userInfo]);
+    }, [doc, provider, userInfo, dealId]);
 
     return (
         <div className={`relative w-full max-w-screen-lg group ${className}`}>

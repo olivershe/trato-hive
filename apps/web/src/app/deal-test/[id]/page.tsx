@@ -10,29 +10,32 @@ interface PageProps {
 }
 
 export default async function DealTestPage({ params }: PageProps) {
-    // 1. Fetch the Deal (to find the Page ID)
-    // In real app, we might look up Page by dealId directly if relation is set
+    // 1. Fetch the Deal with root page (first page without parent)
     const deal = await prisma.deal.findUnique({
         where: { id: params.id },
-        include: { page: true },
+        include: {
+            pages: {
+                where: { parentPageId: null },
+                take: 1,
+            }
+        },
     });
 
-    if (!deal || !deal.page) {
-        // Fallback: Try to find page directly if ID was actually a page ID?
-        // Or just 404
+    const rootPage = deal?.pages[0];
+    if (!deal || !rootPage) {
         return notFound();
     }
 
     // 2. Fetch Recursive Blocks
     // This runs on the server (RSC), zero client bundle overhead for text!
-    const blocks = await getRecursivePageBlocks(deal.page.id);
+    const blocks = await getRecursivePageBlocks(rootPage.id);
 
     return (
         <div className="min-h-screen bg-alabaster dark:bg-deep-grey">
             <div className="max-w-screen-lg mx-auto py-12 px-8">
                 {/* Debug Info */}
                 <div className="mb-8 p-4 bg-yellow-100/50 text-xs font-mono text-charcoal/50 rounded border border-yellow-200">
-                    SSR Render Mode | Blocks: {blocks.length} | Page ID: {deal.page.id}
+                    SSR Render Mode | Blocks: {blocks.length} | Page ID: {rootPage.id}
                 </div>
 
                 {/* The Document */}

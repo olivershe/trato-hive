@@ -27,6 +27,8 @@ import { diligenceRouter } from '../routers/diligence';
 import { vdrRouter } from '../routers/vdr';
 import { generatorRouter } from '../routers/generator';
 import { sourcingRouter } from '../routers/sourcing';
+import { pageRouter } from '../routers/page';
+import { syncGroupRouter } from '../routers/sync-group';
 
 /**
  * Root application router
@@ -40,6 +42,8 @@ export const appRouter = router({
   vdr: vdrRouter,
   generator: generatorRouter,
   sourcing: sourcingRouter,
+  page: pageRouter,
+  syncGroup: syncGroupRouter,
 });
 
 /**
