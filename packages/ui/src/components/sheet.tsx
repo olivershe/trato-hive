@@ -104,6 +104,28 @@ export function SheetContent({
 }: SheetContentProps) {
   const { open, onOpenChange } = useSheetContext();
   const contentRef = React.useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = React.useState(false);
+  const [isAnimating, setIsAnimating] = React.useState(false);
+
+  // Handle open/close with animation
+  React.useEffect(() => {
+    if (open) {
+      setIsVisible(true);
+      // Small delay to ensure DOM is ready before animation starts
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setIsAnimating(true);
+        });
+      });
+    } else {
+      setIsAnimating(false);
+      // Wait for animation to complete before hiding
+      const timer = setTimeout(() => {
+        setIsVisible(false);
+      }, 450);
+      return () => clearTimeout(timer);
+    }
+  }, [open]);
 
   // Close on Escape key
   React.useEffect(() => {
@@ -130,13 +152,27 @@ export function SheetContent({
     };
   }, [open]);
 
-  if (!open) return null;
+  if (!isVisible) return null;
+
+  const getTransform = () => {
+    if (isAnimating) return "translateX(0) scale(1)";
+    switch (side) {
+      case "right": return "translateX(120%) scale(0.85)";
+      case "left": return "translateX(-120%) scale(0.85)";
+      case "top": return "translateY(-120%) scale(0.85)";
+      case "bottom": return "translateY(120%) scale(0.85)";
+      default: return "translateX(120%) scale(0.85)";
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50">
-      {/* Overlay */}
+      {/* Overlay - light touch to keep background visible */}
       <div
-        className="fixed inset-0 bg-charcoal/50 backdrop-blur-sm transition-opacity"
+        className={cn(
+          "fixed inset-0 bg-charcoal/10 transition-opacity duration-500 ease-out",
+          isAnimating ? "opacity-100" : "opacity-0"
+        )}
         onClick={() => {
           onOpenChange(false);
           onClose?.();
@@ -149,11 +185,15 @@ export function SheetContent({
         role="dialog"
         aria-modal="true"
         data-state={open ? "open" : "closed"}
+        style={{
+          transform: getTransform(),
+          transition: "transform 450ms cubic-bezier(0.32, 0.72, 0, 1), opacity 400ms ease-out",
+          opacity: isAnimating ? 1 : 0,
+        }}
         className={cn(
-          "fixed z-50 gap-4 bg-alabaster p-6 shadow-lg transition-transform duration-300 ease-in-out",
+          "fixed z-50 gap-4 bg-alabaster p-6 shadow-lg",
           "dark:bg-deep-grey dark:border-charcoal",
           sideStyles[side],
-          open ? "translate-x-0" : side === "right" ? "translate-x-full" : "-translate-x-full",
           className
         )}
         {...props}

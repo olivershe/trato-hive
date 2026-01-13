@@ -1790,7 +1790,7 @@ function EntryFormSheet({ database, entry, open, onOpenChange }: EntryFormSheetP
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto">
+      <SheetContent side="right" className="w-[calc(100%-24px)] sm:max-w-lg m-3 h-[calc(100%-24px)] overflow-y-auto bg-white/25 backdrop-blur-md border border-white/40 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] ring-1 ring-white/30 dark:bg-charcoal/25 dark:border-white/15 dark:ring-white/10">
         <SheetClose className="absolute right-4 top-4" />
         <SheetHeader>
           <SheetTitle>{entry ? "Edit Entry" : "New Entry"}</SheetTitle>
@@ -1810,18 +1810,18 @@ function EntryFormSheet({ database, entry, open, onOpenChange }: EntryFormSheetP
             </div>
           ))}
 
-          <SheetFooter className="pt-6">
+          <SheetFooter className="pt-6 border-t border-white/20 dark:border-white/10">
             <button
               type="button"
               onClick={() => onOpenChange(false)}
-              className="px-4 py-2 text-sm font-medium text-charcoal hover:bg-bone rounded-md transition-colors"
+              className="px-5 py-2.5 text-sm font-medium text-charcoal bg-white/20 hover:bg-white/40 backdrop-blur-sm border border-white/30 rounded-full transition-all dark:text-cultured-white dark:bg-white/10 dark:hover:bg-white/20 dark:border-white/15"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isLoading}
-              className="px-4 py-2 text-sm font-medium text-white bg-gold hover:bg-gold/90 rounded-md transition-colors disabled:opacity-50"
+              className="px-5 py-2.5 text-sm font-medium text-white bg-gold/90 hover:bg-gold backdrop-blur-sm rounded-full shadow-lg shadow-gold/20 transition-all disabled:opacity-50"
             >
               {isLoading ? "Saving..." : entry ? "Update" : "Create"}
             </button>
@@ -1859,7 +1859,7 @@ function FormField({ column, value, onChange }: FormFieldProps) {
         <select
           value={String(value ?? "")}
           onChange={(e) => onChange(e.target.value || null)}
-          className="w-full px-3 py-2 rounded-md border border-bone bg-white text-charcoal focus:border-gold focus:ring-1 focus:ring-gold"
+          className="w-full px-4 py-2.5 rounded-xl border border-white/50 bg-white/30 backdrop-blur-sm text-charcoal shadow-sm focus:border-gold focus:ring-2 focus:ring-gold/30 focus:bg-white/50 transition-all dark:bg-white/10 dark:border-white/20 dark:text-cultured-white dark:focus:bg-white/15"
         >
           <option value="">Select...</option>
           {column.options?.map((opt) => (
@@ -1900,7 +1900,7 @@ function FormField({ column, value, onChange }: FormFieldProps) {
           type="number"
           value={value != null ? String(value) : ""}
           onChange={(e) => onChange(e.target.value ? parseFloat(e.target.value) : null)}
-          className="w-full px-3 py-2 rounded-md border border-bone bg-white text-charcoal focus:border-gold focus:ring-1 focus:ring-gold"
+          className="w-full px-4 py-2.5 rounded-xl border border-white/50 bg-white/30 backdrop-blur-sm text-charcoal placeholder:text-charcoal/40 shadow-sm focus:border-gold focus:ring-2 focus:ring-gold/30 focus:bg-white/50 transition-all dark:bg-white/10 dark:border-white/20 dark:text-cultured-white dark:placeholder:text-cultured-white/40 dark:focus:bg-white/15"
         />
       );
 
@@ -1910,7 +1910,7 @@ function FormField({ column, value, onChange }: FormFieldProps) {
           type="date"
           value={String(value ?? "")}
           onChange={(e) => onChange(e.target.value || null)}
-          className="w-full px-3 py-2 rounded-md border border-bone bg-white text-charcoal focus:border-gold focus:ring-1 focus:ring-gold"
+          className="w-full px-4 py-2.5 rounded-xl border border-white/50 bg-white/30 backdrop-blur-sm text-charcoal placeholder:text-charcoal/40 shadow-sm focus:border-gold focus:ring-2 focus:ring-gold/30 focus:bg-white/50 transition-all dark:bg-white/10 dark:border-white/20 dark:text-cultured-white dark:placeholder:text-cultured-white/40 dark:focus:bg-white/15"
         />
       );
 
@@ -1921,7 +1921,7 @@ function FormField({ column, value, onChange }: FormFieldProps) {
           value={String(value ?? "")}
           onChange={(e) => onChange(e.target.value || null)}
           placeholder="https://..."
-          className="w-full px-3 py-2 rounded-md border border-bone bg-white text-charcoal focus:border-gold focus:ring-1 focus:ring-gold"
+          className="w-full px-4 py-2.5 rounded-xl border border-white/50 bg-white/30 backdrop-blur-sm text-charcoal placeholder:text-charcoal/40 shadow-sm focus:border-gold focus:ring-2 focus:ring-gold/30 focus:bg-white/50 transition-all dark:bg-white/10 dark:border-white/20 dark:text-cultured-white dark:placeholder:text-cultured-white/40 dark:focus:bg-white/15"
         />
       );
 
@@ -1931,7 +1931,7 @@ function FormField({ column, value, onChange }: FormFieldProps) {
           type="text"
           value={String(value ?? "")}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full px-3 py-2 rounded-md border border-bone bg-white text-charcoal focus:border-gold focus:ring-1 focus:ring-gold"
+          className="w-full px-4 py-2.5 rounded-xl border border-white/50 bg-white/30 backdrop-blur-sm text-charcoal placeholder:text-charcoal/40 shadow-sm focus:border-gold focus:ring-2 focus:ring-gold/30 focus:bg-white/50 transition-all dark:bg-white/10 dark:border-white/20 dark:text-cultured-white dark:placeholder:text-cultured-white/40 dark:focus:bg-white/15"
         />
       );
   }
