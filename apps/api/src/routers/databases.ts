@@ -287,4 +287,50 @@ export const databasesRouter = router({
         }
       )
     }),
+
+  // ===========================================================================
+  // RELATION Column Support
+  // ===========================================================================
+
+  /**
+   * database.getEntryTitles - Batch fetch entry titles for relation display
+   * Auth: organizationProtectedProcedure
+   */
+  getEntryTitles: organizationProtectedProcedure
+    .input(
+      z.object({
+        databaseId: z.string().cuid(),
+        entryIds: z.array(z.string().cuid()),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const service = new DatabaseService(ctx.db)
+      return service.getEntryTitles(
+        input.databaseId,
+        input.entryIds,
+        ctx.organizationId
+      )
+    }),
+
+  /**
+   * database.searchEntries - Search entries for relation picker
+   * Auth: organizationProtectedProcedure
+   */
+  searchEntries: organizationProtectedProcedure
+    .input(
+      z.object({
+        databaseId: z.string().cuid(),
+        query: z.string().default(''),
+        limit: z.number().int().min(1).max(50).default(20),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const service = new DatabaseService(ctx.db)
+      return service.searchEntries(
+        input.databaseId,
+        input.query,
+        ctx.organizationId,
+        input.limit
+      )
+    }),
 })
