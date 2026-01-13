@@ -436,6 +436,10 @@ enum DatabaseColumnType {
   PERSON
   CHECKBOX
   URL
+  STATUS
+  RELATION
+  ROLLUP
+  FORMULA
 }
 
 model Database {

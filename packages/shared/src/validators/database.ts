@@ -7,6 +7,61 @@ import { DatabaseColumnType } from '../types/database'
 const columnTypeValues = Object.values(DatabaseColumnType) as [string, ...string[]]
 
 // =============================================================================
+// Type-Specific Config Validators
+// =============================================================================
+
+/**
+ * StatusOption - A single status option with visual styling
+ */
+export const statusOptionSchema = z.object({
+  id: z.string().min(1, 'Status option ID is required'),
+  name: z.string().min(1, 'Status name is required').max(50, 'Status name too long'),
+  color: z.enum(['gray', 'blue', 'green', 'yellow', 'red', 'purple'], {
+    errorMap: () => ({ message: 'Invalid status color' }),
+  }),
+})
+
+export type StatusOptionInput = z.infer<typeof statusOptionSchema>
+
+/**
+ * RelationConfig - Configuration for linking to another database
+ */
+export const relationConfigSchema = z.object({
+  targetDatabaseId: z.string().cuid({ message: 'Invalid target database ID' }),
+  relationType: z.enum(['one', 'many'], {
+    errorMap: () => ({ message: 'Relation type must be "one" or "many"' }),
+  }),
+})
+
+export type RelationConfigInput = z.infer<typeof relationConfigSchema>
+
+/**
+ * RollupConfig - Configuration for aggregating related entries
+ */
+export const rollupConfigSchema = z.object({
+  sourceRelationColumnId: z.string().min(1, 'Source relation column ID is required'),
+  targetColumnId: z.string().min(1, 'Target column ID is required'),
+  aggregation: z.enum(
+    ['count', 'count_values', 'sum', 'avg', 'min', 'max', 'concat', 'percent_empty', 'percent_not_empty'],
+    { errorMap: () => ({ message: 'Invalid rollup aggregation' }) }
+  ),
+})
+
+export type RollupConfigInput = z.infer<typeof rollupConfigSchema>
+
+/**
+ * FormulaConfig - Configuration for computed columns
+ */
+export const formulaConfigSchema = z.object({
+  formula: z.string().min(1, 'Formula is required').max(1000, 'Formula too long'),
+  resultType: z.enum(['text', 'number', 'date', 'boolean'], {
+    errorMap: () => ({ message: 'Invalid formula result type' }),
+  }),
+})
+
+export type FormulaConfigInput = z.infer<typeof formulaConfigSchema>
+
+// =============================================================================
 // Column Schema Validators
 // =============================================================================
 
@@ -19,6 +74,11 @@ export const databaseColumnSchema = z.object({
   type: z.enum(columnTypeValues, { errorMap: () => ({ message: 'Invalid column type' }) }),
   options: z.array(z.string()).optional(), // For SELECT/MULTI_SELECT
   width: z.number().min(50).max(500).optional(), // Column width in pixels
+  // New type-specific configurations
+  statusOptions: z.array(statusOptionSchema).optional(), // For STATUS type
+  relationConfig: relationConfigSchema.optional(), // For RELATION type
+  rollupConfig: rollupConfigSchema.optional(), // For ROLLUP type
+  formulaConfig: formulaConfigSchema.optional(), // For FORMULA type
 })
 
 export type DatabaseColumnInput = z.infer<typeof databaseColumnSchema>

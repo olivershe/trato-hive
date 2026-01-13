@@ -69,11 +69,15 @@
     position: relative;
 }
 
-/* When dragging, show visual feedback */
+/* When dragging, show subtle visual feedback */
 .ProseMirror-selectednode {
-    outline: 2px solid #EE8D1D;
+    outline: 1px solid rgba(0, 0, 0, 0.1);
     outline-offset: 2px;
     border-radius: 4px;
+}
+
+.dark .ProseMirror-selectednode {
+    outline: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 /* Drop indicator line */

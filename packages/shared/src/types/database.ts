@@ -15,10 +15,91 @@ export const DatabaseColumnType = {
   PERSON: 'PERSON',
   CHECKBOX: 'CHECKBOX',
   URL: 'URL',
+  STATUS: 'STATUS',
+  RELATION: 'RELATION',
+  ROLLUP: 'ROLLUP',
+  FORMULA: 'FORMULA',
 } as const
 
 export type DatabaseColumnTypeValue =
   (typeof DatabaseColumnType)[keyof typeof DatabaseColumnType]
+
+// =============================================================================
+// STATUS Column Type Configuration
+// =============================================================================
+
+/**
+ * StatusOption - A single status option with visual styling
+ */
+export type StatusColor = 'gray' | 'blue' | 'green' | 'yellow' | 'red' | 'purple'
+
+export interface StatusOption {
+  id: string
+  name: string
+  color: StatusColor
+}
+
+export const DEFAULT_STATUS_OPTIONS: StatusOption[] = [
+  { id: 'not_started', name: 'Not Started', color: 'gray' },
+  { id: 'in_progress', name: 'In Progress', color: 'blue' },
+  { id: 'done', name: 'Done', color: 'green' },
+]
+
+// =============================================================================
+// RELATION Column Type Configuration
+// =============================================================================
+
+/**
+ * RelationConfig - Configuration for linking to another database
+ */
+export interface RelationConfig {
+  targetDatabaseId: string
+  relationType: 'one' | 'many'
+}
+
+// =============================================================================
+// ROLLUP Column Type Configuration
+// =============================================================================
+
+/**
+ * RollupAggregation - Supported aggregation functions
+ */
+export type RollupAggregation =
+  | 'count'
+  | 'count_values'
+  | 'sum'
+  | 'avg'
+  | 'min'
+  | 'max'
+  | 'concat'
+  | 'percent_empty'
+  | 'percent_not_empty'
+
+/**
+ * RollupConfig - Configuration for aggregating related entries
+ */
+export interface RollupConfig {
+  sourceRelationColumnId: string // RELATION column in this database
+  targetColumnId: string // Column in target database to aggregate
+  aggregation: RollupAggregation
+}
+
+// =============================================================================
+// FORMULA Column Type Configuration
+// =============================================================================
+
+/**
+ * FormulaResultType - Expected result type of a formula
+ */
+export type FormulaResultType = 'text' | 'number' | 'date' | 'boolean'
+
+/**
+ * FormulaConfig - Configuration for computed columns
+ */
+export interface FormulaConfig {
+  formula: string // e.g., 'prop("Price") * prop("Quantity")'
+  resultType: FormulaResultType
+}
 
 /**
  * DatabaseColumn - Definition for a single column in the database schema
@@ -29,6 +110,11 @@ export interface DatabaseColumn {
   type: DatabaseColumnTypeValue
   options?: string[] // For SELECT/MULTI_SELECT types
   width?: number // Column width in pixels (default: 150)
+  // New type-specific configurations
+  statusOptions?: StatusOption[] // For STATUS type
+  relationConfig?: RelationConfig // For RELATION type
+  rollupConfig?: RollupConfig // For ROLLUP type
+  formulaConfig?: FormulaConfig // For FORMULA type
 }
 
 /**

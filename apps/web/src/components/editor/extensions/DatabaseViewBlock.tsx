@@ -6,9 +6,13 @@
  */
 import { Node, mergeAttributes } from "@tiptap/core";
 import { ReactNodeViewRenderer, NodeViewWrapper, NodeViewProps } from "@tiptap/react";
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useParams } from "next/navigation";
-import { Database, Table2, LayoutGrid, Plus, Link2, Loader2, Trash2, Copy, Edit, Settings, X, GripVertical } from "lucide-react";
+import {
+  Database, Table2, LayoutGrid, Plus, Link2, Loader2, Trash2, Copy, Edit, Settings, X, GripVertical,
+  Type, Hash, Calendar, CheckSquare, Link, User, ListChecks, Circle, ArrowUpRight, Search, Sigma, Smile
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   DndContext,
@@ -73,12 +77,44 @@ interface DatabaseViewBlockAttributes {
   hiddenColumns: string[];
 }
 
+// Status option type for STATUS columns
+type StatusColor = "gray" | "blue" | "green" | "yellow" | "red" | "purple";
+interface StatusOption {
+  id: string;
+  name: string;
+  color: StatusColor;
+}
+
+// Relation config for RELATION columns
+interface RelationConfig {
+  targetDatabaseId: string;
+  relationType: "one" | "many";
+}
+
+// Rollup config for ROLLUP columns
+interface RollupConfig {
+  sourceRelationColumnId: string;
+  targetColumnId: string;
+  aggregation: "count" | "count_values" | "sum" | "avg" | "min" | "max" | "concat" | "percent_empty" | "percent_not_empty";
+}
+
+// Formula config for FORMULA columns
+interface FormulaConfig {
+  formula: string;
+  resultType: "text" | "number" | "date" | "boolean";
+}
+
 interface DatabaseColumn {
   id: string;
   name: string;
   type: string;
   options?: string[];
   width?: number;
+  // New type-specific configurations
+  statusOptions?: StatusOption[];
+  relationConfig?: RelationConfig;
+  rollupConfig?: RollupConfig;
+  formulaConfig?: FormulaConfig;
 }
 
 interface DatabaseSchema {
@@ -279,10 +315,10 @@ function DatabasePicker({ mode, onModeChange, onSelect, dealId }: DatabasePicker
   const handleCreate = () => {
     if (!newDbName.trim() || !dealId) return;
 
-    // Get template schema or empty schema
+    // Get template schema or use default "Name" column for blank
     const schema =
       selectedTemplate === "blank" || !selectedTemplate
-        ? { columns: [{ id: "col_title", name: "Title", type: "TEXT" as const }] }
+        ? { columns: [{ name: "Name", type: "TEXT" as const }] }
         : getTemplateSchema(selectedTemplate);
 
     createMutation.mutate({
@@ -523,17 +559,9 @@ function DatabaseView({
 
   return (
     <div className="rounded-lg border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-deep-grey overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200">
-      {/* Header with gold accent and subtle hexagon pattern */}
-      <div className="relative flex items-center justify-between px-2.5 py-1.5 border-b border-bone dark:border-charcoal/60 bg-alabaster dark:bg-surface-dark border-t-2 border-t-gold overflow-hidden">
-        {/* Subtle hexagon background pattern */}
-        <div
-          className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05] pointer-events-none"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='49' viewBox='0 0 28 49'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23D4AF37' fill-rule='nonzero'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-            backgroundSize: '14px 24px'
-          }}
-        />
-        <div className="relative flex items-center gap-1.5">
+      {/* Header */}
+      <div className="flex items-center justify-between px-2.5 py-1.5 border-b border-bone dark:border-charcoal/60 bg-alabaster dark:bg-surface-dark">
+        <div className="flex items-center gap-1.5">
           <Database className="w-3.5 h-3.5 text-gold" />
           <span className="font-medium text-xs text-charcoal dark:text-cultured-white">{database.name}</span>
         </div>
@@ -725,6 +753,29 @@ function DatabaseTableView({ database, sortBy, hiddenColumns, onSortChange }: Da
   // Column order state (for drag-to-reorder)
   const [columnOrder, setColumnOrder] = useState<string[]>(() => visibleColumns.map((col) => col.id));
 
+  // Sync columnOrder when visibleColumns changes (new column added/removed)
+  const visibleColumnIds = visibleColumns.map((col) => col.id);
+  const prevColumnIdsRef = useRef<string[]>(visibleColumnIds);
+
+  if (prevColumnIdsRef.current.join(',') !== visibleColumnIds.join(',')) {
+    const currentIds = new Set(columnOrder);
+    const newIds = visibleColumnIds;
+
+    // Check if there are new columns that aren't in columnOrder
+    const hasNewColumns = newIds.some((id) => !currentIds.has(id));
+    // Check if there are removed columns
+    const hasRemovedColumns = columnOrder.some((id) => !newIds.includes(id));
+
+    if (hasNewColumns || hasRemovedColumns) {
+      // Keep existing order for columns that still exist, append new ones
+      const existingOrder = columnOrder.filter((id) => newIds.includes(id));
+      const newColumnIds = newIds.filter((id) => !currentIds.has(id));
+      setColumnOrder([...existingOrder, ...newColumnIds]);
+    }
+
+    prevColumnIdsRef.current = visibleColumnIds;
+  }
+
   // Get columns in current order
   const columns = columnOrder
     .map((id) => visibleColumns.find((col) => col.id === id))
@@ -737,6 +788,32 @@ function DatabaseTableView({ database, sortBy, hiddenColumns, onSortChange }: Da
   // Column config state
   const [configColumn, setConfigColumn] = useState<DatabaseColumn | null>(null);
   const [configPosition, setConfigPosition] = useState<{ x: number; y: number } | null>(null);
+
+  // Add column state
+  const [showAddColumn, setShowAddColumn] = useState(false);
+  const [newColName, setNewColName] = useState("");
+  const addColumnContainerRef = useRef<HTMLDivElement>(null);
+  const [addColumnDropdownPos, setAddColumnDropdownPos] = useState<{ top: number; left: number } | null>(null);
+
+  // Update dropdown position when showing add column
+  useEffect(() => {
+    if (showAddColumn && addColumnContainerRef.current) {
+      const rect = addColumnContainerRef.current.getBoundingClientRect();
+      setAddColumnDropdownPos({
+        top: rect.bottom + 4,
+        left: Math.max(8, rect.left - 72), // Position left, but don't go off-screen
+      });
+    }
+  }, [showAddColumn]);
+
+  const utils = api.useUtils();
+  const addColumnMutation = api.database.addColumn.useMutation({
+    onSuccess: () => {
+      utils.database.getById.invalidate({ id: database.id });
+      setShowAddColumn(false);
+      setNewColName("");
+    },
+  });
 
   // Column resize state
   const [columnWidths, setColumnWidths] = useState<Record<string, number>>(() => {
@@ -779,7 +856,10 @@ function DatabaseTableView({ database, sortBy, hiddenColumns, onSortChange }: Da
       e.preventDefault();
       const rect = (e.target as HTMLElement).getBoundingClientRect();
       setConfigColumn(col);
-      setConfigPosition({ x: rect.left, y: rect.bottom + 4 });
+      // Ensure popover stays on screen (w-56 = 224px wide)
+      const popoverWidth = 224;
+      const x = Math.min(rect.left, window.innerWidth - popoverWidth - 16);
+      setConfigPosition({ x, y: rect.bottom + 4 });
     } else {
       // Normal click toggles sort
       if (sortBy?.columnId === col.id) {
@@ -871,11 +951,109 @@ function DatabaseTableView({ database, sortBy, hiddenColumns, onSortChange }: Da
                       e.stopPropagation();
                       const rect = (e.target as HTMLElement).getBoundingClientRect();
                       setConfigColumn(column);
-                      setConfigPosition({ x: rect.left, y: rect.bottom + 4 });
+                      // Ensure popover stays on screen (w-56 = 224px wide)
+                      const popoverWidth = 224;
+                      const x = Math.min(rect.left, window.innerWidth - popoverWidth - 16);
+                      setConfigPosition({ x, y: rect.bottom + 4 });
                     }}
                   />
                 ))}
               </SortableContext>
+              {/* Add Column - Notion-style inline input + type picker */}
+              <th className={`relative ${showAddColumn ? "min-w-[200px]" : "w-8"} px-1 transition-all`} role="columnheader">
+                {!showAddColumn ? (
+                  <button
+                    onClick={() => setShowAddColumn(true)}
+                    className="w-6 h-6 flex items-center justify-center text-charcoal/40 dark:text-cultured-white/40 hover:text-gold hover:bg-gold/10 rounded transition-colors"
+                    title="Add column"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                  </button>
+                ) : (
+                  <div ref={addColumnContainerRef}>
+                    {/* Inline name input styled like column header */}
+                    <div className="flex items-center gap-1.5 px-2 py-1.5">
+                      <Smile className="w-3.5 h-3.5 text-charcoal/40 dark:text-cultured-white/40" />
+                      <input
+                        type="text"
+                        value={newColName}
+                        onChange={(e) => setNewColName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Escape") {
+                            setShowAddColumn(false);
+                            setNewColName("");
+                          }
+                        }}
+                        placeholder="Type property name..."
+                        autoFocus
+                        className="flex-1 bg-transparent text-[11px] font-medium text-charcoal dark:text-cultured-white placeholder:text-charcoal/40 dark:placeholder:text-cultured-white/40 focus:outline-none"
+                      />
+                    </div>
+                    {/* Type picker dropdown - rendered via portal to escape overflow */}
+                    {addColumnDropdownPos && createPortal(
+                      <div
+                        className="fixed z-[9999] w-72 bg-alabaster dark:bg-deep-grey rounded-lg border border-bone dark:border-charcoal/60 shadow-xl"
+                        style={{ top: addColumnDropdownPos.top, left: addColumnDropdownPos.left }}
+                      >
+                        {/* Header */}
+                        <div className="px-3 py-2 border-b border-bone/50 dark:border-charcoal/50 flex items-center gap-2">
+                          <span className="text-[11px] font-medium text-charcoal/60 dark:text-cultured-white/60">Select type</span>
+                          <Search className="w-3 h-3 text-charcoal/40 dark:text-cultured-white/40" />
+                        </div>
+                        {/* Type grid - 2 columns */}
+                        <div className="p-1.5 grid grid-cols-2 gap-0.5">
+                          {[
+                            { type: "TEXT", label: "Text", icon: Type },
+                            { type: "NUMBER", label: "Number", icon: Hash },
+                            { type: "SELECT", label: "Select", icon: Circle },
+                            { type: "MULTI_SELECT", label: "Multi-select", icon: ListChecks },
+                            { type: "STATUS", label: "Status", icon: Circle },
+                            { type: "DATE", label: "Date", icon: Calendar },
+                            { type: "PERSON", label: "Person", icon: User },
+                            { type: "CHECKBOX", label: "Checkbox", icon: CheckSquare },
+                            { type: "URL", label: "URL", icon: Link },
+                            { type: "RELATION", label: "Relation", icon: ArrowUpRight },
+                            { type: "ROLLUP", label: "Rollup", icon: Search },
+                            { type: "FORMULA", label: "Formula", icon: Sigma },
+                          ].map(({ type, label, icon: Icon }) => (
+                            <button
+                              key={type}
+                              onClick={() => {
+                                // Use entered name or default to type label
+                                const columnName = newColName.trim() || label;
+                                addColumnMutation.mutate({
+                                  databaseId: database.id,
+                                  column: {
+                                    name: columnName,
+                                    type: type,
+                                  },
+                                });
+                              }}
+                              className="flex items-center gap-2 px-2.5 py-1.5 rounded text-left transition-colors hover:bg-bone/50 dark:hover:bg-surface-dark text-charcoal dark:text-cultured-white"
+                            >
+                              <Icon className="w-3.5 h-3.5 opacity-60" />
+                              <span className="text-[11px]">{label}</span>
+                            </button>
+                          ))}
+                        </div>
+                        {/* Footer with cancel button */}
+                        <div className="px-3 py-2 border-t border-bone/50 dark:border-charcoal/50 flex justify-end">
+                          <button
+                            onClick={() => {
+                              setShowAddColumn(false);
+                              setNewColName("");
+                            }}
+                            className="px-2 py-1 text-[10px] text-charcoal/60 dark:text-cultured-white/60 hover:text-charcoal dark:hover:text-cultured-white transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>,
+                      document.body
+                    )}
+                  </div>
+                )}
+              </th>
             </tr>
           </thead>
         <tbody>
@@ -888,7 +1066,7 @@ function DatabaseTableView({ database, sortBy, hiddenColumns, onSortChange }: Da
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
               >
-                <td colSpan={columns.length + 1} className="px-2 py-4 text-center text-xs text-charcoal/40 dark:text-cultured-white/40">
+                <td colSpan={columns.length + 2} className="px-2 py-4 text-center text-xs text-charcoal/40 dark:text-cultured-white/40">
                   No entries yet
                 </td>
               </motion.tr>
@@ -928,6 +1106,8 @@ function DatabaseTableView({ database, sortBy, hiddenColumns, onSortChange }: Da
                       />
                     </td>
                   ))}
+                  {/* Empty cell for add column */}
+                  <td className="w-8" role="gridcell" />
                 </motion.tr>
               ))
             )}
@@ -965,10 +1145,10 @@ function DatabaseTableView({ database, sortBy, hiddenColumns, onSortChange }: Da
         onOpenChange={setEntryFormOpen}
       />
 
-      {/* Column config popover */}
-      {configColumn && configPosition && (
+      {/* Column config popover - rendered via portal to escape overflow */}
+      {configColumn && configPosition && createPortal(
         <div
-          className="fixed z-50"
+          className="fixed z-[9999]"
           style={{ left: configPosition.x, top: configPosition.y }}
         >
           <ColumnConfigPopover
@@ -979,7 +1159,8 @@ function DatabaseTableView({ database, sortBy, hiddenColumns, onSortChange }: Da
               setConfigPosition(null);
             }}
           />
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
@@ -990,7 +1171,7 @@ function DatabaseTableView({ database, sortBy, hiddenColumns, onSortChange }: Da
 // =============================================================================
 
 interface CellRendererProps {
-  column: { id: string; name: string; type: string; options?: string[] };
+  column: DatabaseColumn;
   value: unknown;
   entryId: string;
   databaseId: string;
@@ -1082,6 +1263,194 @@ function CellRenderer({ column, value, entryId, databaseId }: CellRendererProps)
           </option>
         ))}
       </select>
+    );
+  }
+
+  // Status type - Colored badge dropdown (Notion-style)
+  if (column.type === "STATUS") {
+    const defaultStatusOptions: StatusOption[] = [
+      { id: 'not_started', name: 'Not Started', color: 'gray' },
+      { id: 'in_progress', name: 'In Progress', color: 'blue' },
+      { id: 'done', name: 'Done', color: 'green' },
+    ];
+    const statusOptions: StatusOption[] = column.statusOptions || defaultStatusOptions;
+    const currentValue = String(value ?? "");
+    const selectedOption = statusOptions.find((opt: StatusOption) => opt.id === currentValue);
+
+    // Color mapping for status badges
+    const colorClasses: Record<string, string> = {
+      gray: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200',
+      blue: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200',
+      green: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200',
+      yellow: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-200',
+      red: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200',
+      purple: 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-200',
+    };
+
+    return (
+      <div className="relative">
+        <select
+          value={currentValue}
+          onChange={(e) => {
+            updateCellMutation.mutate({
+              entryId,
+              columnId: column.id,
+              value: e.target.value || null,
+            });
+          }}
+          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+          aria-label={column.name}
+        >
+          <option value="">-</option>
+          {statusOptions.map((opt: StatusOption) => (
+            <option key={opt.id} value={opt.id}>
+              {opt.name}
+            </option>
+          ))}
+        </select>
+        <div className={`px-2 py-0.5 text-[10px] font-medium rounded-full inline-flex items-center cursor-pointer ${
+          selectedOption ? colorClasses[selectedOption.color] || colorClasses.gray : 'text-charcoal/30 dark:text-cultured-white/30'
+        }`}>
+          {selectedOption ? selectedOption.name : '-'}
+        </div>
+      </div>
+    );
+  }
+
+  // RELATION type - Linked entries as pills
+  if (column.type === "RELATION" && column.relationConfig) {
+    const relationType = column.relationConfig.relationType;
+    const targetDatabaseId = column.relationConfig.targetDatabaseId;
+
+    // Get linked entry IDs
+    const linkedIds: string[] = relationType === "many"
+      ? (Array.isArray(value) ? value as string[] : [])
+      : (value ? [String(value)] : []);
+
+    // Fetch entry titles for display
+    const { data: entryTitles } = api.database.getEntryTitles.useQuery(
+      { databaseId: targetDatabaseId, entryIds: linkedIds },
+      { enabled: linkedIds.length > 0 }
+    );
+
+    // State for relation picker
+    const [showPicker, setShowPicker] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
+
+    // Search entries in target database
+    const { data: searchResults } = api.database.searchEntries.useQuery(
+      { databaseId: targetDatabaseId, query: searchQuery, limit: 10 },
+      { enabled: showPicker }
+    );
+
+    const handleAddRelation = (entryIdToAdd: string) => {
+      let newValue: unknown;
+      if (relationType === "many") {
+        newValue = [...linkedIds, entryIdToAdd];
+      } else {
+        newValue = entryIdToAdd;
+      }
+      updateCellMutation.mutate({
+        entryId,
+        columnId: column.id,
+        value: newValue,
+      });
+      if (relationType === "one") {
+        setShowPicker(false);
+      }
+    };
+
+    const handleRemoveRelation = (entryIdToRemove: string) => {
+      let newValue: unknown;
+      if (relationType === "many") {
+        newValue = linkedIds.filter((id) => id !== entryIdToRemove);
+      } else {
+        newValue = null;
+      }
+      updateCellMutation.mutate({
+        entryId,
+        columnId: column.id,
+        value: newValue,
+      });
+    };
+
+    return (
+      <div className="relative">
+        <div className="flex flex-wrap gap-0.5 min-h-[22px] px-0.5 py-0.5 items-center">
+          {entryTitles?.map((entry) => (
+            <span
+              key={entry.id}
+              className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] bg-gold/10 text-gold rounded-full border border-gold/20"
+            >
+              <Link2 className="w-2.5 h-2.5" />
+              <span className="truncate max-w-[80px]">{entry.title}</span>
+              <button
+                onClick={() => handleRemoveRelation(entry.id)}
+                className="hover:text-red-500 transition-colors"
+              >
+                <X className="w-2.5 h-2.5" />
+              </button>
+            </span>
+          ))}
+          {linkedIds.length === 0 && (
+            <span className="text-charcoal/20 dark:text-cultured-white/20 text-[11px]">-</span>
+          )}
+          <button
+            onClick={() => setShowPicker(true)}
+            className="p-0.5 text-charcoal/40 dark:text-cultured-white/40 hover:text-gold hover:bg-gold/10 rounded transition-colors"
+            title="Add relation"
+          >
+            <Plus className="w-3 h-3" />
+          </button>
+        </div>
+
+        {/* Relation Picker Dropdown */}
+        {showPicker && (
+          <div className="absolute left-0 top-full mt-1 z-50 w-48 p-1.5 bg-alabaster dark:bg-deep-grey rounded-md border border-bone dark:border-charcoal/60 shadow-lg">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[10px] font-medium text-charcoal/60 dark:text-cultured-white/60 uppercase">Link Entry</span>
+              <button onClick={() => setShowPicker(false)} className="text-charcoal/40 hover:text-charcoal dark:text-cultured-white/40 dark:hover:text-cultured-white">
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search entries..."
+              autoFocus
+              className="w-full px-1.5 py-1 text-[11px] rounded-sm border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-surface-dark text-charcoal dark:text-cultured-white placeholder:text-charcoal/30 focus:border-gold focus:ring-1 focus:ring-gold/20 transition-all mb-1"
+            />
+            <div className="max-h-32 overflow-y-auto space-y-0.5">
+              {searchResults?.filter((r) => !linkedIds.includes(r.id)).map((result) => (
+                <button
+                  key={result.id}
+                  onClick={() => handleAddRelation(result.id)}
+                  className="w-full text-left px-1.5 py-1 text-[11px] text-charcoal dark:text-cultured-white hover:bg-gold/10 rounded-sm transition-colors truncate"
+                >
+                  {result.title}
+                </button>
+              ))}
+              {searchResults?.filter((r) => !linkedIds.includes(r.id)).length === 0 && (
+                <p className="px-1.5 py-1 text-[10px] text-charcoal/40 dark:text-cultured-white/40">No entries found</p>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ROLLUP and FORMULA types - Read-only computed values
+  if (column.type === "ROLLUP" || column.type === "FORMULA") {
+    return (
+      <div className="min-h-[22px] px-0.5 py-0.5 text-[11px] text-charcoal/60 dark:text-cultured-white/60 italic flex items-center">
+        {value != null && value !== "" ? (
+          <span className="truncate">{String(value)}</span>
+        ) : (
+          <span className="text-charcoal/20 dark:text-cultured-white/20">-</span>
+        )}
+      </div>
     );
   }
 
@@ -1584,6 +1953,71 @@ function ColumnConfigPopover({ column, databaseId, onClose }: ColumnConfigPopove
   const [options, setOptions] = useState<string[]>(column.options || []);
   const [newOption, setNewOption] = useState("");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  // Status options state
+  const defaultStatusOpts: StatusOption[] = [
+    { id: 'not_started', name: 'Not Started', color: 'gray' },
+    { id: 'in_progress', name: 'In Progress', color: 'blue' },
+    { id: 'done', name: 'Done', color: 'green' },
+  ];
+  const [statusOptions, setStatusOptions] = useState<StatusOption[]>(
+    column.statusOptions || defaultStatusOpts
+  );
+  const [newStatusName, setNewStatusName] = useState("");
+  const [newStatusColor, setNewStatusColor] = useState<StatusColor>("gray");
+
+  // Relation config state
+  const [targetDatabaseId, setTargetDatabaseId] = useState<string>(
+    column.relationConfig?.targetDatabaseId || ""
+  );
+  const [relationType, setRelationType] = useState<"one" | "many">(
+    column.relationConfig?.relationType || "one"
+  );
+
+  // Rollup config state
+  const [rollupSourceColumnId, setRollupSourceColumnId] = useState<string>(
+    column.rollupConfig?.sourceRelationColumnId || ""
+  );
+  const [rollupTargetColumnId, setRollupTargetColumnId] = useState<string>(
+    column.rollupConfig?.targetColumnId || ""
+  );
+  const [rollupAggregation, setRollupAggregation] = useState<string>(
+    column.rollupConfig?.aggregation || "count"
+  );
+
+  // Formula config state
+  const [formulaExpression, setFormulaExpression] = useState<string>(
+    column.formulaConfig?.formula || ""
+  );
+  const [formulaResultType, setFormulaResultType] = useState<"text" | "number" | "date" | "boolean">(
+    column.formulaConfig?.resultType || "text"
+  );
+
+  // Fetch available databases for RELATION type
+  const { data: availableDatabases } = api.database.list.useQuery(
+    { page: 1, pageSize: 50 },
+    { enabled: type === "RELATION" }
+  );
+
+  // Fetch current database for ROLLUP column selection
+  const { data: currentDatabase } = api.database.getById.useQuery(
+    { id: databaseId },
+    { enabled: type === "ROLLUP" || type === "FORMULA" }
+  );
+
+  // Get RELATION columns from current database (for ROLLUP source)
+  const relationColumns = currentDatabase?.schema.columns.filter(
+    (col) => col.type === "RELATION"
+  ) || [];
+
+  // Get target database schema for ROLLUP target column selection
+  const selectedRelationColumn = relationColumns.find(
+    (col) => col.id === rollupSourceColumnId
+  );
+  const rollupTargetDatabaseId = selectedRelationColumn?.relationConfig?.targetDatabaseId;
+  const { data: targetDatabase } = api.database.getById.useQuery(
+    { id: rollupTargetDatabaseId! },
+    { enabled: !!rollupTargetDatabaseId && type === "ROLLUP" }
+  );
 
   const utils = api.useUtils();
 
@@ -1609,8 +2043,37 @@ function ColumnConfigPopover({ column, databaseId, onClose }: ColumnConfigPopove
         name,
         type,
         options: type === "SELECT" || type === "MULTI_SELECT" ? options : undefined,
+        statusOptions: type === "STATUS" ? statusOptions : undefined,
+        relationConfig: type === "RELATION" && targetDatabaseId
+          ? { targetDatabaseId, relationType }
+          : undefined,
+        rollupConfig: type === "ROLLUP" && rollupSourceColumnId && rollupTargetColumnId
+          ? {
+              sourceRelationColumnId: rollupSourceColumnId,
+              targetColumnId: rollupTargetColumnId,
+              aggregation: rollupAggregation as RollupConfig["aggregation"],
+            }
+          : undefined,
+        formulaConfig: type === "FORMULA" && formulaExpression
+          ? { formula: formulaExpression, resultType: formulaResultType }
+          : undefined,
       },
     });
+  };
+
+  const handleAddStatusOption = () => {
+    if (newStatusName.trim()) {
+      const id = newStatusName.trim().toLowerCase().replace(/\s+/g, '_');
+      if (!statusOptions.find(opt => opt.id === id)) {
+        setStatusOptions([...statusOptions, { id, name: newStatusName.trim(), color: newStatusColor }]);
+        setNewStatusName("");
+        setNewStatusColor("gray");
+      }
+    }
+  };
+
+  const handleRemoveStatusOption = (id: string) => {
+    setStatusOptions(statusOptions.filter((opt) => opt.id !== id));
   };
 
   const handleDelete = () => {
@@ -1636,9 +2099,23 @@ function ColumnConfigPopover({ column, databaseId, onClose }: ColumnConfigPopove
     { value: "NUMBER", label: "Number" },
     { value: "SELECT", label: "Select" },
     { value: "MULTI_SELECT", label: "Multi-select" },
+    { value: "STATUS", label: "Status" },
     { value: "DATE", label: "Date" },
     { value: "CHECKBOX", label: "Checkbox" },
     { value: "URL", label: "URL" },
+    { value: "RELATION", label: "Relation" },
+    { value: "ROLLUP", label: "Rollup" },
+    { value: "FORMULA", label: "Formula" },
+  ];
+
+  // Status color options for STATUS type
+  const statusColors = [
+    { value: "gray", label: "Gray", className: "bg-gray-200" },
+    { value: "blue", label: "Blue", className: "bg-blue-200" },
+    { value: "green", label: "Green", className: "bg-green-200" },
+    { value: "yellow", label: "Yellow", className: "bg-yellow-200" },
+    { value: "red", label: "Red", className: "bg-red-200" },
+    { value: "purple", label: "Purple", className: "bg-purple-200" },
   ];
 
   if (showDeleteConfirm) {
@@ -1731,6 +2208,213 @@ function ColumnConfigPopover({ column, databaseId, onClose }: ColumnConfigPopove
               Add
             </button>
           </div>
+        </div>
+      )}
+
+      {/* Status Options (for STATUS type) */}
+      {type === "STATUS" && (
+        <div className="mb-2">
+          <label className="block text-[10px] font-medium text-charcoal/60 dark:text-cultured-white/60 mb-0.5 uppercase tracking-wide">Status Options</label>
+          <div className="space-y-0.5 mb-1 max-h-24 overflow-y-auto">
+            {statusOptions.map((opt) => (
+              <div key={opt.id} className="flex items-center justify-between px-1 py-0.5 bg-bone/40 dark:bg-surface-dark/60 rounded-sm text-[10px]">
+                <div className="flex items-center gap-1.5">
+                  <span className={`w-2.5 h-2.5 rounded-full ${
+                    opt.color === 'gray' ? 'bg-gray-400' :
+                    opt.color === 'blue' ? 'bg-blue-400' :
+                    opt.color === 'green' ? 'bg-green-400' :
+                    opt.color === 'yellow' ? 'bg-yellow-400' :
+                    opt.color === 'red' ? 'bg-red-400' :
+                    'bg-purple-400'
+                  }`} />
+                  <span className="text-charcoal dark:text-cultured-white truncate">{opt.name}</span>
+                </div>
+                <button onClick={() => handleRemoveStatusOption(opt.id)} className="text-charcoal/40 dark:text-cultured-white/40 hover:text-red-500 transition-colors">
+                  <X className="w-2.5 h-2.5" />
+                </button>
+              </div>
+            ))}
+          </div>
+          <div className="flex gap-0.5">
+            <input
+              type="text"
+              value={newStatusName}
+              onChange={(e) => setNewStatusName(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleAddStatusOption()}
+              placeholder="Status name..."
+              className="flex-1 px-1 py-0.5 text-[10px] rounded-sm border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-surface-dark text-charcoal dark:text-cultured-white placeholder:text-charcoal/30 dark:placeholder:text-cultured-white/30 focus:border-gold transition-all"
+            />
+            <select
+              value={newStatusColor}
+              onChange={(e) => setNewStatusColor(e.target.value as StatusColor)}
+              className="px-1 py-0.5 text-[10px] rounded-sm border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-surface-dark text-charcoal dark:text-cultured-white focus:border-gold transition-all"
+            >
+              {statusColors.map((c) => (
+                <option key={c.value} value={c.value}>{c.label}</option>
+              ))}
+            </select>
+            <button
+              onClick={handleAddStatusOption}
+              className="px-1.5 py-0.5 text-[10px] text-gold hover:bg-gold/10 rounded-sm transition-colors"
+            >
+              Add
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Relation Config (for RELATION type) */}
+      {type === "RELATION" && (
+        <div className="mb-2 space-y-2">
+          <div>
+            <label className="block text-[10px] font-medium text-charcoal/60 dark:text-cultured-white/60 mb-0.5 uppercase tracking-wide">Target Database</label>
+            <select
+              value={targetDatabaseId}
+              onChange={(e) => setTargetDatabaseId(e.target.value)}
+              className="w-full px-1.5 py-0.5 text-[11px] rounded-sm border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-surface-dark text-charcoal dark:text-cultured-white focus:border-gold focus:ring-1 focus:ring-gold/20 transition-all"
+            >
+              <option value="">Select database...</option>
+              {availableDatabases?.items
+                .filter((db) => db.id !== databaseId) // Exclude current database
+                .map((db) => (
+                  <option key={db.id} value={db.id}>
+                    {db.name}
+                  </option>
+                ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-[10px] font-medium text-charcoal/60 dark:text-cultured-white/60 mb-0.5 uppercase tracking-wide">Relation Type</label>
+            <div className="flex gap-1">
+              <button
+                onClick={() => setRelationType("one")}
+                className={`flex-1 px-1.5 py-1 text-[10px] rounded-sm border transition-colors ${
+                  relationType === "one"
+                    ? "border-gold bg-gold/10 text-gold"
+                    : "border-bone dark:border-charcoal/60 text-charcoal/60 dark:text-cultured-white/60 hover:bg-bone/30 dark:hover:bg-surface-dark/50"
+                }`}
+              >
+                One
+              </button>
+              <button
+                onClick={() => setRelationType("many")}
+                className={`flex-1 px-1.5 py-1 text-[10px] rounded-sm border transition-colors ${
+                  relationType === "many"
+                    ? "border-gold bg-gold/10 text-gold"
+                    : "border-bone dark:border-charcoal/60 text-charcoal/60 dark:text-cultured-white/60 hover:bg-bone/30 dark:hover:bg-surface-dark/50"
+                }`}
+              >
+                Many
+              </button>
+            </div>
+            <p className="mt-1 text-[9px] text-charcoal/40 dark:text-cultured-white/40">
+              {relationType === "one" ? "Link to one entry" : "Link to multiple entries"}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Rollup Config (for ROLLUP type) */}
+      {type === "ROLLUP" && (
+        <div className="mb-2 space-y-2">
+          <div>
+            <label className="block text-[10px] font-medium text-charcoal/60 dark:text-cultured-white/60 mb-0.5 uppercase tracking-wide">Relation Column</label>
+            <select
+              value={rollupSourceColumnId}
+              onChange={(e) => {
+                setRollupSourceColumnId(e.target.value);
+                setRollupTargetColumnId(""); // Reset target when source changes
+              }}
+              className="w-full px-1.5 py-0.5 text-[11px] rounded-sm border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-surface-dark text-charcoal dark:text-cultured-white focus:border-gold focus:ring-1 focus:ring-gold/20 transition-all"
+            >
+              <option value="">Select relation column...</option>
+              {relationColumns.map((col) => (
+                <option key={col.id} value={col.id}>
+                  {col.name}
+                </option>
+              ))}
+            </select>
+            {relationColumns.length === 0 && (
+              <p className="mt-1 text-[9px] text-charcoal/40 dark:text-cultured-white/40">
+                Add a RELATION column first to use ROLLUP
+              </p>
+            )}
+          </div>
+          {rollupSourceColumnId && targetDatabase && (
+            <>
+              <div>
+                <label className="block text-[10px] font-medium text-charcoal/60 dark:text-cultured-white/60 mb-0.5 uppercase tracking-wide">Target Column</label>
+                <select
+                  value={rollupTargetColumnId}
+                  onChange={(e) => setRollupTargetColumnId(e.target.value)}
+                  className="w-full px-1.5 py-0.5 text-[11px] rounded-sm border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-surface-dark text-charcoal dark:text-cultured-white focus:border-gold focus:ring-1 focus:ring-gold/20 transition-all"
+                >
+                  <option value="">Select column to aggregate...</option>
+                  {targetDatabase.schema.columns.map((col) => (
+                    <option key={col.id} value={col.id}>
+                      {col.name} ({col.type})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-[10px] font-medium text-charcoal/60 dark:text-cultured-white/60 mb-0.5 uppercase tracking-wide">Aggregation</label>
+                <select
+                  value={rollupAggregation}
+                  onChange={(e) => setRollupAggregation(e.target.value)}
+                  className="w-full px-1.5 py-0.5 text-[11px] rounded-sm border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-surface-dark text-charcoal dark:text-cultured-white focus:border-gold focus:ring-1 focus:ring-gold/20 transition-all"
+                >
+                  <option value="count">Count all</option>
+                  <option value="count_values">Count values</option>
+                  <option value="sum">Sum</option>
+                  <option value="avg">Average</option>
+                  <option value="min">Min</option>
+                  <option value="max">Max</option>
+                  <option value="concat">Show all</option>
+                  <option value="percent_empty">Percent empty</option>
+                  <option value="percent_not_empty">Percent not empty</option>
+                </select>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Formula Config (for FORMULA type) */}
+      {type === "FORMULA" && (
+        <div className="mb-2 space-y-2">
+          <div>
+            <label className="block text-[10px] font-medium text-charcoal/60 dark:text-cultured-white/60 mb-0.5 uppercase tracking-wide">Formula</label>
+            <textarea
+              value={formulaExpression}
+              onChange={(e) => setFormulaExpression(e.target.value)}
+              placeholder='prop("Price") * prop("Quantity")'
+              rows={2}
+              className="w-full px-1.5 py-1 text-[11px] rounded-sm border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-surface-dark text-charcoal dark:text-cultured-white placeholder:text-charcoal/30 focus:border-gold focus:ring-1 focus:ring-gold/20 transition-all font-mono resize-none"
+            />
+            <p className="mt-0.5 text-[9px] text-charcoal/40 dark:text-cultured-white/40">
+              Use prop("Column Name") to reference columns
+            </p>
+          </div>
+          <div>
+            <label className="block text-[10px] font-medium text-charcoal/60 dark:text-cultured-white/60 mb-0.5 uppercase tracking-wide">Result Type</label>
+            <select
+              value={formulaResultType}
+              onChange={(e) => setFormulaResultType(e.target.value as "text" | "number" | "date" | "boolean")}
+              className="w-full px-1.5 py-0.5 text-[11px] rounded-sm border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-surface-dark text-charcoal dark:text-cultured-white focus:border-gold focus:ring-1 focus:ring-gold/20 transition-all"
+            >
+              <option value="text">Text</option>
+              <option value="number">Number</option>
+              <option value="date">Date</option>
+              <option value="boolean">Boolean</option>
+            </select>
+          </div>
+          {currentDatabase && (
+            <div className="text-[9px] text-charcoal/40 dark:text-cultured-white/40">
+              <span className="font-medium">Available columns:</span>{" "}
+              {currentDatabase.schema.columns.map((c) => c.name).join(", ")}
+            </div>
+          )}
         </div>
       )}
 
