@@ -4,10 +4,12 @@
  *
  * Provides an input for asking questions about deals/companies.
  * Uses the DiligenceAgent via tRPC for RAG-based answers with citations.
+ *
+ * Phase 1 Enhancement: Inline citations [1][2] that reveal source on click.
  */
 import { Node, mergeAttributes } from "@tiptap/core";
 import { ReactNodeViewRenderer, NodeViewWrapper, NodeViewProps } from "@tiptap/react";
-import { useState, useCallback, useRef, KeyboardEvent } from "react";
+import { useState, useCallback, useRef, useMemo, KeyboardEvent } from "react";
 import {
   MessageSquare,
   Send,
@@ -15,10 +17,10 @@ import {
   AlertCircle,
   RefreshCw,
   FileText,
-  ExternalLink,
   Sparkles,
 } from "lucide-react";
 import { api } from "@/trpc/react";
+import { useCitation } from "@/components/citation";
 
 // =============================================================================
 // Types
@@ -41,6 +43,55 @@ interface Citation {
   content: string;
   pageNumber?: number;
   relevanceScore: number;
+}
+
+// =============================================================================
+// Citation Parsing Utilities
+// =============================================================================
+
+interface ParsedSegment {
+  type: "text" | "citation";
+  content: string;
+  citationIndex?: number;
+}
+
+/**
+ * Parses an answer string for [[cite:N]] markers and returns segments.
+ * Example: "Revenue is $50M [[cite:1]] with growth [[cite:2]]"
+ * Returns: [{type: "text", content: "Revenue is $50M "}, {type: "citation", citationIndex: 1}, ...]
+ */
+function parseAnswerWithCitations(answer: string): ParsedSegment[] {
+  const segments: ParsedSegment[] = [];
+  const citationRegex = /\[\[cite:(\d+)\]\]/g;
+  let lastIndex = 0;
+  let match;
+
+  while ((match = citationRegex.exec(answer)) !== null) {
+    // Add text before this citation
+    if (match.index > lastIndex) {
+      segments.push({
+        type: "text",
+        content: answer.slice(lastIndex, match.index),
+      });
+    }
+    // Add the citation marker
+    segments.push({
+      type: "citation",
+      content: `[${match[1]}]`,
+      citationIndex: parseInt(match[1], 10),
+    });
+    lastIndex = match.index + match[0].length;
+  }
+
+  // Add remaining text
+  if (lastIndex < answer.length) {
+    segments.push({
+      type: "text",
+      content: answer.slice(lastIndex),
+    });
+  }
+
+  return segments;
 }
 
 declare module "@tiptap/core" {
@@ -104,6 +155,118 @@ export const QueryBlock = Node.create({
     };
   },
 });
+
+// =============================================================================
+// Answer With Inline Citations Component
+// =============================================================================
+
+interface AnswerWithCitationsProps {
+  answer: string;
+  citations: Citation[];
+}
+
+/**
+ * Renders the AI answer with inline clickable citation markers.
+ * Citations like [[cite:1]] are rendered as teal [1] markers that
+ * open the CitationSidebar when clicked.
+ */
+function AnswerWithCitations({ answer, citations }: AnswerWithCitationsProps) {
+  const { openCitation } = useCitation();
+  const segments = useMemo(() => parseAnswerWithCitations(answer), [answer]);
+
+  const handleCitationClick = useCallback(
+    (citationIndex: number) => {
+      // Citations are 1-indexed in the text, array is 0-indexed
+      const citation = citations[citationIndex - 1];
+      if (citation) {
+        openCitation({
+          citationIndex,
+          factId: citation.id,
+          documentId: citation.documentId,
+          chunkId: citation.chunkId,
+          sourceText: citation.content,
+          pageNumber: citation.pageNumber,
+        });
+      }
+    },
+    [citations, openCitation]
+  );
+
+  return (
+    <p className="text-sm text-charcoal dark:text-cultured-white whitespace-pre-wrap leading-relaxed">
+      {segments.map((segment, index) => {
+        if (segment.type === "citation" && segment.citationIndex !== undefined) {
+          return (
+            <button
+              key={index}
+              onClick={() => handleCitationClick(segment.citationIndex!)}
+              className="inline-citation"
+              title={`View source ${segment.citationIndex}`}
+            >
+              {segment.citationIndex}
+            </button>
+          );
+        }
+        return <span key={index}>{segment.content}</span>;
+      })}
+    </p>
+  );
+}
+
+// =============================================================================
+// Citation Card Component (for collapsible list)
+// =============================================================================
+
+interface CitationCardProps {
+  citation: Citation;
+  index: number;
+}
+
+/**
+ * Individual citation card in the collapsible sources list.
+ * Also clickable to open the CitationSidebar.
+ */
+function CitationCard({ citation, index }: CitationCardProps) {
+  const { openCitation } = useCitation();
+
+  const handleClick = () => {
+    openCitation({
+      citationIndex: index,
+      factId: citation.id,
+      documentId: citation.documentId,
+      chunkId: citation.chunkId,
+      sourceText: citation.content,
+      pageNumber: citation.pageNumber,
+    });
+  };
+
+  return (
+    <button
+      onClick={handleClick}
+      className="w-full flex items-start gap-3 p-3 bg-[#2F7E8A]/5 hover:bg-[#2F7E8A]/10 border border-[#2F7E8A]/20 rounded-lg transition-colors text-left"
+    >
+      <div className="w-6 h-6 rounded-full bg-[#2F7E8A]/10 flex items-center justify-center shrink-0">
+        <span className="text-xs font-bold text-[#2F7E8A]">{index}</span>
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-medium text-[#2F7E8A] truncate">
+            {citation.documentName}
+          </span>
+          {citation.pageNumber && (
+            <span className="text-xs text-[#2F7E8A]/70">
+              p.{citation.pageNumber}
+            </span>
+          )}
+        </div>
+        <p className="text-xs text-charcoal/70 dark:text-cultured-white/70 mt-1 line-clamp-2">
+          {citation.content}
+        </p>
+      </div>
+      <FileText className="w-4 h-4 text-[#2F7E8A]/50 shrink-0" />
+    </button>
+  );
+}
 
 // =============================================================================
 // React Component
@@ -293,54 +456,28 @@ function QueryCard({ node, updateAttributes }: NodeViewProps) {
         {/* Answer */}
         {status === "complete" && answer && (
           <div className="px-4 pb-4 space-y-4">
-            {/* Answer Text */}
-            <div className="p-4 bg-alabaster dark:bg-surface-dark rounded-lg">
-              <p className="text-sm text-charcoal dark:text-cultured-white whitespace-pre-wrap leading-relaxed">
-                {answer}
-              </p>
+            {/* Answer Text with Inline Citations */}
+            <div className="p-4 bg-alabaster dark:bg-surface-dark rounded-lg border-l-2 border-[#2F7E8A]">
+              <AnswerWithCitations answer={answer} citations={citations} />
             </div>
 
-            {/* Citations */}
+            {/* Citations Summary - Collapsible reference list */}
             {citations.length > 0 && (
-              <div className="space-y-2">
-                <h4 className="text-xs font-semibold text-charcoal/60 dark:text-cultured-white/60 uppercase tracking-wide">
-                  Sources ({citations.length})
-                </h4>
-                <div className="space-y-2">
+              <details className="group">
+                <summary className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-charcoal/60 dark:text-cultured-white/60 uppercase tracking-wide hover:text-charcoal dark:hover:text-cultured-white transition-colors">
+                  <span>Sources ({citations.length})</span>
+                  <span className="text-[10px] normal-case font-normal">Click citation numbers above to view</span>
+                </summary>
+                <div className="mt-2 space-y-2">
                   {citations.map((citation, index) => (
-                    <div
+                    <CitationCard
                       key={citation.id || index}
-                      className="flex items-start gap-3 p-3 bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-800/30 rounded-lg"
-                    >
-                      <div className="p-1.5 bg-teal-100 dark:bg-teal-900/50 rounded shrink-0">
-                        <FileText className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-medium text-teal-700 dark:text-teal-400 truncate">
-                            {citation.documentName}
-                          </span>
-                          {citation.pageNumber && (
-                            <span className="text-xs text-teal-600/70 dark:text-teal-400/70">
-                              Page {citation.pageNumber}
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-xs text-charcoal/70 dark:text-cultured-white/70 mt-1 line-clamp-2">
-                          {citation.content}
-                        </p>
-                      </div>
-                      <a
-                        href={`/documents/${citation.documentId}`}
-                        className="p-1 text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300 transition-colors shrink-0"
-                        title="View document"
-                      >
-                        <ExternalLink className="w-3.5 h-3.5" />
-                      </a>
-                    </div>
+                      citation={citation}
+                      index={index + 1}
+                    />
                   ))}
                 </div>
-              </div>
+              </details>
             )}
           </div>
         )}

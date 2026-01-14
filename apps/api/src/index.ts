@@ -18,6 +18,7 @@ import rateLimit from '@fastify/rate-limit';
 import { fastifyTRPCPlugin } from '@trpc/server/adapters/fastify';
 import { createContext } from './trpc/context';
 import { appRouter } from './trpc/router';
+import { registerDocumentStreamRoutes } from './routes/document-stream';
 export type { AppRouter } from './trpc/router';
 
 /**
@@ -102,6 +103,11 @@ fastify.register(fastifyTRPCPlugin, {
 fastify.get('/health', async () => {
   return { status: 'ok', timestamp: new Date().toISOString() };
 });
+
+/**
+ * Register SSE routes for real-time document processing updates
+ */
+fastify.register(registerDocumentStreamRoutes);
 
 /**
  * Start server

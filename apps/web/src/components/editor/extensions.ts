@@ -22,6 +22,7 @@ import { InboxBlock } from "./extensions/InboxBlock";
 import { QueryBlock } from "./extensions/QueryBlock";
 import { VDRBlock } from "./extensions/VDRBlock";
 import { SearchBlock } from "./extensions/SearchBlock";
+import { InlineCitationMark } from "./extensions/InlineCitationMark";
 import GlobalDragHandle from "tiptap-extension-global-drag-handle";
 import AutoJoiner from "tiptap-extension-auto-joiner";
 import Focus from "@tiptap/extension-focus";
@@ -29,6 +30,7 @@ import Focus from "@tiptap/extension-focus";
 // Re-export for dynamic configuration
 export { PageMention } from "./extensions/PageMention";
 export { createWikiLinkSuggestion } from "./WikiLinkSuggestion";
+export { InlineCitationMark, type InlineCitationAttrs } from "./extensions/InlineCitationMark";
 
 // @ts-ignore
 const uniqueId = UniqueID.configure({
@@ -157,6 +159,7 @@ export const defaultExtensions: any[] = [
     QueryBlock,
     VDRBlock,
     SearchBlock,
+    InlineCitationMark,
     GlobalDragHandle.configure({
         dragHandleWidth: 24,
         scrollTreshold: 100,

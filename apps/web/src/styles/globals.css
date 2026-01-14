@@ -14,3 +14,27 @@ body {
 main {
     flex: 1;
 }
+
+/* Inline Citation Styles - Phase 1: Citation Core */
+.inline-citation {
+    color: #2F7E8A; /* Teal Blue - reserved for citations only */
+    font-weight: 600;
+    font-size: 0.75rem;
+    vertical-align: super;
+    cursor: pointer;
+    padding: 0 0.125rem;
+    border-radius: 0.125rem;
+    transition: background-color 150ms ease-in-out;
+}
+
+.inline-citation:hover {
+    background-color: rgba(47, 126, 138, 0.1);
+}
+
+.inline-citation::before {
+    content: "[";
+}
+
+.inline-citation::after {
+    content: "]";
+}

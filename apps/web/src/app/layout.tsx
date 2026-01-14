@@ -13,6 +13,7 @@ export const metadata: Metadata = {
 };
 
 import { TRPCReactProvider } from "@/trpc/provider";
+import { CitationProvider, CitationSidebar } from "@/components/citation";
 
 export default function RootLayout({
     children,
@@ -23,7 +24,10 @@ export default function RootLayout({
         <html lang="en">
             <body className={`${inter.variable} font-sans antialiased`}>
                 <TRPCReactProvider>
-                    {children}
+                    <CitationProvider>
+                        {children}
+                        <CitationSidebar />
+                    </CitationProvider>
                 </TRPCReactProvider>
             </body>
         </html>
