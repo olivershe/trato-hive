@@ -117,6 +117,7 @@ export function SheetContent({
           setIsAnimating(true);
         });
       });
+      return; // No cleanup needed when opening
     } else {
       setIsAnimating(false);
       // Wait for animation to complete before hiding

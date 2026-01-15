@@ -137,4 +137,24 @@ export const companyRouter = router({
       const companyService = new CompanyService(ctx.db);
       return companyService.search(input, ctx.organizationId);
     }),
+
+  /**
+   * company.getRelated - Get related companies by similarity
+   * Auth: organizationProtectedProcedure
+   * Used by: RelatedCompaniesBlock on Company Page
+   * [TASK-105] Related Companies Section
+   */
+  getRelated: organizationProtectedProcedure
+    .input(z.object({
+      id: z.string().min(1),
+      limit: z.number().min(1).max(20).optional().default(6),
+    }))
+    .query(async ({ ctx, input }) => {
+      const companyService = new CompanyService(ctx.db);
+      return companyService.getRelatedCompanies(
+        input.id,
+        ctx.organizationId,
+        input.limit
+      );
+    }),
 });

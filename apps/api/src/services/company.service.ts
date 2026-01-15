@@ -24,18 +24,23 @@ export interface CompanyListResult {
   };
 }
 
+/**
+ * Deal history entry from DealCompany junction table
+ * Used by DealHistoryBlock to display company's deal involvement
+ */
+export interface DealHistoryEntry {
+  id: string;
+  dealId: string;
+  name: string;
+  stage: string;
+  value: number | null;
+  currency: string;
+  role: string;
+  createdAt: Date;
+}
+
 export interface CompanyWithDeals extends Company {
-  dealCompanies: Array<{
-    id: string;
-    role: string;
-    deal: {
-      id: string;
-      name: string;
-      stage: string;
-      value: Prisma.Decimal | null;
-      createdAt: Date;
-    };
-  }>;
+  dealHistory: DealHistoryEntry[];
 }
 
 export interface CompanySearchResult {
@@ -44,6 +49,24 @@ export interface CompanySearchResult {
   industry: string | null;
   location: string | null;
   employees: number | null;
+}
+
+/**
+ * Related company with similarity information
+ * Used by RelatedCompaniesBlock to display company relationships
+ */
+export interface RelatedCompanyResult {
+  id: string;
+  name: string;
+  industry: string | null;
+  sector: string | null;
+  location: string | null;
+  employees: number | null;
+  revenue: number | null;
+  /** Similarity score 0-100 based on shared attributes/facts */
+  similarityScore: number;
+  /** What makes this company related */
+  relationshipTypes: string[];
 }
 
 export class CompanyService {
@@ -143,7 +166,14 @@ export class CompanyService {
 
   /**
    * Get company with deal history (via DealCompany junction)
-   * Used for Company Page Deal History section
+   * Used for Company Page Deal History section and DealHistoryBlock
+   *
+   * Returns deals from DealCompany junction with role information:
+   * - PLATFORM: Company is the main platform in a platform deal
+   * - ADD_ON: Company is an add-on acquisition target
+   * - SELLER: Company is selling assets/equity
+   * - BUYER: Company is the buyer in a transaction
+   * - ADVISOR: Company is advising on the deal
    */
   async getWithDeals(id: string, organizationId: string): Promise<CompanyWithDeals> {
     const company = await this.getById(id, organizationId);
@@ -158,17 +188,9 @@ export class CompanyService {
                 id: true,
                 name: true,
                 stage: true,
-                type: true,
                 value: true,
                 currency: true,
-                probability: true,
-                expectedCloseDate: true,
-                description: true,
-                notes: true,
-                companyId: true,
-                organizationId: true,
                 createdAt: true,
-                updatedAt: true,
               },
             },
           },
@@ -177,16 +199,22 @@ export class CompanyService {
       },
     });
 
-    // Flatten dealCompanies into deals array for CompanyWithDeals type
-    const deals = (companyWithDealCompanies?.dealCompanies || []).map(dc => ({
-      ...dc.deal,
-      role: dc.role, // Include the role from junction table
+    // Transform to DealHistoryEntry array
+    const dealHistory: DealHistoryEntry[] = (companyWithDealCompanies?.dealCompanies || []).map(dc => ({
+      id: dc.id,
+      dealId: dc.deal.id,
+      name: dc.deal.name,
+      stage: dc.deal.stage,
+      value: dc.deal.value ? Number(dc.deal.value) : null,
+      currency: dc.deal.currency || 'USD',
+      role: dc.role,
+      createdAt: dc.deal.createdAt,
     }));
 
     return {
       ...company,
-      deals,
-    } as unknown as CompanyWithDeals;
+      dealHistory,
+    };
   }
 
   /**
@@ -294,26 +322,44 @@ export class CompanyService {
         },
       });
 
-      // 5. Create Deal History section placeholder
+      // 5. Create Deal History block (TASK-104)
       await tx.block.create({
         data: {
           pageId: rootPage.id,
-          type: 'heading',
+          type: 'deal_history',
           order: 1,
           properties: {
-            text: 'Deal History',
-            level: 2,
+            companyId: company.id,
+            title: 'Deal History',
+            showEmpty: true,
+            maxItems: 10,
           },
           createdBy: userId,
         },
       });
 
-      // 6. Create AI Insights section placeholder
+      // 6. Create Related Companies block (TASK-105)
+      await tx.block.create({
+        data: {
+          pageId: rootPage.id,
+          type: 'related_companies',
+          order: 2,
+          properties: {
+            companyId: company.id,
+            title: 'Related Companies',
+            maxItems: 6,
+            showEmpty: true,
+          },
+          createdBy: userId,
+        },
+      });
+
+      // 7. Create AI Insights section placeholder
       await tx.block.create({
         data: {
           pageId: rootPage.id,
           type: 'heading',
-          order: 2,
+          order: 3,
           properties: {
             text: 'AI Insights',
             level: 2,
@@ -326,7 +372,7 @@ export class CompanyService {
         data: {
           pageId: rootPage.id,
           type: 'paragraph',
-          order: 3,
+          order: 4,
           properties: {
             text: 'AI-generated insights will appear here once documents are processed.',
           },
@@ -334,7 +380,7 @@ export class CompanyService {
         },
       });
 
-      // 7. Create Key Contacts Database page (sub-page of root)
+      // 8. Create Key Contacts Database page (sub-page of root)
       const contactsTemplate = DATABASE_TEMPLATES.find(t => t.id === 'contact-list');
       if (contactsTemplate) {
         // Create a page for the database
@@ -479,5 +525,119 @@ export class CompanyService {
     });
 
     return companies;
+  }
+
+  /**
+   * Get related companies based on shared attributes
+   * [TASK-105] Related Companies Section
+   *
+   * Finds companies related by:
+   * 1. Same industry (40 points)
+   * 2. Same sector (30 points)
+   * 3. Same location (20 points)
+   * 4. Similar employee count (±50%) (10 points)
+   *
+   * Note: In production, this should also query Neo4j KnowledgeGraphService
+   * for companies sharing facts. For now, using Prisma-based similarity.
+   */
+  async getRelatedCompanies(
+    companyId: string,
+    organizationId: string,
+    limit: number = 6
+  ): Promise<RelatedCompanyResult[]> {
+    // First get the target company
+    const company = await this.getById(companyId, organizationId);
+
+    // Build OR conditions for related companies
+    const orConditions: Prisma.CompanyWhereInput[] = [];
+
+    if (company.industry) {
+      orConditions.push({ industry: company.industry });
+    }
+    if (company.sector) {
+      orConditions.push({ sector: company.sector });
+    }
+    if (company.location) {
+      orConditions.push({ location: { contains: company.location.split(',')[0], mode: 'insensitive' } });
+    }
+
+    // If no attributes to match, return empty
+    if (orConditions.length === 0) {
+      return [];
+    }
+
+    // Find potentially related companies
+    const relatedCompanies = await this.db.company.findMany({
+      where: {
+        organizationId,
+        id: { not: companyId }, // Exclude self
+        OR: orConditions,
+      },
+      select: {
+        id: true,
+        name: true,
+        industry: true,
+        sector: true,
+        location: true,
+        employees: true,
+        revenue: true,
+      },
+      take: limit * 2, // Fetch more to filter/score
+    });
+
+    // Calculate similarity scores and relationship types
+    const scoredCompanies: RelatedCompanyResult[] = relatedCompanies.map((related) => {
+      let score = 0;
+      const relationshipTypes: string[] = [];
+
+      // Industry match (40 points)
+      if (company.industry && related.industry === company.industry) {
+        score += 40;
+        relationshipTypes.push('Same Industry');
+      }
+
+      // Sector match (30 points)
+      if (company.sector && related.sector === company.sector) {
+        score += 30;
+        relationshipTypes.push('Same Sector');
+      }
+
+      // Location match (20 points) - check city/region overlap
+      if (company.location && related.location) {
+        const companyCity = company.location.split(',')[0].trim().toLowerCase();
+        const relatedCity = related.location.split(',')[0].trim().toLowerCase();
+        if (companyCity === relatedCity) {
+          score += 20;
+          relationshipTypes.push('Same Location');
+        }
+      }
+
+      // Similar employee count (10 points) - within 50%
+      if (company.employees && related.employees) {
+        const ratio = related.employees / company.employees;
+        if (ratio >= 0.5 && ratio <= 1.5) {
+          score += 10;
+          relationshipTypes.push('Similar Size');
+        }
+      }
+
+      return {
+        id: related.id,
+        name: related.name,
+        industry: related.industry,
+        sector: related.sector,
+        location: related.location,
+        employees: related.employees,
+        revenue: related.revenue ? Number(related.revenue) : null,
+        similarityScore: score,
+        relationshipTypes,
+      };
+    });
+
+    // Sort by score and take top results
+    return scoredCompanies
+      .filter((c) => c.similarityScore > 0)
+      .sort((a, b) => b.similarityScore - a.similarityScore)
+      .slice(0, limit);
   }
 }

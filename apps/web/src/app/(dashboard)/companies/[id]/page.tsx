@@ -111,8 +111,20 @@ export default function CompanyDetailPage() {
   }
 
   const company = companyData;
-  // Type assertion needed because tRPC infers from Prisma types which differ from shared types
-  const deals = (companyWithDeals as unknown as { deals?: Array<{ id: string; name: string; stage: string; value?: unknown; role?: string }> })?.deals || [];
+
+  // Deal history from DealCompany junction table
+  // Uses the properly typed dealHistory array from company.getWithDeals
+  interface DealHistoryEntry {
+    id: string;
+    dealId: string;
+    name: string;
+    stage: string;
+    value: number | null;
+    currency: string;
+    role: string;
+    createdAt: Date;
+  }
+  const dealHistory: DealHistoryEntry[] = (companyWithDeals as { dealHistory?: DealHistoryEntry[] })?.dealHistory || [];
 
   const handleWatchToggle = () => {
     // TODO: Hook into tRPC watch.add/watch.remove when TASK-109 is complete
@@ -265,8 +277,13 @@ export default function CompanyDetailPage() {
               <h3 className="font-semibold text-charcoal mb-4 flex items-center gap-2">
                 <Briefcase className="w-5 h-5 text-orange" />
                 Deal History
+                {dealHistory.length > 0 && (
+                  <span className="text-xs text-charcoal/50 bg-bone px-2 py-0.5 rounded-full">
+                    {dealHistory.length}
+                  </span>
+                )}
               </h3>
-              {deals.length === 0 ? (
+              {dealHistory.length === 0 ? (
                 <div className="text-center py-8 text-charcoal/50">
                   <Briefcase className="w-8 h-8 mx-auto mb-2" />
                   <p className="text-sm">No deals yet</p>
@@ -276,13 +293,13 @@ export default function CompanyDetailPage() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {deals.slice(0, 5).map((deal: any) => (
+                  {dealHistory.slice(0, 5).map((deal) => (
                     <Link
                       key={deal.id}
-                      href={`/deals/${deal.id}`}
+                      href={`/deals/${deal.dealId}`}
                       className="block p-3 bg-bone rounded-lg border border-gold/5 hover:bg-bone/80 transition-colors"
                     >
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between mb-2">
                         <p className="text-sm font-medium text-charcoal">
                           {deal.name}
                         </p>
@@ -298,16 +315,33 @@ export default function CompanyDetailPage() {
                           {deal.stage.replace(/_/g, " ")}
                         </span>
                       </div>
-                      {deal.value && (
-                        <p className="text-xs text-charcoal/60 mt-1">
-                          {formatRevenue(deal.value)}
-                        </p>
-                      )}
+                      <div className="flex items-center justify-between">
+                        <span
+                          className={`px-2 py-0.5 rounded text-[10px] font-medium ${
+                            deal.role === "PLATFORM"
+                              ? "bg-charcoal text-white"
+                              : deal.role === "ADD_ON"
+                              ? "bg-orange/20 text-orange"
+                              : deal.role === "SELLER"
+                              ? "bg-emerald-100 text-emerald-700"
+                              : deal.role === "BUYER"
+                              ? "bg-blue-100 text-blue-700"
+                              : "bg-violet-100 text-violet-700"
+                          }`}
+                        >
+                          {deal.role.replace(/_/g, " ")}
+                        </span>
+                        {deal.value && (
+                          <p className="text-xs text-charcoal/60">
+                            {formatRevenue(deal.value)}
+                          </p>
+                        )}
+                      </div>
                     </Link>
                   ))}
-                  {deals.length > 5 && (
+                  {dealHistory.length > 5 && (
                     <p className="text-sm text-charcoal/50 text-center">
-                      +{deals.length - 5} more deals
+                      +{dealHistory.length - 5} more deals
                     </p>
                   )}
                 </div>
