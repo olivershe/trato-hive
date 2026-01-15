@@ -34,3 +34,13 @@ export {
 
 // Sidebar database sync (Phase 11)
 export { useSidebarSync } from "./useSidebarSync";
+
+// Command palette (Phase 11.3)
+export { useCommandPalette } from "./useCommandPalette";
+
+// Page context detection (Phase 11.3)
+export {
+  usePageContext,
+  type PageContext,
+  type PageContextType,
+} from "./usePageContext";

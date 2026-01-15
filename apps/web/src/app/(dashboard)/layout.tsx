@@ -2,6 +2,7 @@
 
 import { Sidebar } from "@/components/layouts/Sidebar";
 import { SidebarProvider, useSidebar } from "@/components/layouts/SidebarContext";
+import { CommandPaletteProvider } from "@/components/CommandPaletteProvider";
 
 function DashboardContent({ children }: { children: React.ReactNode }) {
   const { collapsed } = useSidebar();
@@ -28,7 +29,9 @@ export default function DashboardLayout({
 }) {
   return (
     <SidebarProvider>
-      <DashboardContent>{children}</DashboardContent>
+      <CommandPaletteProvider>
+        <DashboardContent>{children}</DashboardContent>
+      </CommandPaletteProvider>
     </SidebarProvider>
   );
 }

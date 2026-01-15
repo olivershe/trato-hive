@@ -168,58 +168,58 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 
 | Task ID | Task | Status | Est. Hours | Dependencies |
 |---------|------|--------|------------|--------------|
-| **[TASK-094]** | CommandPalette Component | Pending | 4 | - |
-| **[TASK-095]** | Global Keyboard Hook | Pending | 2 | TASK-094 |
-| **[TASK-096]** | Entity Search Mode | Pending | 3 | TASK-094 |
-| **[TASK-097]** | AI Query Mode | Pending | 4 | TASK-094 |
-| **[TASK-098]** | Quick Actions Mode | Pending | 2 | TASK-094 |
-| **[TASK-099]** | Insert as Block Action | Pending | 3 | TASK-097 |
-| **[TASK-100]** | Context-Aware Scoping | Pending | 3 | TASK-097 |
+| **[TASK-094]** | CommandPalette Component | ✅ COMPLETE | 4 | - |
+| **[TASK-095]** | Global Keyboard Hook | ✅ COMPLETE | 2 | TASK-094 |
+| **[TASK-096]** | Entity Search Mode | ✅ COMPLETE | 3 | TASK-094 |
+| **[TASK-097]** | AI Query Mode | ✅ COMPLETE | 4 | TASK-094 |
+| **[TASK-098]** | Quick Actions Mode | ✅ COMPLETE | 2 | TASK-094 |
+| **[TASK-099]** | Insert as Block Action | ✅ COMPLETE | 3 | TASK-097 |
+| **[TASK-100]** | Context-Aware Scoping | ✅ COMPLETE | 3 | TASK-097 |
 
 **Task Details:**
 
-- [ ] **[TASK-094] CommandPalette Component** (4 hours)
-  - [ ] Create modal at `apps/web/src/components/CommandPalette.tsx`
-  - [ ] Search input with icon and placeholder
-  - [ ] Keyboard navigation: Up/Down arrows, Enter, Escape
-  - [ ] Results grouped by type (Pages, Actions, AI)
-  - [ ] Design: Dark overlay, centered modal, Intelligent Hive styling
+- [x] **[TASK-094] CommandPalette Component** (4 hours) - ✅ COMPLETE
+  - [x] Create modal at `apps/web/src/components/CommandPalette.tsx`
+  - [x] Search input with icon and placeholder
+  - [x] Keyboard navigation: Up/Down arrows, Enter, Escape
+  - [x] Results grouped by type (Pages, Actions, AI)
+  - [x] Design: Dark overlay, centered modal, Intelligent Hive styling
 
-- [ ] **[TASK-095] Global Keyboard Hook** (2 hours)
-  - [ ] Hook into K globally in app shell (`_app.tsx` or layout)
-  - [ ] Open CommandPalette on trigger
-  - [ ] Close on Escape or click outside
-  - [ ] Prevent conflicts with editor shortcuts
+- [x] **[TASK-095] Global Keyboard Hook** (2 hours) - ✅ COMPLETE
+  - [x] Hook into ⌘K globally in app shell (dashboard layout)
+  - [x] Open CommandPalette on trigger
+  - [x] Close on Escape or click outside
+  - [x] Prevent conflicts with editor shortcuts (Tiptap/ProseMirror detection)
 
-- [ ] **[TASK-096] Entity Search Mode** (3 hours)
-  - [ ] Search across Deals by name, value, stage
-  - [ ] Search across Companies by name, industry
-  - [ ] Search across Documents by title, folder
-  - [ ] Real-time results with debounced input (300ms)
+- [x] **[TASK-096] Entity Search Mode** (3 hours) - ✅ COMPLETE
+  - [x] Search across Deals by name
+  - [x] Search across Companies by name, industry, sector, location
+  - [x] Search across Documents by name, folderPath
+  - [x] Real-time results with debounced input (300ms)
 
-- [ ] **[TASK-097] AI Query Mode** (4 hours)
-  - [ ] Detect natural language questions (starts with "what", "how", "why", etc.)
-  - [ ] Route to DiligenceAgent via `diligence.askQuestion`
-  - [ ] Show inline answer with citations
-  - [ ] Loading state with "Thinking..." animation
+- [x] **[TASK-097] AI Query Mode** (4 hours) - ✅ COMPLETE
+  - [x] Detect natural language questions (starts with "what", "how", "why", etc.)
+  - [x] Route to DiligenceAgent via `diligence.askQuestion`
+  - [x] Show inline answer with citations
+  - [x] Loading state with "Thinking..." animation
 
-- [ ] **[TASK-098] Quick Actions Mode** (2 hours)
-  - [ ] Slash commands: `/new-deal`, `/new-company`, `/upload`, `/generate`
-  - [ ] Show action results in palette
-  - [ ] Navigate to created entity after action
-  - [ ] Show keyboard shortcuts in action list
+- [x] **[TASK-098] Quick Actions Mode** (2 hours) - ✅ COMPLETE
+  - [x] Slash commands: `/new-deal`, `/new-company`, `/upload`, `/generate`, `/search`, `/ask`, `/settings`, `/help`
+  - [x] Show action results in palette
+  - [x] Navigate to created entity after action
+  - [x] Show keyboard shortcuts in action list (⌘⇧D, ⌘⇧C, ⌘U, etc.)
 
-- [ ] **[TASK-099] Insert as Block Action** (3 hours)
-  - [ ] After AI answer, show "Insert as Block" button
-  - [ ] Create CitationBlock with answer content
-  - [ ] Insert at cursor position in current page editor
-  - [ ] Preserve citations and sources in block properties
+- [x] **[TASK-099] Insert as Block Action** (3 hours) - ✅ COMPLETE
+  - [x] After AI answer, show "Insert as Block" button
+  - [x] Create AIAnswerBlock with answer content
+  - [x] Insert at cursor position in current page editor (via editorStore)
+  - [x] Preserve citations and sources in block properties
 
-- [ ] **[TASK-100] Context-Aware Scoping** (3 hours)
-  - [ ] Inherit search scope from current page (if on Deal, scope to deal docs)
-  - [ ] Toggle to expand scope to organization
-  - [ ] Show current scope indicator in palette header
-  - [ ] Remember user's scope preference
+- [x] **[TASK-100] Context-Aware Scoping** (3 hours) - ✅ COMPLETE
+  - [x] Inherit search scope from current page (usePageContext hook)
+  - [x] Toggle to expand scope to organization
+  - [x] Show current scope indicator in palette header
+  - [x] Remember user's scope preference (localStorage via Zustand)
 
 ---
 
@@ -471,7 +471,7 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 - Phase 8: Backend - 100% - [Archive](./COMPLETED_WORK.md#phase-8-backend)
 - Phase 9: AI Stack - 100% - [Archive](./COMPLETED_WORK.md#phase-9-ai-stack)
 - Phase 10: Features - 100% - [Archive](./COMPLETED_WORK.md#phase-10-features)
-- **Phase 11: UI/UX Architecture - 15% (7/46 tasks)**
+- **Phase 11: UI/UX Architecture - 43% (20/46 tasks)**
 
 **Phase 11 Breakdown:**
 
@@ -480,7 +480,7 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 | 11.0: Documentation | TASK-080, TASK-081 | 1/2 |
 | 11.1: Schema | TASK-082 to TASK-087 | ✅ 6/6 |
 | 11.2: Navigation | TASK-088 to TASK-093 | ✅ 6/6 |
-| 11.3: Command Palette | TASK-094 to TASK-100 | 0/7 |
+| 11.3: Command Palette | TASK-094 to TASK-100 | ✅ 7/7 |
 | 11.4: Company Pages | TASK-101 to TASK-106 | 0/6 |
 | 11.5: Watch List | TASK-107 to TASK-109 | 0/3 |
 | 11.6: Document Pages | TASK-110 to TASK-113 | 0/4 |
@@ -501,21 +501,22 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 **Current Phase:** Phase 11: UI/UX Architecture Restructure
 
 **Recently Completed:**
-- [TASK-082] DealCompany Junction Table ✅
-- [TASK-083] CompanyWatch Table ✅
-- [TASK-084] Page Type Enhancement ✅
-- [TASK-085] Migration Script ✅
-- [TASK-086] Update Seed Data ✅
-- [TASK-087] Schema Unit Tests ✅ (27 tests passing)
+- [TASK-094] CommandPalette Component ✅
+- [TASK-095] Global Keyboard Hook ✅
+- [TASK-096] Entity Search Mode ✅
+- [TASK-097] AI Query Mode ✅
+- [TASK-098] Quick Actions Mode ✅
+- [TASK-099] Insert as Block Action ✅
+- [TASK-100] Context-Aware Scoping ✅
 
 **In Progress:**
 - [TASK-080] Archive Completed Work (verify archive completeness)
 
 **Next Up:**
-1. [TASK-088] Sidebar State Store
-2. [TASK-089] Sidebar Item Types
-3. [TASK-090] Pinned Section UI
-4. [TASK-091] Recent Section UI
+1. [TASK-101] CompanyHeaderBlock
+2. [TASK-102] Company Page Route
+3. [TASK-103] Company Page Template
+4. [TASK-104] Deal History DatabaseView
 
 **Recommended Execution Order:**
 
@@ -534,17 +535,19 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 
 ---
 
-**Last Updated:** January 15, 2026 (Phase 11.1 Schema Complete)
+**Last Updated:** January 15, 2026 (Phase 11.3 Command Palette Complete)
 **Maintained By:** All team members (update after every task)
 **Reference:** Root CLAUDE.md Section 5 (EPC Workflow)
 **Completed Work:** See [COMPLETED_WORK.md](./COMPLETED_WORK.md)
-**Plan File:** See `~/.claude/plans/mutable-soaring-nygaard.md` for detailed implementation plan
 
-**Files Modified in Phase 11.1:**
-- `packages/db/prisma/schema.prisma` - DealCompany, CompanyWatch, PageType additions
-- `packages/db/prisma/migrations/20260115_phase11_schema_updates/migration.sql` - Migration script
-- `packages/db/prisma/migrations/20260115_phase11_schema_updates/rollback.sql` - Rollback script
-- `packages/db/prisma/seed/phase11.ts` - Phase 11 seed data
-- `packages/db/prisma/seed.ts` - Updated to include Phase 11 seeding
-- `packages/db/src/schema.test.ts` - 27 unit tests for new schema
-- `packages/db/vitest.config.ts` - Vitest configuration
+**Files Created/Modified in Phase 11.3:**
+- `apps/web/src/components/CommandPalette.tsx` - Core modal component with search and keyboard navigation
+- `apps/web/src/components/CommandPaletteProvider.tsx` - Provider integrating search, AI, and quick actions
+- `apps/web/src/components/CommandPaletteAIAnswer.tsx` - AI answer display with Insert as Block
+- `apps/web/src/hooks/useCommandPalette.ts` - Global ⌘K keyboard hook
+- `apps/web/src/hooks/usePageContext.ts` - Page context detection for scoping
+- `apps/web/src/stores/editor.ts` - Editor store for Command Palette integration
+- `apps/web/src/stores/commandPalette.ts` - Scope preference store
+- `apps/web/src/components/editor/extensions/AIAnswerBlock.tsx` - Tiptap extension for AI answers
+- `apps/api/src/routers/search.ts` - Unified search router for entities
+- `apps/web/src/app/(dashboard)/layout.tsx` - Wrapped with CommandPaletteProvider

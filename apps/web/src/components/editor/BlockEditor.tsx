@@ -24,6 +24,9 @@ import * as Y from "yjs";
 import Collaboration from "@tiptap/extension-collaboration";
 import CollaborationCursor from "@tiptap/extension-collaboration-cursor";
 
+// Editor Store (for Command Palette integration)
+import { useEditorStore } from "@/stores/editor";
+
 const getRandomColor = () => '#' + Math.floor(Math.random() * 16777215).toString(16);
 
 // Base extensions without PageMention (configured per-instance with dealId)
@@ -73,7 +76,10 @@ function BlockEditorInner({
 
     const [provider, setProvider] = useState<LiveblocksYjsProvider | null>(null);
     const [doc, setDoc] = useState<Y.Doc | null>(null);
-    const [editor, setEditor] = useState<Editor | null>(null); // State for Tiptap editor instance
+    const [localEditor, setLocalEditor] = useState<Editor | null>(null); // Local state for Tiptap editor instance
+
+    // Register editor with global store for Command Palette integration
+    const { setEditor: setGlobalEditor, clearEditor } = useEditorStore();
 
     useEffect(() => {
         const yDoc = new Y.Doc();
@@ -86,6 +92,16 @@ function BlockEditorInner({
             yProvider.destroy();
         };
     }, [room]);
+
+    // Register/unregister editor with global store
+    useEffect(() => {
+        if (localEditor) {
+            setGlobalEditor(localEditor, pageId);
+        }
+        return () => {
+            clearEditor();
+        };
+    }, [localEditor, pageId, setGlobalEditor, clearEditor]);
 
     // 3. Configure Tiptap Extensions with Yjs + Wiki Links
     // Note: Using 'as any' to handle Tiptap v2/v3 type mismatch for collaboration extensions
@@ -159,11 +175,11 @@ function BlockEditorInner({
                         updateContent(json);
                     }}
                     onCreate={({ editor }) => {
-                        setEditor(editor as any);
+                        setLocalEditor(editor as any);
                     }}
                     editable={editable}
                 >
-                    {editor && <EditorBubbleMenu editor={editor} />}
+                    {localEditor && <EditorBubbleMenu editor={localEditor} />}
                 </EditorContent>
             </EditorRoot>
         </div>

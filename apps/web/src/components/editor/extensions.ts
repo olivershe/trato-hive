@@ -23,6 +23,7 @@ import { QueryBlock } from "./extensions/QueryBlock";
 import { VDRBlock } from "./extensions/VDRBlock";
 import { SearchBlock } from "./extensions/SearchBlock";
 import { InlineCitationMark } from "./extensions/InlineCitationMark";
+import { AIAnswerBlock } from "./extensions/AIAnswerBlock";
 import GlobalDragHandle from "tiptap-extension-global-drag-handle";
 import AutoJoiner from "tiptap-extension-auto-joiner";
 import Focus from "@tiptap/extension-focus";
@@ -160,6 +161,7 @@ export const defaultExtensions: any[] = [
     VDRBlock,
     SearchBlock,
     InlineCitationMark,
+    AIAnswerBlock,
     GlobalDragHandle.configure({
         dragHandleWidth: 24,
         scrollTreshold: 100,
