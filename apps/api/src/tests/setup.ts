@@ -4,7 +4,7 @@
  * Mock factories and utilities for testing.
  */
 import { vi } from 'vitest';
-import type { Deal, DealStage, DealType, OrganizationRole, FactType } from '@trato-hive/db';
+import type { Deal, Company, DealStage, DealType, CompanyStatus, OrganizationRole, FactType } from '@trato-hive/db';
 
 // Session type matching what's used in tRPC context
 type Session = {
@@ -76,6 +76,33 @@ export function createMockDeal(overrides?: Partial<Deal>): Deal {
     actualCloseDate: null,
     description: null,
     notes: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ...overrides,
+  };
+}
+
+/**
+ * Create a mock company for testing
+ */
+export function createMockCompany(overrides?: Partial<Company>): Company {
+  return {
+    id: TEST_IDS.company,
+    organizationId: TEST_IDS.org,
+    name: 'Test Company',
+    domain: 'testcompany.com',
+    description: 'A test company for unit testing',
+    industry: 'Technology',
+    sector: 'Software',
+    founded: 2020,
+    employees: 50,
+    revenue: null,
+    location: 'San Francisco, CA',
+    website: 'https://testcompany.com',
+    linkedin: null,
+    status: 'PROSPECT' as CompanyStatus,
+    aiSummary: null,
+    aiScore: null,
     createdAt: new Date(),
     updatedAt: new Date(),
     ...overrides,
@@ -269,7 +296,10 @@ export function createMockPrisma() {
     company: {
       findUnique: vi.fn(),
       findMany: vi.fn(),
+      create: vi.fn(),
       update: vi.fn(),
+      delete: vi.fn(),
+      count: vi.fn(),
     },
     document: {
       findMany: vi.fn(),

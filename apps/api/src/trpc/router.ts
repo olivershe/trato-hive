@@ -5,6 +5,7 @@
  *
  * Active routers:
  * - block - Block synchronization for editor
+ * - company - Company CRUD operations [TASK-106]
  * - deal - Deal CRUD operations
  * - database - Inline database CRUD operations
  * - dashboard - Pipeline health and activity metrics
@@ -13,13 +14,11 @@
  * - generator - Document export (PPTX/DOCX)
  * - sourcing - Company search and discovery
  *
- * Future routers:
- * - companyRouter - Company CRUD operations
- *
  * @see apps/api/CLAUDE.md for router patterns
  */
 import { router } from './init';
 import { blockRouter } from '../routers/block';
+import { companyRouter } from '../routers/company';
 import { dealsRouter } from '../routers/deals';
 import { databasesRouter } from '../routers/databases';
 import { dashboardRouter } from '../routers/dashboard';
@@ -37,6 +36,7 @@ import { searchRouter } from '../routers/search';
  */
 export const appRouter = router({
   block: blockRouter,
+  company: companyRouter,
   deal: dealsRouter,
   database: databasesRouter,
   dashboard: dashboardRouter,
