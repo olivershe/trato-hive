@@ -83,7 +83,7 @@ export const searchRouter = router({
           orderBy: { updatedAt: 'desc' },
         })
 
-        results.deals = deals.map((deal) => ({
+        results.deals = deals.map((deal: { id: string; name: string; stage: string; type: string; value: unknown }) => ({
           id: deal.id,
           type: 'deal' as const,
           title: deal.name,
@@ -119,7 +119,7 @@ export const searchRouter = router({
           orderBy: { updatedAt: 'desc' },
         })
 
-        results.companies = companies.map((company) => ({
+        results.companies = companies.map((company: { id: string; name: string; industry: string | null; location: string | null }) => ({
           id: company.id,
           type: 'company' as const,
           title: company.name,
@@ -154,7 +154,7 @@ export const searchRouter = router({
           orderBy: { updatedAt: 'desc' },
         })
 
-        results.documents = documents.map((doc) => ({
+        results.documents = documents.map((doc: { id: string; name: string; folderPath: string | null; dealId: string | null }) => ({
           id: doc.id,
           type: 'document' as const,
           title: doc.name,

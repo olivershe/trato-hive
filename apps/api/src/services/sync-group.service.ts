@@ -73,9 +73,10 @@ export class SyncGroupService {
     });
 
     // Filter to only blocks in this org
+    type BlockWithRelations = typeof blocks[number];
     return blocks
-      .filter((b) => b.page.deal.organizationId === organizationId)
-      .map((b) => ({
+      .filter((b: BlockWithRelations) => b.page.deal.organizationId === organizationId)
+      .map((b: BlockWithRelations) => ({
         id: b.id,
         pageId: b.pageId,
         syncGroupId: b.syncGroupId!,

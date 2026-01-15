@@ -184,9 +184,10 @@ describe('CompanyService', () => {
 
       const result = await service.getWithDeals(TEST_IDS.company, TEST_IDS.org);
 
-      expect(result.dealCompanies).toHaveLength(1);
-      expect(result.dealCompanies[0].role).toBe('PLATFORM');
-      expect(result.dealCompanies[0].deal.name).toBe('Test Deal');
+      // Service flattens dealCompanies into deals array with role property
+      expect(result.deals).toHaveLength(1);
+      expect((result.deals[0] as { role: string }).role).toBe('PLATFORM');
+      expect(result.deals[0].name).toBe('Test Deal');
     });
   });
 

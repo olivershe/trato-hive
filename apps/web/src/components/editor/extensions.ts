@@ -13,6 +13,7 @@ import Highlight from "@tiptap/extension-highlight";
 import UniqueID from "@tiptap/extension-unique-id";
 import { CitationBlock } from "./extensions/CitationBlock";
 import { DealHeaderBlock } from "./extensions/DealHeaderBlock";
+import { CompanyHeaderBlock } from "./extensions/CompanyHeaderBlock";
 import { ActivityTimelineBlock } from "./extensions/ActivityTimelineBlock";
 import { DealDatabaseBlock } from "./extensions/DealDatabaseBlock";
 import { AISuggestionBlock } from "./extensions/AISuggestionBlock";
@@ -151,6 +152,7 @@ export const defaultExtensions: any[] = [
     }),
     CitationBlock,
     DealHeaderBlock,
+    CompanyHeaderBlock,
     ActivityTimelineBlock,
     DealDatabaseBlock,
     AISuggestionBlock,

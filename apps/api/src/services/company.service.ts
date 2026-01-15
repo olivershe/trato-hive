@@ -147,7 +147,7 @@ export class CompanyService {
   async getWithDeals(id: string, organizationId: string): Promise<CompanyWithDeals> {
     const company = await this.getById(id, organizationId);
 
-    const companyWithDeals = await this.db.company.findUnique({
+    const companyWithDealCompanies = await this.db.company.findUnique({
       where: { id },
       include: {
         dealCompanies: {
@@ -157,8 +157,17 @@ export class CompanyService {
                 id: true,
                 name: true,
                 stage: true,
+                type: true,
                 value: true,
+                currency: true,
+                probability: true,
+                expectedCloseDate: true,
+                description: true,
+                notes: true,
+                companyId: true,
+                organizationId: true,
                 createdAt: true,
+                updatedAt: true,
               },
             },
           },
@@ -167,7 +176,16 @@ export class CompanyService {
       },
     });
 
-    return companyWithDeals as CompanyWithDeals;
+    // Flatten dealCompanies into deals array for CompanyWithDeals type
+    const deals = (companyWithDealCompanies?.dealCompanies || []).map(dc => ({
+      ...dc.deal,
+      role: dc.role, // Include the role from junction table
+    }));
+
+    return {
+      ...company,
+      deals,
+    } as unknown as CompanyWithDeals;
   }
 
   /**
