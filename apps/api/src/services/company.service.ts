@@ -9,6 +9,7 @@
 import { TRPCError } from '@trpc/server';
 import type { PrismaClient, Company, Prisma, CompanyStatus } from '@trato-hive/db';
 import type { CompanyListInput, RouterCreateCompanyInput, CompanySearchInput } from '@trato-hive/shared';
+import { DATABASE_TEMPLATES } from '@trato-hive/shared';
 
 // Re-export input types for convenience
 export type { CompanyListInput, CompanySearchInput } from '@trato-hive/shared';
@@ -333,19 +334,36 @@ export class CompanyService {
         },
       });
 
-      // 7. Create Key Contacts section placeholder
-      await tx.block.create({
-        data: {
-          pageId: rootPage.id,
-          type: 'heading',
-          order: 4,
-          properties: {
-            text: 'Key Contacts',
-            level: 2,
+      // 7. Create Key Contacts Database page (sub-page of root)
+      const contactsTemplate = DATABASE_TEMPLATES.find(t => t.id === 'contact-list');
+      if (contactsTemplate) {
+        // Create a page for the database
+        const contactsPage = await tx.page.create({
+          data: {
+            dealId: placeholderDeal.id,
+            companyId: company.id,
+            parentPageId: rootPage.id,
+            type: 'COMPANY_PAGE',
+            title: 'Key Contacts',
+            icon: '👥',
+            isDatabase: true,
+            order: 1,
           },
-          createdBy: userId,
-        },
-      });
+        });
+
+        // Create the Database linked to the contacts page
+        await tx.database.create({
+          data: {
+            name: `${company.name} - Contacts`,
+            description: 'Key contacts for this company',
+            schema: contactsTemplate.schema as unknown as Prisma.InputJsonValue,
+            organizationId,
+            dealId: placeholderDeal.id,
+            pageId: contactsPage.id,
+            createdById: userId,
+          },
+        });
+      }
 
       return company;
     });
