@@ -15,6 +15,8 @@ import { useState, useCallback } from "react";
 import { api } from "@/trpc/react";
 import { PageTreeNode, type PageTreeNodeData } from "../deals/PageTreeNode";
 import { useSidebar } from "./SidebarContext";
+import { PinnedSection, RecentSection } from "../sidebar";
+import { useActivePageExpansion } from "@/hooks";
 import {
   DndContext,
   DragOverlay,
@@ -82,6 +84,9 @@ export function Sidebar() {
   const pathname = usePathname();
   const params = useParams();
   const { collapsed, setCollapsed } = useSidebar();
+
+  // Auto-expand sidebar items when navigating to child pages
+  useActivePageExpansion();
 
   // Check if we're on a deal page
   const dealId = params?.id as string | undefined;
@@ -183,6 +188,12 @@ export function Sidebar() {
           );
         })}
       </nav>
+
+      {/* Pinned Items Section */}
+      <PinnedSection />
+
+      {/* Recent Items Section */}
+      <RecentSection />
 
       {/* Deal Pages Section - shows when viewing a deal */}
       {isOnDealPage && (

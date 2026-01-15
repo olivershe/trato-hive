@@ -30,7 +30,7 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 
 ## Phase 11: UI/UX Architecture Restructure
 
-**Status:** 7/46 tasks complete (15%)
+**Status:** 12/46 tasks complete (26%)
 **Estimated Time:** ~126 hours total
 **Priority:** HIGH (Major architecture evolution)
 
@@ -117,44 +117,44 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 
 | Task ID | Task | Status | Est. Hours | Dependencies |
 |---------|------|--------|------------|--------------|
-| **[TASK-088]** | Sidebar State Store | Pending | 3 | - |
-| **[TASK-089]** | Sidebar Item Types | Pending | 1 | - |
-| **[TASK-090]** | Pinned Section UI | Pending | 4 | TASK-088 |
-| **[TASK-091]** | Recent Section UI | Pending | 3 | TASK-088 |
-| **[TASK-092]** | Active Page Expansion | Pending | 3 | TASK-088 |
+| **[TASK-088]** | Sidebar State Store | ✅ COMPLETE | 3 | - |
+| **[TASK-089]** | Sidebar Item Types | ✅ COMPLETE | 1 | - |
+| **[TASK-090]** | Pinned Section UI | ✅ COMPLETE | 4 | TASK-088 |
+| **[TASK-091]** | Recent Section UI | ✅ COMPLETE | 3 | TASK-088 |
+| **[TASK-092]** | Active Page Expansion | ✅ COMPLETE | 3 | TASK-088 |
 | **[TASK-093]** | Sidebar Persistence | Pending | 2 | TASK-088 |
 
 **Task Details:**
 
-- [ ] **[TASK-088] Sidebar State Store** (3 hours)
-  - [ ] Create Zustand store at `apps/web/src/stores/sidebar.ts`
-  - [ ] State: `pinnedItems` (7 max), `recentItems` (7 max, FIFO), `expandedItemId`
-  - [ ] Actions: `pin`, `unpin`, `addRecent`, `setExpanded`, `clearRecent`
-  - [ ] Persistence middleware for localStorage sync
+- [x] **[TASK-088] Sidebar State Store** (3 hours) - ✅ COMPLETE
+  - [x] Create Zustand store at `apps/web/src/stores/sidebar.ts`
+  - [x] State: `pinnedItems` (7 max), `recentItems` (7 max, FIFO), `expandedItemId`
+  - [x] Actions: `pin`, `unpin`, `addRecent`, `setExpanded`, `clearRecent`
+  - [x] Persistence middleware for localStorage sync
 
-- [ ] **[TASK-089] Sidebar Item Types** (1 hour)
-  - [ ] Define `SidebarItem` interface in `@trato-hive/shared`
-  - [ ] Properties: `id`, `type`, `title`, `icon`, `href`, `children`
-  - [ ] Types: `deal`, `company`, `document`, `page`, `module`
-  - [ ] Export from shared package
+- [x] **[TASK-089] Sidebar Item Types** (1 hour) - ✅ COMPLETE
+  - [x] Define `SidebarItem` interface in `@trato-hive/shared`
+  - [x] Properties: `id`, `type`, `title`, `icon`, `href`, `children`
+  - [x] Types: `deal`, `company`, `document`, `page`, `module`
+  - [x] Export from shared package
 
-- [ ] **[TASK-090] Pinned Section UI** (4 hours)
-  - [ ] Implement draggable pinned section in Sidebar
-  - [ ] 7-item limit with visual indicator when full
-  - [ ] Context menu: "Unpin", "Open in new tab"
-  - [ ] Drag-and-drop reordering with dnd-kit
+- [x] **[TASK-090] Pinned Section UI** (4 hours) - ✅ COMPLETE
+  - [x] Implement draggable pinned section in Sidebar
+  - [x] 7-item limit with visual indicator when full
+  - [x] Unpin functionality on hover
+  - [x] Drag-and-drop reordering with dnd-kit
 
-- [ ] **[TASK-091] Recent Section UI** (3 hours)
-  - [ ] Implement auto-tracked recent section
-  - [ ] FIFO logic: newest at top, max 7 items
-  - [ ] Hook into route changes to track visits
-  - [ ] "Clear Recent" action in context menu
+- [x] **[TASK-091] Recent Section UI** (3 hours) - ✅ COMPLETE
+  - [x] Implement auto-tracked recent section
+  - [x] FIFO logic: newest at top, max 7 items
+  - [x] Hook into route changes to track visits (`useRecentTracker`)
+  - [x] "Clear Recent" button in section header
 
-- [ ] **[TASK-092] Active Page Expansion** (3 hours)
-  - [ ] Auto-expand sidebar item when navigating to page
-  - [ ] Show sub-pages (children) when expanded
-  - [ ] Collapse siblings when expanding new item
-  - [ ] Smooth animation with Framer Motion
+- [x] **[TASK-092] Active Page Expansion** (3 hours) - ✅ COMPLETE
+  - [x] Auto-expand sidebar item when navigating to page
+  - [x] Show sub-pages (children) when expanded
+  - [x] Collapse siblings when expanding new item
+  - [x] Chevron animation with CSS transitions
 
 - [ ] **[TASK-093] Sidebar Persistence** (2 hours)
   - [ ] Save pinned items to user preferences

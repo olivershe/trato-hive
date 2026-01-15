@@ -17,3 +17,17 @@ export {
   type ExtractedFact,
   type UseDocumentProcessingStreamResult,
 } from "./useDocumentProcessingStream";
+
+// Recent tracking (Phase 11)
+export {
+  useRecentTracker,
+  useTrackRecentVisit,
+  type RecentTrackerOptions,
+} from "./useRecentTracker";
+
+// Active page expansion (Phase 11)
+export {
+  useActivePageExpansion,
+  useIsExpanded,
+  useToggleExpanded,
+} from "./useActivePageExpansion";

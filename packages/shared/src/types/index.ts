@@ -122,3 +122,12 @@ export type {
   ExportFormat,
 } from './generator'
 export { EXPORT_MIME_TYPES } from './generator'
+
+// Sidebar Types (Navigation System)
+export type {
+  SidebarItemTypeValue,
+  SidebarItem,
+  SidebarItemMetadata,
+  SidebarSection,
+} from './sidebar'
+export { SidebarItemType } from './sidebar'
