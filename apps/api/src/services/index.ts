@@ -3,6 +3,12 @@
  *
  * All business logic services are exported from here.
  */
+export {
+  CompanyService,
+  type CompanyListResult,
+  type CompanyWithDeals,
+  type CompanySearchResult,
+} from './company.service';
 export { DealService, type DealListResult, type FactSheetResult } from './deals.service';
 export { ActivityService, type LogActivityParams } from './activity.service';
 export { DatabaseService } from './database.service';
