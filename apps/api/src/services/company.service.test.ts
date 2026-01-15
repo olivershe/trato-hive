@@ -185,9 +185,11 @@ describe('CompanyService', () => {
       const result = await service.getWithDeals(TEST_IDS.company, TEST_IDS.org);
 
       // Service flattens dealCompanies into deals array with role property
-      expect(result.deals).toHaveLength(1);
-      expect((result.deals[0] as { role: string }).role).toBe('PLATFORM');
-      expect(result.deals[0].name).toBe('Test Deal');
+      // Cast to access the transformed structure
+      const resultWithDeals = result as unknown as { deals: Array<{ name: string; role: string }> };
+      expect(resultWithDeals.deals).toHaveLength(1);
+      expect(resultWithDeals.deals[0].role).toBe('PLATFORM');
+      expect(resultWithDeals.deals[0].name).toBe('Test Deal');
     });
   });
 
@@ -205,6 +207,7 @@ describe('CompanyService', () => {
         title: 'Test Company',
       };
       const mockBlock = { id: TEST_IDS.block, pageId: TEST_IDS.page };
+      const mockDatabase = { id: 'clqdatabase12345678901234' };
 
       // Mock transaction
       mockPrisma.$transaction.mockImplementation(async (fn) => {
@@ -213,6 +216,7 @@ describe('CompanyService', () => {
           deal: { create: vi.fn().mockResolvedValue(mockDeal) },
           page: { create: vi.fn().mockResolvedValue(mockPage) },
           block: { create: vi.fn().mockResolvedValue(mockBlock) },
+          database: { create: vi.fn().mockResolvedValue(mockDatabase) },
         };
         return fn(tx);
       });
@@ -236,11 +240,13 @@ describe('CompanyService', () => {
       const mockDeal = { id: TEST_IDS.deal };
       const mockPage = { id: TEST_IDS.page };
       const mockBlock = { id: TEST_IDS.block };
+      const mockDatabase = { id: 'clqdatabase12345678901234' };
 
       const companyCreate = vi.fn().mockResolvedValue(mockCompany);
       const dealCreate = vi.fn().mockResolvedValue(mockDeal);
       const pageCreate = vi.fn().mockResolvedValue(mockPage);
       const blockCreate = vi.fn().mockResolvedValue(mockBlock);
+      const databaseCreate = vi.fn().mockResolvedValue(mockDatabase);
 
       mockPrisma.$transaction.mockImplementation(async (fn) => {
         const tx = {
@@ -248,6 +254,7 @@ describe('CompanyService', () => {
           deal: { create: dealCreate },
           page: { create: pageCreate },
           block: { create: blockCreate },
+          database: { create: databaseCreate },
         };
         return fn(tx);
       });
@@ -290,6 +297,27 @@ describe('CompanyService', () => {
             companyId: TEST_IDS.company,
             name: 'Acme Corp',
           }),
+        }),
+      });
+
+      // Verify Key Contacts page creation (sub-page for database)
+      expect(pageCreate).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          title: 'Key Contacts',
+          icon: '👥',
+          isDatabase: true,
+          companyId: TEST_IDS.company,
+        }),
+      });
+
+      // Verify Key Contacts Database creation
+      expect(databaseCreate).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          name: 'Acme Corp - Contacts',
+          description: 'Key contacts for this company',
+          organizationId: TEST_IDS.org,
+          createdById: TEST_IDS.user,
+          pageId: TEST_IDS.page,
         }),
       });
     });
