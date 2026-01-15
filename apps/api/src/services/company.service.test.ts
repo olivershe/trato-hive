@@ -167,11 +167,13 @@ describe('CompanyService', () => {
           {
             id: 'clqdealcompany1234567890123',
             role: 'PLATFORM',
+            createdAt: new Date(),
             deal: {
               id: TEST_IDS.deal,
               name: 'Test Deal',
               stage: 'SOURCING',
               value: null,
+              currency: 'USD',
               createdAt: new Date(),
             },
           },
@@ -184,12 +186,13 @@ describe('CompanyService', () => {
 
       const result = await service.getWithDeals(TEST_IDS.company, TEST_IDS.org);
 
-      // Service flattens dealCompanies into deals array with role property
+      // Service transforms dealCompanies into dealHistory array with role property
       // Cast to access the transformed structure
-      const resultWithDeals = result as unknown as { deals: Array<{ name: string; role: string }> };
-      expect(resultWithDeals.deals).toHaveLength(1);
-      expect(resultWithDeals.deals[0].role).toBe('PLATFORM');
-      expect(resultWithDeals.deals[0].name).toBe('Test Deal');
+      const resultWithDeals = result as unknown as { dealHistory: Array<{ name: string; role: string; dealId: string }> };
+      expect(resultWithDeals.dealHistory).toHaveLength(1);
+      expect(resultWithDeals.dealHistory[0].role).toBe('PLATFORM');
+      expect(resultWithDeals.dealHistory[0].name).toBe('Test Deal');
+      expect(resultWithDeals.dealHistory[0].dealId).toBe(TEST_IDS.deal);
     });
   });
 
@@ -449,6 +452,100 @@ describe('CompanyService', () => {
           }),
         })
       );
+    });
+  });
+
+  describe('getRelatedCompanies', () => {
+    it('should return related companies by industry', async () => {
+      const mockCompany = createMockCompany({
+        industry: 'Technology',
+        sector: 'Software',
+        location: 'San Francisco, CA',
+        employees: 100,
+      });
+
+      const mockRelatedCompanies = [
+        {
+          id: 'clqrelated00000000000000001',
+          name: 'Similar Tech Co',
+          industry: 'Technology',
+          sector: 'Software',
+          location: 'San Francisco, CA',
+          employees: 80,
+          revenue: 5000000,
+        },
+        {
+          id: 'clqrelated00000000000000002',
+          name: 'Different Industry Co',
+          industry: 'Healthcare',
+          sector: null,
+          location: 'San Francisco, CA',
+          employees: 150,
+          revenue: 10000000,
+        },
+      ];
+
+      mockPrisma.company.findUnique.mockResolvedValue(mockCompany);
+      mockPrisma.company.findMany.mockResolvedValue(mockRelatedCompanies);
+
+      const result = await service.getRelatedCompanies(TEST_IDS.company, TEST_IDS.org, 6);
+
+      // First company has higher score (same industry + sector + location + similar size)
+      expect(result.length).toBeGreaterThan(0);
+      expect(result[0].similarityScore).toBeGreaterThan(0);
+      expect(result[0].relationshipTypes).toContain('Same Industry');
+    });
+
+    it('should return empty array when no attributes to match', async () => {
+      const mockCompany = createMockCompany({
+        industry: null,
+        sector: null,
+        location: null,
+        employees: null,
+      });
+
+      mockPrisma.company.findUnique.mockResolvedValue(mockCompany);
+
+      const result = await service.getRelatedCompanies(TEST_IDS.company, TEST_IDS.org);
+
+      expect(result).toHaveLength(0);
+    });
+
+    it('should exclude the source company from results', async () => {
+      const mockCompany = createMockCompany({ industry: 'Technology' });
+
+      mockPrisma.company.findUnique.mockResolvedValue(mockCompany);
+      mockPrisma.company.findMany.mockResolvedValue([]);
+
+      await service.getRelatedCompanies(TEST_IDS.company, TEST_IDS.org);
+
+      expect(mockPrisma.company.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            id: { not: TEST_IDS.company },
+          }),
+        })
+      );
+    });
+
+    it('should respect limit parameter', async () => {
+      const mockCompany = createMockCompany({ industry: 'Technology' });
+      const manyCompanies = Array.from({ length: 10 }, (_, i) => ({
+        id: `clqrelated0000000000000000${i}`,
+        name: `Company ${i}`,
+        industry: 'Technology',
+        sector: null,
+        location: null,
+        employees: null,
+        revenue: null,
+      }));
+
+      mockPrisma.company.findUnique.mockResolvedValue(mockCompany);
+      mockPrisma.company.findMany.mockResolvedValue(manyCompanies);
+
+      const result = await service.getRelatedCompanies(TEST_IDS.company, TEST_IDS.org, 3);
+
+      expect(result.length).toBeLessThanOrEqual(3);
     });
   });
 });

@@ -13,9 +13,6 @@ import {
   DealCompanyRole,
   PageType,
   Prisma,
-  DealCompany,
-  CompanyWatch,
-  Page,
 } from '@prisma/client';
 
 // =============================================================================

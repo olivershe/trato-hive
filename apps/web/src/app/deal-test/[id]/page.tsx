@@ -4,15 +4,16 @@ import { prisma, getRecursivePageBlocks } from "@trato-hive/db";
 import { BlockRenderer } from "@/components/document/renderer/BlockRenderer";
 
 interface PageProps {
-    params: {
+    params: Promise<{
         id: string;
-    };
+    }>;
 }
 
 export default async function DealTestPage({ params }: PageProps) {
+    const { id } = await params;
     // 1. Fetch the Deal with root page (first page without parent)
     const deal = await prisma.deal.findUnique({
-        where: { id: params.id },
+        where: { id },
         include: {
             pages: {
                 where: { parentPageId: null },
