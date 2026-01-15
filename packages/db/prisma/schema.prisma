@@ -26,14 +26,15 @@ model User {
   updatedAt DateTime @updatedAt
 
   // Relations
-  accounts        Account[]
-  sessions        Session[]
-  organizations   OrganizationMember[]
-  documents       Document[]
-  activities      Activity[]
-  createdBlocks   Block[]
-  databases       Database[]           @relation("DatabaseCreator")
-  databaseEntries DatabaseEntry[]      @relation("DatabaseEntryCreator")
+  accounts         Account[]
+  sessions         Session[]
+  organizations    OrganizationMember[]
+  documents        Document[]
+  activities       Activity[]
+  createdBlocks    Block[]
+  databases        Database[]           @relation("DatabaseCreator")
+  databaseEntries  DatabaseEntry[]      @relation("DatabaseEntryCreator")
+  watchedCompanies CompanyWatch[] // Companies this user is watching
 
   @@map("users")
 }
@@ -165,9 +166,12 @@ model Company {
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   // Relations
-  deals     Deal[]
-  documents Document[]
-  facts     Fact[]
+  deals         Deal[]
+  dealCompanies DealCompany[] // Many-to-many junction for deals with roles
+  watches       CompanyWatch[] // Users watching this company
+  documents     Document[]
+  facts         Fact[]
+  pages         Page[] // Company pages
 
   @@index([organizationId])
   @@index([status])
@@ -196,6 +200,14 @@ enum DealType {
   OTHER
 }
 
+enum DealCompanyRole {
+  PLATFORM // Primary target company
+  ADD_ON   // Bolt-on acquisition
+  SELLER   // Selling party
+  BUYER    // Acquiring party
+  ADVISOR  // Advisory role
+}
+
 model Deal {
   id             String  @id @default(cuid())
   organizationId String
@@ -221,15 +233,63 @@ model Deal {
   company      Company?     @relation(fields: [companyId], references: [id], onDelete: SetNull)
 
   // Relations
-  documents  Document[]
-  activities Activity[]
-  pages      Page[] // Deals have multiple nested pages
-  databases  Database[] // Databases scoped to this deal
+  dealCompanies DealCompany[] // Many-to-many junction for companies with roles
+  documents     Document[]
+  activities    Activity[]
+  pages         Page[] // Deals have multiple nested pages
+  databases     Database[] // Databases scoped to this deal
 
   @@index([organizationId])
   @@index([stage])
   @@index([companyId])
   @@map("deals")
+}
+
+// =============================================================================
+// DEAL-COMPANY JUNCTION (Many-to-Many with Roles)
+// =============================================================================
+
+model DealCompany {
+  id        String          @id @default(cuid())
+  dealId    String
+  companyId String
+  role      DealCompanyRole @default(PLATFORM)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  deal    Deal    @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([dealId, companyId])
+  @@index([dealId])
+  @@index([companyId])
+  @@map("deal_companies")
+}
+
+// =============================================================================
+// COMPANY WATCH LIST (User tracking of companies without deals)
+// =============================================================================
+
+model CompanyWatch {
+  id        String @id @default(cuid())
+  companyId String
+  userId    String
+
+  notes    String?  @db.Text // Optional notes about why watching
+  tags     String[] @default([]) // Tags for categorization
+  priority Int      @default(0) // 0=low, 1=medium, 2=high
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, userId]) // One watch per user per company
+  @@index([companyId])
+  @@index([userId])
+  @@map("company_watches")
 }
 
 // =============================================================================
@@ -293,6 +353,7 @@ model Document {
   // Relations
   chunks DocumentChunk[]
   facts  Fact[]
+  pages  Page[] @relation("DocumentPage") // Document pages
 
   @@index([organizationId])
   @@index([companyId])
@@ -502,11 +563,23 @@ model DatabaseEntry {
 // BLOCK PROTOCOL (Experience Layer - Dynamic Content)
 // =============================================================================
 
+enum PageType {
+  DEAL_PAGE     // Page associated with a deal
+  COMPANY_PAGE  // Page associated with a company
+  DOCUMENT_PAGE // Page associated with a document
+  FREEFORM      // General-purpose page
+}
+
 model Page {
   id         String  @id @default(cuid())
   title      String?
   icon       String? // Emoji or image URL
   coverImage String?
+
+  // Page type for entity association
+  type       PageType @default(FREEFORM)
+  companyId  String?  // For COMPANY_PAGE type
+  documentId String?  // For DOCUMENT_PAGE type
 
   // Hierarchy - Pages nest infinitely within a Deal
   dealId       String
@@ -520,6 +593,10 @@ model Page {
 
   // Deal relation (required - all pages belong to a deal)
   deal Deal @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  // Entity relations (for typed pages)
+  company  Company?  @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  document Document? @relation("DocumentPage", fields: [documentId], references: [id], onDelete: SetNull)
 
   // Children blocks
   blocks Block[] @relation("PageBlocks")
@@ -540,6 +617,8 @@ model Page {
   @@index([dealId])
   @@index([parentPageId])
   @@index([dealId, parentPageId])
+  @@index([companyId])
+  @@index([documentId])
   @@map("pages")
 }
 

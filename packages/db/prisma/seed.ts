@@ -12,6 +12,7 @@ import { seedDeals } from './seed/deals';
 import { seedDocuments } from './seed/documents';
 import { seedFacts } from './seed/facts';
 import { seedPages } from './seed/pages';
+import { seedPhase11 } from './seed/phase11';
 
 const prisma = new PrismaClient();
 
@@ -54,6 +55,11 @@ async function main() {
     const { pages, blocks } = await seedPages(deals, users);
     console.log(`✓ Pages & Blocks: ${pages.length} pages, ${blocks.length} blocks ready\n`);
 
+    // Step 8: Seed Phase 11 Data (DealCompany, CompanyWatch)
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    const phase11 = await seedPhase11(deals, companies, users);
+    console.log(`✓ Phase 11: ${phase11.dealCompanies} deal-company links, ${phase11.companyWatches} company watches ready\n`);
+
     // Summary
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     console.log('🎉 Database seed completed successfully!\n');
@@ -62,6 +68,8 @@ async function main() {
     console.log(`   • ${users.length} Users (OWNER, ADMIN, MEMBER, VIEWER)`);
     console.log(`   • ${companies.length} Companies (SaaS, Fintech, Healthcare, etc.)`);
     console.log(`   • ${deals.length} Deals (across all pipeline stages)`);
+    console.log(`   • ${phase11.dealCompanies} DealCompany links (many-to-many with roles)`);
+    console.log(`   • ${phase11.companyWatches} CompanyWatch entries (user watch lists)`);
     console.log(`   • ${documents.length} Documents (VDR documents with metadata)`);
     console.log(`   • ${facts.length} Facts (verifiable facts with citations)`);
     console.log(`   • ${pages.length} Pages (Block Protocol foundation)`);

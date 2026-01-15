@@ -1,606 +1,550 @@
 # Trato Hive - Project Status & Implementation Roadmap
 
-**Last Updated:** January 9, 2026
-**Current Phase:** All Core Phases Complete! 🎉
-**Latest Commit:** `feat(semantic-layer): add KnowledgeGraphService with Neo4j integration [TASK-038]`
-**Overall Progress:** Phases 1-10: 100% Complete
-**Completed Work Archive:** See [COMPLETED_WORK.md](./COMPLETED_WORK.md) for Phases 1-5 & completed tasks
+**Last Updated:** January 15, 2026
+**Current Phase:** Phase 11: UI/UX Architecture Restructure
+**Latest Commit:** `feat: citation UI, fact streaming, and codebase cleanup`
+**Overall Progress:** Phases 1-10: 100% Complete | Phase 11: In Progress
+**Completed Work Archive:** See [COMPLETED_WORK.md](./COMPLETED_WORK.md) for Phases 1-10
 
 ---
 
-## 📊 Executive Summary
+## Executive Summary
 
 Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 7-Layer Architecture with 5 Core Modules. This document tracks active and future work.
 
 **Project Status:**
 
-- ✅ Foundation & Documentation Complete (100%) - [Archive](./COMPLETED_WORK.md#phase-1-foundation--documentation-100-complete)
-- ✅ Package Configuration & Implementation Complete (100%) - [Archive](./COMPLETED_WORK.md#phase-3-package-configuration--implementation-100-complete)
-- ✅ **CLAUDE.md Documentation Expansion (100% - ALL 15 files complete!)** - [Archive](./COMPLETED_WORK.md#phase-5---claudemd-documentation-expansion-)
-  - ✅ 2 App CLAUDE.md files (apps/web, apps/api)
-  - ✅ 8 Package CLAUDE.md files (all packages)
-  - ✅ 5 Feature CLAUDE.md files (all 5 modules)
-- ✅ **Phase 4: Environment Setup (100% - COMPLETE December 21, 2025!)** 🎉 - [Archive](./COMPLETED_WORK.md#phase-4-environment-setup---complete-)
-  - ✅ Docker services running (PostgreSQL, Redis, Neo4j) - All healthy
-  - ✅ Database initialized (11 tables created via migration `20251130150128_init`)
-  - ✅ Database seeded (119 records: 3 orgs, 10 users, 20 companies, 15 deals, 29 docs, 42 facts)
-  - ✅ Dependencies installed (934 packages)
-  - ✅ Prisma Client generated
-  - ✅ .env file created with secure secrets
-  - ⏸️ API keys (user to add when implementing AI features)
-- ✅ **Phase 5 Foundation (100% - PUSHED TO GITHUB!)** 🎉
-  - ✅ All code committed and pushed
-  - ✅ GitHub tag created: `phase-5-foundation`
-  - ✅ Baseline established for Phase 6
-  - ✅ 97 files changed, 27,876 insertions
-  - ✅ Complete working foundation ready
-- 🔄 **Phase 6: Foundation Packages (61.5% - IN PROGRESS)**
-  - ✅ packages/shared implementation (TASK-001 through TASK-005 complete)
-  - ✅ packages/db implementation (TASK-006, TASK-007 complete)
-  - ✅ **packages/auth implementation (TASK-008 through TASK-013 complete!)** 🎉
-    - NextAuth v5 with split config pattern
-    - Google & Microsoft OAuth with account linking
-    - tRPC context and protected procedures
-    - Comprehensive RBAC utilities
-    - Test infrastructure with 80%+ coverage target
+- Phases 1-10: Foundation Complete (100%) - [Archive](./COMPLETED_WORK.md)
+- Phase 11: UI/UX Architecture Restructure (IN PROGRESS)
+
+**Phase 11 Objectives:**
+1. Transform module-centric navigation to Page-first architecture
+2. Implement Company Pages as first-class entities (hybrid entity graph)
+3. Add Deal-Company many-to-many relationships with roles
+4. Build global Command Palette with AI integration
+5. Add Company watch list functionality
+6. Create Document Pages with auto-generation on upload
+7. Implement Q&A Review flow (approve/edit/reject)
 
 ---
 
-## 🚀 Active Work: Phase 6 - Foundation Packages
+## Phase 11: UI/UX Architecture Restructure
 
-**Status:** 9/13 tasks complete (69.2%)
-**Estimated Time:** ~40 hours total (28 hours completed)
-**Priority:** HIGH (Required before frontend/backend implementation)
+**Status:** 7/46 tasks complete (15%)
+**Estimated Time:** ~126 hours total
+**Priority:** HIGH (Major architecture evolution)
 
-### 6.1: packages/shared Implementation ✅ **COMPLETE**
+### 11.0: Documentation & Planning
 
-**Location:** `packages/shared/src/`  
-**Reference:** packages/shared/CLAUDE.md, docs/architecture/7-layer-architecture.md
+| Task ID | Task | Status | Est. Hours |
+|---------|------|--------|------------|
+| **[TASK-080]** | Archive Completed Work | IN PROGRESS | 1 |
+| **[TASK-081]** | Restructure Specification Document | ✅ COMPLETE | 6 |
 
-**Completed Tasks:**
+**Task Details:**
 
-- [x] **[TASK-001] Types Implementation** (4 hours) ✅ - [Archive](./COMPLETED_WORK.md#task-001-types-implementation--completed)
-- [x] **[TASK-002] Validators Implementation** (4 hours) ✅ - [Archive](./COMPLETED_WORK.md#task-002-validators-implementation--completed)
-- [x] **[TASK-003] Utilities Implementation** (3 hours) ✅ - [Archive](./COMPLETED_WORK.md#task-003-utilities-implementation--completed)
-- [x] **[TASK-004] Constants Implementation** (1 hour) ✅ - [Archive](./COMPLETED_WORK.md#task-004-constants-implementation--completed)
-- [x] **[TASK-005] Shared Package Testing** (2 hours) ✅ - [Archive](./COMPLETED_WORK.md#task-005-shared-package-testing--completed)
+- [ ] **[TASK-080] Archive Completed Work** (1 hour) - IN PROGRESS
+  - [x] Move Phase 6-10 tasks to COMPLETED_WORK.md
+  - [x] Reset PROJECT_STATUS.md for Phase 11
+  - [ ] Verify archive completeness
 
-### 6.2: packages/db Implementation ✅ **COMPLETE**
-
-**Location:** `packages/db/prisma/`  
-**Reference:** packages/db/CLAUDE.md, docs/architecture/governance-layer.md
-
-**Completed Tasks:**
-
-- [x] **[TASK-006] Database Migrations** (2 hours) ✅ - [Archive](./COMPLETED_WORK.md#task-006-database-migrations--completed)
-- [x] **[TASK-007] Database Seed Scripts** (4 hours) ✅ - [Archive](./COMPLETED_WORK.md#task-007-database-seed-scripts--completed)
-
-### 6.3: packages/auth Implementation ✅ **COMPLETE**
-
-**Location:** `packages/auth/src/`
-**Reference:** packages/auth/CLAUDE.md, docs/architecture/governance-layer.md
-
-**Completed Tasks:**
-
-- [x] **[TASK-008] NextAuth Configuration** (4 hours) ✅
-  - [x] src/auth.config.ts - Edge-compatible NextAuth config
-  - [x] src/auth.ts - NextAuth 5 instance with Prisma adapter
-  - [x] src/types.ts - Extended session types (organizationId, role)
-  - [x] Session strategy: database sessions (30-day expiry)
-  - [x] Session enrichment with organizationId and role
-  - [x] Use AUTH_SECRET environment variable (NextAuth v5 default)
-
-- [x] **[TASK-009] OAuth Providers** (6 hours) ✅
-  - [x] Google OAuth 2.0 provider configured
-  - [x] Microsoft Azure AD provider configured
-  - [x] Account linking via `allowDangerousEmailAccountLinking`
-  - [x] Organization membership enforcement in signIn callback
-  - [x] OAuth callback URLs documented
-  - [x] README.md with comprehensive OAuth setup guide
-
-- [x] **[TASK-010] SAML Provider** (8 hours - LOW PRIORITY) ✅
-  - [x] src/providers/saml.ts - Placeholder for future enterprise SSO
-  - [x] Documentation of BoxyHQ SAML Jackson integration strategy
-  - [x] Multi-tenant SAML config design documented
-  - [x] Database schema changes documented (future implementation)
-
-- [x] **[TASK-011] tRPC Context & Middleware** (3 hours) ✅
-  - [x] apps/api/src/trpc/context.ts - Session-aware tRPC context
-  - [x] apps/api/src/trpc/init.ts - tRPC instance with middleware
-  - [x] `protectedProcedure` - Requires authenticated session (throws UNAUTHORIZED)
-  - [x] `organizationProtectedProcedure` - Multi-tenancy enforcement (throws FORBIDDEN)
-  - [x] apps/api/src/index.ts - Fastify server with tRPC adapter
-  - [x] superjson dependency added for Date/Map serialization
-
-- [x] **[TASK-012] RBAC Utilities** (2 hours) ✅
-  - [x] src/utils.ts - Comprehensive RBAC functions
-  - [x] hasRole(session, role) - Check specific role
-  - [x] hasAnyRole(session, roles[]) - Check multiple roles
-  - [x] hasMinimumRole(session, minRole) - Role hierarchy (OWNER > ADMIN > MEMBER > VIEWER)
-  - [x] canAccessOrganization(session, organizationId) - "Golden Rule" for multi-tenancy
-  - [x] canEditBlock(session, blockType) - Block Protocol stub
-  - [x] getUserRole(), getUserOrganizationId() - Helper functions
-
-- [x] **[TASK-013] Auth Package Testing** (2 hours) ✅
-  - [x] vitest.config.ts with 80% coverage thresholds
-  - [x] tests/setup.ts - Mock factories (createMockSession, mockPrisma, mockAuth)
-  - [x] tests/rbac.test.ts - Comprehensive RBAC test suite (240+ lines)
-  - [x] Test infrastructure ready for execution
-
-### 6.4: Block Protocol Foundation ✅ **COMPLETE**
-
-**Location:** `packages/db/prisma/`
-**Reference:** packages/db/CLAUDE.md
-
-**Completed Tasks:**
-
-- [x] **[TASK-013a] Block Protocol Schema** (3 hours) ✅
-  - [x] Define `Block` model (recursive parent/child relation)
-  - [x] Define `Page` model (container for blocks)
-  - [x] Add JSONB `properties` field to Block for storing text/data
-  - [x] Add polymorphic relations to `Deal` and `Company` (Each has a `Page`)
-  - [x] Migration: `20251224220241_block_protocol_init`
-  - [x] Seed script: Created 5 pages with 35 hierarchical blocks
-  - [x] Verified recursive queries and polymorphic relations
+- [x] **[TASK-081] Restructure Specification Document** (6 hours) - ✅ COMPLETE
+  - [x] Rewrite `Trato Hive Product & Design Specification.md`
+  - [x] Add Information Architecture section (Entity Graph Model)
+  - [x] Add Navigation System section (Pinned/Recent + Command Palette)
+  - [x] Add Page Templates section (Deal, Company, Document, Freeform)
+  - [x] Add Block Reference section (complete catalog with props)
+  - [x] Update Module Specifications with new patterns
 
 ---
 
-## 📅 Future Phases
+### 11.1: Schema Updates (Database Layer)
 
-### Phase 7: Frontend (Block Protocol & Editor) 🔄 IN PROGRESS
+| Task ID | Task | Status | Est. Hours | Dependencies |
+|---------|------|--------|------------|--------------|
+| **[TASK-082]** | DealCompany Junction Table | ✅ COMPLETE | 2 | - |
+| **[TASK-083]** | CompanyWatch Table | ✅ COMPLETE | 2 | - |
+| **[TASK-084]** | Page Type Enhancement | ✅ COMPLETE | 2 | - |
+| **[TASK-085]** | Migration Script | ✅ COMPLETE | 2 | TASK-082 |
+| **[TASK-086]** | Update Seed Data | ✅ COMPLETE | 2 | TASK-082, TASK-083 |
+| **[TASK-087]** | Schema Unit Tests | ✅ COMPLETE | 2 | TASK-082, TASK-083 |
 
-**Focus:** Building a premium, AI-native Experience Layer using **Novel** and **Tiptap**.
+**Task Details:**
 
-**Tasks:**
+- [x] **[TASK-082] DealCompany Junction Table** (2 hours) - ✅ COMPLETE
+  - [x] Create `DealCompany` model with `dealId`, `companyId`, `role`
+  - [x] Create `DealCompanyRole` enum: PLATFORM, ADD_ON, SELLER, BUYER, ADVISOR
+  - [x] Add unique constraint on `[dealId, companyId]`
+  - [x] Add indexes on `dealId` and `companyId`
+  - [x] Update `Company` model with `dealCompanies` relation
+  - [x] Update `Deal` model with `dealCompanies` relation
 
-- [x] **[TASK-014] Editor Setup & Design Tokens** (3 hours) ✅
-  - [x] Initialize `apps/web` with `novel` and `@tiptap/react`
-  - [x] Configure Tailwind 4.0 tokens (Soft Sand, Gold, Bone) in `packages/ui`
-- [x] **[TASK-015] Block Editor Core** (6 hours) ✅
-  - [x] Build `BlockEditor.tsx` headless wrapper
-  - [x] Implement custom Slash Command menu (`/`) for M&A blocks
-- [x] **[TASK-016] Content Persistence Sync** (4 hours) ✅
-  - [x] Connect Tiptap JSON output to tRPC `updateBlock` mutations
-  - [x] Implement debounced auto-save to Phase 6.4 schema
-- [x] **[TASK-017] Custom M&A Blocks I: Citations** (5 hours) ✅
-  - [x] Build `CitationBlock` extension (verifiable facts from Layer 2)
-  - [x] Implement hover-previews for source document snippets
-- [x] **[TASK-018] Custom M&A Blocks II: Deal Snapshot** (5 hours) ✅
-  - [x] Build `DealHeaderBlock` (dynamic value, stage, owner status)
-  - [x] Build `ActivityTimelineBlock` logic
-- [x] **[TASK-018b] M&A Intelligence Views** (10 hours) ✅
-  - [x] Build **KanbanView**: Pipeline-specific (Sourcing, Diligence, Closing)
-  - [x] Build **TimelineView**: Critical for Exclusivity/LOI windows and Closing paths
-  - [x] Build **CalendarView**: Manage Site Visits, Management Presentations, and Deadlines
-  - [x] Build **Table & Gallery Views**: For financial logs and "Logo" target lists
-  - [x] Build **Analytics Chart View**: (Simple Bar/Pie) for pipeline value concentration
-  - [x] Implementation: Cross-block filtering and query state persistence in JSONB
-- [x] **[TASK-019] Block Protocol Renderer** (4 hours) ✅
-  - [x] Create read-only recursive React renderer for shared "Deal 360" views
-  - [x] Optimize for Server-Side Rendering (SSR) in Next.js 15
-- [x] **[TASK-020] UI Polish: The Intelligent Hive** (6 hours) ✅
-  - [x] Custom-style toolbars and drag-handles using `packages/ui`
-  - [x] Add `framer-motion` micro-animations for block reordering
-- [x] **[TASK-021] Collaboration Foundation** (5 hours) ✅
-  - [x] POC setup for `Yjs` or Liveblocks for real-time editing
-  - [x] Implement "User Presence" indicators
-- [ ] **[TASK-022] Mobile Experience** (4 hours) ⏭️ SKIPPED
-  - [ ] Optimize editor for tablet and mobile touch interactions
-  - Deferred - not in current scope
-- [x] **[TASK-023] Frontend Verification Suite** (4 hours) ✅
-  - [x] Playwright E2E tests for core editor interactions and auto-save
+- [x] **[TASK-083] CompanyWatch Table** (2 hours) - ✅ COMPLETE
+  - [x] Create `CompanyWatch` model with `companyId`, `userId`, `notes`, `tags`, `priority`
+  - [x] Add unique constraint on `[companyId, userId]`
+  - [x] Add indexes on `companyId` and `userId`
+  - [x] Update `Company` model with `watches` relation
+  - [x] Update `User` model with `watchedCompanies` relation
 
----
+- [x] **[TASK-084] Page Type Enhancement** (2 hours) - ✅ COMPLETE
+  - [x] Create `PageType` enum: DEAL_PAGE, COMPANY_PAGE, DOCUMENT_PAGE, FREEFORM
+  - [x] Add `type` field to `Page` model (default: FREEFORM)
+  - [x] Add `companyId` optional field to `Page` model
+  - [x] Add `documentId` optional field to `Page` model
+  - [x] Add relations: `Page.company`, `Page.document`
 
-### Phase 8: Backend ✅ **COMPLETE** (January 3, 2026)
+- [x] **[TASK-085] Migration Script** (2 hours) - ✅ COMPLETE
+  - [x] Create migration for DealCompany, CompanyWatch, Page updates
+  - [x] Auto-migrate existing `Deal.companyId` to `DealCompany` with role=PLATFORM
+  - [x] Preserve all existing relationships
+  - [x] Add rollback script for safety
 
-#### 8.1: apps/api Implementation
+- [x] **[TASK-086] Update Seed Data** (2 hours) - ✅ COMPLETE
+  - [x] Update seed script for `DealCompany` relationships
+  - [x] Add sample `CompanyWatch` entries
+  - [x] Update existing deals to use junction table
+  - [x] Add multiple companies per deal examples
 
-**Location:** `apps/api/src/`
-**Reference:** apps/api/CLAUDE.md, docs/architecture/api-layer.md
-**Status:** 7/7 tasks complete (100%)
-
-**Completed Tasks:**
-
-- [x] **[TASK-024] Fastify Server Setup** (2 hours) ✅
-  - [x] src/index.ts - Fastify server with tRPC adapter
-  - [x] Add Fastify plugins: @fastify/helmet, @fastify/cors, @fastify/rate-limit
-  - [x] Rate limiting: 100 requests per minute
-  - [x] CORS configured for localhost:3000
-
-- [x] **[TASK-024b] Fix blockRouter Security Issues** (1 hour) ✅
-  - [x] Replace `new PrismaClient()` with `ctx.db`
-  - [x] Use `ctx.session.user.id` instead of hardcoded ID
-  - [x] Switch to `organizationProtectedProcedure` for multi-tenancy
-
-- [x] **[TASK-025] Deals Router & Procedures** (4 hours) ✅
-  - [x] src/routers/deals.ts - 6 tRPC procedures
-  - [x] `deal.list` query with pagination, filtering, sorting
-  - [x] `deal.get` query with organization enforcement
-  - [x] `deal.getWithPage` query (Notion-style: Deal + Page + Blocks)
-  - [x] `deal.create` mutation (auto-creates Page + DealHeaderBlock)
-  - [x] `deal.update` mutation with activity logging
-  - [x] `deal.getFactSheet` query for AI-extracted facts
-
-- [x] **[TASK-026] Deals Service Layer** (3 hours) ✅
-  - [x] src/services/deals.service.ts - Business logic
-  - [x] src/services/activity.service.ts - Audit logging
-  - [x] Notion-style auto Page+Block creation on deal.create
-  - [x] Multi-tenancy enforcement (organizationId filtering)
-  - [x] Input validation with Zod schemas
-
-- [x] **[TASK-027] Fact Sheet Integration** (3 hours) ✅
-  - [x] `deal.getFactSheet` query - Returns facts with document sources
-  - [x] Company summary integration
-  - [x] Confidence scores and source text
-
-- [x] **[TASK-028] Authentication Integration** ⏭️ SKIPPED
-  - Already completed in Phase 6.3 (TASK-011)
-  - `organizationProtectedProcedure` already implemented
-
-- [x] **[TASK-029] API Integration Testing** (2 hours) ✅
-  - [x] 9 integration tests using tRPC `createCaller`
-  - [x] Multi-tenancy enforcement tests (UNAUTHORIZED, FORBIDDEN)
-  - [x] Valid CUID test fixtures
-
-- [x] **[TASK-030] API Unit Testing** (2 hours) ✅
-  - [x] 13 unit tests for DealService
-  - [x] Mock database with vi.fn()
-  - [x] All 22 tests passing
+- [x] **[TASK-087] Schema Unit Tests** (2 hours) - ✅ COMPLETE
+  - [x] Tests for DealCompany CRUD operations
+  - [x] Tests for CompanyWatch CRUD operations
+  - [x] Tests for Page type constraints
+  - [x] Tests for many-to-many relationship queries
 
 ---
 
-### Phase 9: AI Stack (Week 6-8, ~70 hours) 🔄 IN PROGRESS
+### 11.2: Navigation System
 
-#### 9.1: packages/ai-core Implementation ✅ **COMPLETE** (January 5, 2026)
+| Task ID | Task | Status | Est. Hours | Dependencies |
+|---------|------|--------|------------|--------------|
+| **[TASK-088]** | Sidebar State Store | Pending | 3 | - |
+| **[TASK-089]** | Sidebar Item Types | Pending | 1 | - |
+| **[TASK-090]** | Pinned Section UI | Pending | 4 | TASK-088 |
+| **[TASK-091]** | Recent Section UI | Pending | 3 | TASK-088 |
+| **[TASK-092]** | Active Page Expansion | Pending | 3 | TASK-088 |
+| **[TASK-093]** | Sidebar Persistence | Pending | 2 | TASK-088 |
 
-**Location:** `packages/ai-core/src/`
-**Reference:** packages/ai-core/CLAUDE.md, docs/architecture/tic-core.md
-**Architecture:** Hybrid approach - Anthropic SDK (backend) + Vercel AI SDK (streaming)
+**Task Details:**
 
-**Completed Tasks:**
+- [ ] **[TASK-088] Sidebar State Store** (3 hours)
+  - [ ] Create Zustand store at `apps/web/src/stores/sidebar.ts`
+  - [ ] State: `pinnedItems` (7 max), `recentItems` (7 max, FIFO), `expandedItemId`
+  - [ ] Actions: `pin`, `unpin`, `addRecent`, `setExpanded`, `clearRecent`
+  - [ ] Persistence middleware for localStorage sync
 
-- [x] **[TASK-031] LLM Service Enhancement** (8 hours) ✅
-  - [x] Production-ready LLM client with retry logic and exponential backoff
-  - [x] Cost tracking per model with MODEL_PRICING
-  - [x] Error classification (RATE_LIMIT, AUTH, TIMEOUT, CONTEXT_LENGTH, etc.)
-  - [x] Support Claude (Anthropic SDK) and OpenAI/Kimi (LangChain)
-  - [x] generateJSON() for structured output with Zod validation
+- [ ] **[TASK-089] Sidebar Item Types** (1 hour)
+  - [ ] Define `SidebarItem` interface in `@trato-hive/shared`
+  - [ ] Properties: `id`, `type`, `title`, `icon`, `href`, `children`
+  - [ ] Types: `deal`, `company`, `document`, `page`, `module`
+  - [ ] Export from shared package
 
-- [x] **[TASK-032] Streaming Service** (4 hours) ✅
-  - [x] Vercel AI SDK integration for streaming chat UI
-  - [x] streamResponse() and streamChat() async generators
-  - [x] Both Claude and OpenAI provider support
-  - [x] getStreamResult() for Next.js API route compatibility
+- [ ] **[TASK-090] Pinned Section UI** (4 hours)
+  - [ ] Implement draggable pinned section in Sidebar
+  - [ ] 7-item limit with visual indicator when full
+  - [ ] Context menu: "Unpin", "Open in new tab"
+  - [ ] Drag-and-drop reordering with dnd-kit
 
-- [ ] **[TASK-033] Embedding Service** (4 hours) - Deferred to semantic-layer
-  - Will be implemented in TASK-036 (Vector Store) with Pinecone
+- [ ] **[TASK-091] Recent Section UI** (3 hours)
+  - [ ] Implement auto-tracked recent section
+  - [ ] FIFO logic: newest at top, max 7 items
+  - [ ] Hook into route changes to track visits
+  - [ ] "Clear Recent" action in context menu
 
-- [x] **[TASK-034] Citation Extraction** (6 hours) ✅
-  - [x] CitationBlock-compatible types (CitationAttributes)
-  - [x] extractCitationIndices() for [N] marker parsing
-  - [x] mapFactsToCitations() and mapChunksToCitations()
-  - [x] validateCitations() and cleanInvalidCitations()
-  - [x] Build context prompts for RAG with numbered citations
+- [ ] **[TASK-092] Active Page Expansion** (3 hours)
+  - [ ] Auto-expand sidebar item when navigating to page
+  - [ ] Show sub-pages (children) when expanded
+  - [ ] Collapse siblings when expanding new item
+  - [ ] Smooth animation with Framer Motion
 
-- [x] **[TASK-035] AI Core Testing** (3 hours) ✅
-  - [x] 49 unit tests (26 llm.test.ts, 23 rag.test.ts)
-  - [x] vitest configured with 70% coverage thresholds
-  - [x] Tests for cost calculation, error classification, citation extraction
-
-#### 9.2: packages/semantic-layer Implementation ✅ **COMPLETE** (January 5, 2026)
-
-**Location:** `packages/semantic-layer/src/`
-**Reference:** packages/semantic-layer/CLAUDE.md, docs/architecture/semantic-layer.md
-
-**Completed Tasks:**
-
-- [x] **[TASK-036] Vector Store (Pinecone)** (6 hours) ✅
-  - [x] Multi-tenant vector storage with organizationId namespaces
-  - [x] Upsert, search, delete operations with batch processing
-  - [x] Metadata filtering (documentId, pageNumber, boundingBox)
-  - [x] Factory functions with env var support
-
-- [x] **[TASK-037] Fact Extraction** (8 hours) ✅
-  - [x] LLM-powered extraction with structured output (Zod validation)
-  - [x] FactType enum: FINANCIAL_METRIC, KEY_PERSON, PRODUCT, CUSTOMER, RISK, OPPORTUNITY
-  - [x] Confidence thresholds (0.7) and deduplication
-  - [x] Database storage with Prisma integration
-  - [x] Utility functions: formatFact, groupFactsByType, sortFactsByConfidence
-
-- [x] **[TASK-038] Knowledge Graph (Neo4j)** (6 hours) ✅ (January 9, 2026)
-  - [x] KnowledgeGraphService with Neo4j integration
-  - [x] Node upserts for Deal, Company, Document, Fact entities
-  - [x] Relationship creation (OWNS, HAS, CONTAINS, ABOUT, SOURCE_DOCUMENT)
-  - [x] Query methods: getCompanyFacts, getFactsByType, getRelatedCompanies
-  - [x] Traversal methods: findCompanyRisks, findKeyPersonsAcrossDeals, getFactChain
-  - [x] Auto-sync hook in FactExtractor.storeFacts()
-  - [x] 27 unit tests with mocked neo4j-driver
-
-- [x] **[TASK-039] Semantic Layer Testing** (3 hours) ✅
-  - [x] 93 unit tests (22 vector-store, 20 embeddings, 24 facts, 27 knowledge-graph)
-  - [x] Mock Pinecone, OpenAI, Neo4j, and Prisma clients
-  - [x] vitest configured with 70% coverage thresholds
-
-#### 9.3: packages/data-plane Implementation ✅ **COMPLETE** (January 5, 2026)
-
-**Location:** `packages/data-plane/src/`
-**Reference:** packages/data-plane/CLAUDE.md, docs/architecture/data-plane.md
-
-**Completed Tasks:**
-
-- [x] **[TASK-040] Reducto AI Integration** (6 hours) ✅
-  - [x] ReductoClient with sync and async parsing
-  - [x] ParsedChunk and ParsedTable types with bounding boxes
-  - [x] Job polling with waitForJob()
-  - [x] Error classification (RATE_LIMIT, AUTH, TIMEOUT, etc.)
-
-- [x] **[TASK-041] S3 Storage Client** (4 hours) ✅
-  - [x] Multi-tenant isolation with organizationId prefix
-  - [x] Presigned URL generation (upload/download)
-  - [x] File validation (size, MIME type)
-  - [x] Error classification (NOT_FOUND, ACCESS_DENIED, etc.)
-
-- [x] **[TASK-042] BullMQ Queue Enhancement** (4 hours) ✅
-  - [x] Multiple job types: process-document, generate-embeddings, extract-facts, reindex, delete
-  - [x] DocumentQueueWorker with rate limiting
-  - [x] Queue status and management functions
-  - [x] Factory functions with env var support
-
-- [x] **[TASK-043] Data Plane Testing** (3 hours) ✅
-  - [x] 82 unit tests (24 storage, 32 reducto, 26 queue)
-  - [x] Mock AWS SDK, axios, BullMQ
-  - [x] vitest configured with 70% coverage thresholds
-
-#### 9.4: packages/agents Implementation ✅ **COMPLETE** (January 5, 2026)
-
-**Location:** `packages/agents/src/`
-**Reference:** packages/agents/CLAUDE.md, docs/architecture/agentic-layer.md
-
-**Completed Tasks:**
-
-- [x] **[TASK-044] Document Agent** (10 hours) ✅
-  - [x] Full document processing pipeline: fetch → parse → chunk → embed → index → extract facts
-  - [x] Integration with StorageClient, ReductoClient, VectorStore, EmbeddingService, FactExtractor
-  - [x] Status tracking (UPLOADING → PROCESSING → PARSED → INDEXED)
-  - [x] Reprocessing support for re-embedding and re-extraction
-  - [x] DocumentAgentError with typed error codes
-
-- [x] **[TASK-045] Diligence Agent (RAG Q&A)** (12 hours) ✅
-  - [x] RAG-based question answering with vector store retrieval
-  - [x] CitationBlock-compatible responses with CitationAttributes
-  - [x] Integration with VectorStore, EmbeddingService, LLMClient, RAGService
-  - [x] Report generation with 6 predefined sections
-  - [x] Follow-up question support with conversation context
-  - [x] canAnswer() pre-check for question answerability
-
-- [x] **[TASK-046] Agents Testing** (3 hours) ✅
-  - [x] 31 unit tests (12 document-agent, 19 diligence-agent)
-  - [x] vitest configured with 70% coverage thresholds
-  - [x] Mock dependencies for all external services
-  - [x] BullMQ workers for background processing
+- [ ] **[TASK-093] Sidebar Persistence** (2 hours)
+  - [ ] Save pinned items to user preferences
+  - [ ] Sync with database via tRPC `user.updatePreferences`
+  - [ ] Load initial state from DB on mount
+  - [ ] Debounced sync to prevent excessive writes
 
 ---
 
-### Phase 10: Features (Templates, AI Suggestions & Inline Databases)
+### 11.3: Command Palette
 
-**Strategy:** Instead of building static pages, we build "Page Templates" composed of Blocks. Users can customize their workspace with AI-assisted updates and inline databases.
+| Task ID | Task | Status | Est. Hours | Dependencies |
+|---------|------|--------|------------|--------------|
+| **[TASK-094]** | CommandPalette Component | Pending | 4 | - |
+| **[TASK-095]** | Global Keyboard Hook | Pending | 2 | TASK-094 |
+| **[TASK-096]** | Entity Search Mode | Pending | 3 | TASK-094 |
+| **[TASK-097]** | AI Query Mode | Pending | 4 | TASK-094 |
+| **[TASK-098]** | Quick Actions Mode | Pending | 2 | TASK-094 |
+| **[TASK-099]** | Insert as Block Action | Pending | 3 | TASK-097 |
+| **[TASK-100]** | Context-Aware Scoping | Pending | 3 | TASK-097 |
 
-#### 10.0: Core Infrastructure 🆕
+**Task Details:**
 
-**Tasks:**
+- [ ] **[TASK-094] CommandPalette Component** (4 hours)
+  - [ ] Create modal at `apps/web/src/components/CommandPalette.tsx`
+  - [ ] Search input with icon and placeholder
+  - [ ] Keyboard navigation: Up/Down arrows, Enter, Escape
+  - [ ] Results grouped by type (Pages, Actions, AI)
+  - [ ] Design: Dark overlay, centered modal, Intelligent Hive styling
 
-- [x] **[TASK-074] AI Suggestion Block** (6 hours) ✅
-  - [x] `AISuggestionBlock` Tiptap extension (shows AI-extracted field updates)
-  - [x] Accept/Dismiss actions with `deal.applySuggestion` mutation
-  - [x] Activity log integration (AI_SUGGESTION_ACCEPTED, AI_SUGGESTION_DISMISSED)
-  - [x] Visual design: Orange accent, "AI SUGGESTS" badge, confidence indicator
-  - [x] `SuggestionService` with entity validation and audit logging
-  - [x] Shared types and Zod validators for suggestions
-  - [x] Slash command `/ai-suggestion` for editor integration
+- [ ] **[TASK-095] Global Keyboard Hook** (2 hours)
+  - [ ] Hook into K globally in app shell (`_app.tsx` or layout)
+  - [ ] Open CommandPalette on trigger
+  - [ ] Close on Escape or click outside
+  - [ ] Prevent conflicts with editor shortcuts
 
-- [x] **[TASK-075] Entity Fact Mapper** (4 hours) ✅
-  - [x] `FactMapperService` with fact-to-entry mapping logic
-  - [x] Map extracted Facts to database entries via deal documents
-  - [x] Confidence thresholds (0.7+ default, configurable)
-  - [x] `database.suggestEntriesFromFacts` tRPC query
-  - [x] 18 unit tests for FactMapperService
+- [ ] **[TASK-096] Entity Search Mode** (3 hours)
+  - [ ] Search across Deals by name, value, stage
+  - [ ] Search across Companies by name, industry
+  - [ ] Search across Documents by title, folder
+  - [ ] Real-time results with debounced input (300ms)
 
-- [x] **[TASK-076] Inline Database System** (10 hours) ✅
-  - [x] `Database` model: schema (columns: name, type, options), organizationId
-  - [x] `DatabaseEntry` model: rows with typed JSONB properties
-  - [x] Column types: Text, Number, Select, Multi-Select, Date, Person, Checkbox, URL
-  - [x] `database.create`, `database.addEntry`, `database.updateEntry` tRPC (14 procedures)
-  - [x] `DatabaseService` with 16 methods, full CRUD for databases/columns/entries
-  - [x] Prisma migration for new models
-  - [x] 25 integration tests with multi-tenancy enforcement
+- [ ] **[TASK-097] AI Query Mode** (4 hours)
+  - [ ] Detect natural language questions (starts with "what", "how", "why", etc.)
+  - [ ] Route to DiligenceAgent via `diligence.askQuestion`
+  - [ ] Show inline answer with citations
+  - [ ] Loading state with "Thinking..." animation
 
-- [x] **[TASK-077] DatabaseViewBlock** (10 hours) ✅ PR pending
-  - [x] `DatabaseViewBlock` Tiptap extension (embed database in any page)
-  - [x] View types: Table, Kanban, Gallery (switchable)
-  - [x] Filters, sorting, and grouping persisted in block properties
-  - [x] "Create New Database" flow from slash command (`/database`)
-  - [x] DatabasePicker component for create/link database flow
-  - [x] CellRenderer with type-specific editing (TEXT, NUMBER, SELECT, etc.)
+- [ ] **[TASK-098] Quick Actions Mode** (2 hours)
+  - [ ] Slash commands: `/new-deal`, `/new-company`, `/upload`, `/generate`
+  - [ ] Show action results in palette
+  - [ ] Navigate to created entity after action
+  - [ ] Show keyboard shortcuts in action list
 
-- [x] **[TASK-078] Database Editing UI** (8 hours) ✅ PR pending
-  - [x] **Inline cell editing**: Click cell → edit in place → auto-save on blur
-  - [x] **Entry form modal**: "+ New" button → sidebar form with all column fields
-  - [x] **Column configuration**: Click header → rename, change type, delete
-  - [x] **Row actions**: Hover menu (duplicate, delete, open as page)
-  - [x] **Bulk import**: CSV upload → batch create entries
-  - [x] Sheet & DropdownMenu components in @trato-hive/ui
+- [ ] **[TASK-099] Insert as Block Action** (3 hours)
+  - [ ] After AI answer, show "Insert as Block" button
+  - [ ] Create CitationBlock with answer content
+  - [ ] Insert at cursor position in current page editor
+  - [ ] Preserve citations and sources in block properties
 
-- [x] **[TASK-079] Notion-like UI with Trato Hive Styling** (8 hours) ✅
-  - [x] Design tokens: Alabaster backgrounds, Gold accents, Bone borders
-  - [x] Compact grid layout matching Notion table density
-  - [x] Hover states with subtle shadow elevation
-  - [x] Column resize handles and drag-to-reorder columns (dnd-kit)
-  - [x] Dark mode support (Surface Dark, Cultured White text)
-  - [x] Framer Motion animations for row add/delete/reorder
-  - [x] "Intelligent Hive" polish: subtle hexagon patterns, premium feel
-  - [x] **Testing**: Playwright E2E tests for database table interactions
-  - [ ] **Testing**: Visual regression tests (Chromatic or Percy) - Deferred
-  - [x] **Testing**: Accessibility audit (keyboard navigation, screen readers)
-
-#### 10.1: features/deals Template (Week 9) ✅ **COMPLETE**
-
-**Tasks:**
-
-- [x] **[TASK-047] Deal Service Backend** (4 hours) ✅ (Previously completed in Phase 8)
-  - [x] backend/services/deal-service.ts
-  - [x] CRUD operations for Deals (Entity)
-
-- [x] **[TASK-048] Deal Template (Block Config)** (4 hours) ✅ (January 9, 2026)
-  - [x] Define `DealTemplate`: Auto-creates default blocks for new deals
-  - [x] `DealHeaderBlock`: Custom block displaying stage/value (already existed)
-  - [x] Default embedded "Due Diligence Tracker" database (6 columns: Task, Category, Status, Assignee, Due Date, Priority)
-  - [x] `DatabaseViewBlock` auto-linked to DD Tracker on deal creation
-  - [x] Fixed shared package export issue for `DATABASE_TEMPLATES`
-
-#### 10.2: features/command-center Template (Week 10)
-
-**Tasks:**
-
-- [x] **[TASK-056] Dashboard Service** (3 hours) ✅ (January 9, 2026)
-  - [x] Backend aggregation services (DashboardService + dashboardRouter)
-  - [x] `dashboard.pipelineHealth` - Pipeline metrics by stage, weighted values
-  - [x] `dashboard.recentActivities` - Paginated org-wide activity feed
-  - [x] `dashboard.activitySummary` - Activity counts by type
-
-- [x] **[TASK-058] Command Center Template** (4 hours) ✅ (January 9, 2026)
-  - [x] `QueryBlock`: AI Query bar using DiligenceAgent with RAG-based Q&A
-  - [x] `InboxBlock`: Activity feed with dismiss/mark-read actions
-  - [x] `PipelineHealthBlock`: Recharts horizontal bar chart with pipeline metrics
-  - [x] `diligenceRouter`: tRPC router for DiligenceAgent (askQuestion, canAnswer, generateReport)
-  - [x] `ActivityStatus` enum: ACTIVE, READ, DISMISSED (migration pending DB)
-  - [x] Slash commands: `/ask`, `/pipeline`, `/inbox`
-
-#### 10.3: features/diligence Template (Week 11) ✅ **COMPLETE**
-
-**Tasks:**
-
-- [x] **[TASK-060] VDR Service** (4 hours) ✅ (January 9, 2026)
-  - [x] VDR Validators: 9 Zod schemas for file/folder operations
-  - [x] VDRService: Document listing, folder tree, presigned URLs (upload/download)
-  - [x] vdrRouter: 10 tRPC procedures with organizationProtectedProcedure
-  - [x] Prisma: Added `folderPath` field to Document model with compound index
-
-- [x] **[TASK-063] Diligence Template** (4 hours) ✅ (January 9, 2026)
-  - [x] `VDRBlock`: File tree explorer Tiptap extension with folder navigation
-  - [x] File upload/download via presigned S3 URLs
-  - [x] Slash command `/vdr` for Data Room insertion
-  - [x] `QABlock`: Uses existing QueryBlock (RAG-based Q&A from TASK-058)
-  - [x] "Document Review" database template with AI fields (linkedFacts, confidence, summary)
-
-#### 10.4: features/generator Integration (Week 11-12) ✅ **COMPLETE**
-
-**Tasks:**
-
-- [x] **[TASK-066] Generator Service** (5 hours) ✅ (January 9, 2026)
-  - [x] GeneratorService with PPTX and DOCX export
-  - [x] Block-to-slide mapping (headings, paragraphs, lists, citations, dealHeader)
-  - [x] Citation preservation as Sources slide (PPTX) and footnotes (DOCX)
-  - [x] generatorRouter with `exportPage` tRPC mutation
-  - [x] Multi-tenancy enforcement via Page → Deal/Company → organizationId
-
-#### 10.5: features/discovery Integration ✅ **COMPLETE**
-
-**Tasks:**
-
-- [x] **[TASK-071] Sourcing Service** (4 hours) ✅ (January 9, 2026)
-  - [x] Discovery validators: companySearchInputSchema, companyListInputSchema, companyGetInputSchema
-  - [x] SourcingService: Company search with text filters (name, industry, description, sector, location)
-  - [x] sourcingRouter: 4 tRPC procedures (search, list, get, industries)
-  - [x] Multi-tenancy enforcement via organizationId
-
-- [x] **[TASK-073] Discovery Template** (3 hours) ✅ (January 9, 2026)
-  - [x] `SearchBlock`: Combined search input + results grid Tiptap extension
-  - [x] Industry filter dropdown, pagination support
-  - [x] Company cards with name, industry, location, employees, revenue, AI score
-  - [x] "Add to Pipeline" action opens Deal creation modal
-  - [x] Slash command `/search` for editor integration
-
+- [ ] **[TASK-100] Context-Aware Scoping** (3 hours)
+  - [ ] Inherit search scope from current page (if on Deal, scope to deal docs)
+  - [ ] Toggle to expand scope to organization
+  - [ ] Show current scope indicator in palette header
+  - [ ] Remember user's scope preference
 
 ---
 
-## 📈 Progress Tracking
+### 11.4: Company Pages
+
+| Task ID | Task | Status | Est. Hours | Dependencies |
+|---------|------|--------|------------|--------------|
+| **[TASK-101]** | CompanyHeaderBlock | Pending | 4 | - |
+| **[TASK-102]** | Company Page Route | Pending | 3 | - |
+| **[TASK-103]** | Company Page Template | Pending | 4 | TASK-101, TASK-082 |
+| **[TASK-104]** | Deal History DatabaseView | Pending | 4 | TASK-082 |
+| **[TASK-105]** | Related Companies Section | Pending | 3 | - |
+| **[TASK-106]** | Company tRPC Router | Pending | 3 | TASK-083 |
+
+**Task Details:**
+
+- [ ] **[TASK-101] CompanyHeaderBlock** (4 hours)
+  - [ ] Create Tiptap extension at `apps/web/src/components/editor/extensions/CompanyHeaderBlock.tsx`
+  - [ ] Display: Company name, industry, revenue, employees, location
+  - [ ] Editable fields with inline editing
+  - [ ] Logo upload/display support
+  - [ ] Watch button integration
+
+- [ ] **[TASK-102] Company Page Route** (3 hours)
+  - [ ] Create route at `app/(dashboard)/companies/[id]/page.tsx`
+  - [ ] Layout with breadcrumbs (Home > Companies > [Company Name])
+  - [ ] Page metadata and SEO
+  - [ ] 404 handling for invalid company IDs
+
+- [ ] **[TASK-103] Company Page Template** (4 hours)
+  - [ ] Define `CompanyTemplate` in shared templates
+  - [ ] Auto-create on company creation:
+    - CompanyHeaderBlock
+    - Deal History DatabaseViewBlock
+    - AI Insights section (placeholder)
+    - Key Contacts DatabaseViewBlock
+  - [ ] Hook into `company.create` mutation
+
+- [ ] **[TASK-104] Deal History DatabaseView** (4 hours)
+  - [ ] Graph-powered query via Neo4j `KnowledgeGraphService`
+  - [ ] Show all deals involving company with roles (Platform, Add-on, etc.)
+  - [ ] Columns: Deal Name, Stage, Value, Role, Created At
+  - [ ] Click to navigate to deal page
+
+- [ ] **[TASK-105] Related Companies Section** (3 hours)
+  - [ ] Neo4j query for companies sharing facts
+  - [ ] Filter by same industry, overlapping key persons
+  - [ ] Display as card grid with similarity score
+  - [ ] "View Company" and "Compare" actions
+
+- [ ] **[TASK-106] Company tRPC Router** (3 hours)
+  - [ ] Create `companyRouter` at `apps/api/src/routers/company.ts`
+  - [ ] Procedures: `company.create`, `company.get`, `company.update`, `company.delete`
+  - [ ] Procedures: `company.list`, `company.search`
+  - [ ] Multi-tenancy enforcement via organizationId
+
+---
+
+### 11.5: Watch List System
+
+| Task ID | Task | Status | Est. Hours | Dependencies |
+|---------|------|--------|------------|--------------|
+| **[TASK-107]** | Watch Button Component | Pending | 2 | TASK-083 |
+| **[TASK-108]** | Watch List View | Pending | 3 | TASK-083 |
+| **[TASK-109]** | Watch tRPC Procedures | Pending | 2 | TASK-083 |
+
+**Task Details:**
+
+- [ ] **[TASK-107] Watch Button Component** (2 hours)
+  - [ ] Create `WatchButton.tsx` component
+  - [ ] Toggle watch/unwatch on click
+  - [ ] Visual states: Watching (filled), Not watching (outline)
+  - [ ] Integrate into CompanyHeaderBlock and company cards
+
+- [ ] **[TASK-108] Watch List View** (3 hours)
+  - [ ] Add "Watched Companies" section to Discovery module
+  - [ ] Display watched companies with notes and tags
+  - [ ] Filter by priority, tags, date added
+  - [ ] Quick actions: Remove watch, Open company, Add note
+
+- [ ] **[TASK-109] Watch tRPC Procedures** (2 hours)
+  - [ ] `watch.add` - Add company to watch list with notes/tags
+  - [ ] `watch.remove` - Remove company from watch list
+  - [ ] `watch.list` - Get user's watched companies with pagination
+  - [ ] `watch.update` - Update notes, tags, priority
+
+---
+
+### 11.6: Document Pages
+
+| Task ID | Task | Status | Est. Hours | Dependencies |
+|---------|------|--------|------------|--------------|
+| **[TASK-110]** | DocumentViewerBlock | Pending | 5 | - |
+| **[TASK-111]** | Document Page Route | Pending | 3 | TASK-084 |
+| **[TASK-112]** | Document Page Template | Pending | 3 | TASK-110 |
+| **[TASK-113]** | Document Agent Integration | Pending | 2 | TASK-111 |
+
+**Task Details:**
+
+- [ ] **[TASK-110] DocumentViewerBlock** (5 hours)
+  - [ ] Create Tiptap extension for embedded document viewer
+  - [ ] PDF rendering with page navigation
+  - [ ] Zoom controls and fullscreen mode
+  - [ ] Text selection for citation creation
+  - [ ] Highlight extracted facts on hover
+
+- [ ] **[TASK-111] Document Page Route** (3 hours)
+  - [ ] Create route at `app/(dashboard)/documents/[id]/page.tsx`
+  - [ ] Auto-create page when document uploaded
+  - [ ] Layout with breadcrumbs and document metadata
+  - [ ] Handle various document types (PDF, DOCX, XLSX)
+
+- [ ] **[TASK-112] Document Page Template** (3 hours)
+  - [ ] Define `DocumentTemplate` in shared templates
+  - [ ] Auto-apply on document upload:
+    - DocumentViewerBlock (full width)
+    - Extracted Facts DatabaseViewBlock
+    - Q&A History (scoped to document)
+  - [ ] Hook into document upload flow
+
+- [ ] **[TASK-113] Document Agent Integration** (2 hours)
+  - [ ] Hook into DocumentAgent `processDocument` completion
+  - [ ] Auto-create Page with template after processing
+  - [ ] Link Page to Document via `documentId`
+  - [ ] Notify user when page is ready
+
+---
+
+### 11.7: Q&A Review Flow
+
+| Task ID | Task | Status | Est. Hours | Dependencies |
+|---------|------|--------|------------|--------------|
+| **[TASK-114]** | QAAnswer Status Enum | Pending | 1 | - |
+| **[TASK-115]** | QAAnswer Model | Pending | 2 | TASK-114 |
+| **[TASK-116]** | Q&A Review UI | Pending | 4 | TASK-115 |
+| **[TASK-117]** | Q&A Activity Logging | Pending | 2 | TASK-115 |
+| **[TASK-118]** | Q&A Sub-page Template | Pending | 2 | TASK-116 |
+
+**Task Details:**
+
+- [ ] **[TASK-114] QAAnswer Status Enum** (1 hour)
+  - [ ] Create `QAAnswerStatus` enum: PENDING, APPROVED, EDITED, REJECTED
+  - [ ] Add to Prisma schema
+  - [ ] Export from shared types
+
+- [ ] **[TASK-115] QAAnswer Model** (2 hours)
+  - [ ] Create `QAAnswer` model in Prisma
+  - [ ] Fields: `id`, `question`, `answer`, `citations`, `status`, `editedAnswer`, `reviewerId`, `reviewedAt`
+  - [ ] Relations: `deal`, `document`, `reviewer` (User)
+  - [ ] Indexes for efficient queries
+
+- [ ] **[TASK-116] Q&A Review UI** (4 hours)
+  - [ ] Enhance QueryBlock with review actions
+  - [ ] Approve button: Mark as APPROVED, log activity
+  - [ ] Edit button: Open edit modal, save as EDITED
+  - [ ] Reject button: Mark as REJECTED with reason
+  - [ ] Status badges: Pending (yellow), Approved (green), Edited (blue), Rejected (red)
+
+- [ ] **[TASK-117] Q&A Activity Logging** (2 hours)
+  - [ ] Create activity types: QA_APPROVED, QA_EDITED, QA_REJECTED
+  - [ ] Log reviewer, timestamp, changes
+  - [ ] Show in deal activity timeline
+  - [ ] Include in activity summary metrics
+
+- [ ] **[TASK-118] Q&A Sub-page Template** (2 hours)
+  - [ ] Update Deal template to auto-create "Q&A" sub-page
+  - [ ] Include QueryBlock with review UI
+  - [ ] Show Q&A history filtered to deal
+  - [ ] Add to deal page navigation
+
+---
+
+### 11.8: Pipeline Updates
+
+| Task ID | Task | Status | Est. Hours | Dependencies |
+|---------|------|--------|------------|--------------|
+| **[TASK-119]** | Deal Companies Column | Pending | 3 | TASK-082 |
+| **[TASK-120]** | AI Alerts InboxBlock | Pending | 3 | - |
+| **[TASK-121]** | Deal Quick Actions | Pending | 2 | - |
+
+**Task Details:**
+
+- [ ] **[TASK-119] Deal Companies Column** (3 hours)
+  - [ ] Update Pipeline DatabaseViewBlock columns
+  - [ ] Show multiple companies with role badges
+  - [ ] "Platform" company shown first, others as +N
+  - [ ] Expand to see all companies on hover
+
+- [ ] **[TASK-120] AI Alerts InboxBlock** (3 hours)
+  - [ ] Add InboxBlock to top of Pipeline page
+  - [ ] Show urgent items from PipelineAgent (stub for now)
+  - [ ] Alert types: Stage overdue, Document pending, Action required
+  - [ ] Dismiss and snooze actions
+
+- [ ] **[TASK-121] Deal Quick Actions** (2 hours)
+  - [ ] Hover card on deal in pipeline
+  - [ ] Actions: "Open", "Update Stage", "Add Company"
+  - [ ] Keyboard shortcuts for power users
+  - [ ] Update optimistically with rollback on error
+
+---
+
+### 11.9: Testing & Documentation
+
+| Task ID | Task | Status | Est. Hours | Dependencies |
+|---------|------|--------|------------|--------------|
+| **[TASK-122]** | Navigation E2E Tests | Pending | 3 | TASK-088-093 |
+| **[TASK-123]** | Company Pages E2E Tests | Pending | 3 | TASK-101-106 |
+| **[TASK-124]** | Q&A Review E2E Tests | Pending | 2 | TASK-114-118 |
+| **[TASK-125]** | Update CLAUDE.md Files | Pending | 2 | All |
+
+**Task Details:**
+
+- [ ] **[TASK-122] Navigation E2E Tests** (3 hours)
+  - [ ] Playwright tests for Pinned section (add, remove, reorder)
+  - [ ] Tests for Recent section (auto-track, FIFO, clear)
+  - [ ] Tests for K Command Palette (search, AI query, actions)
+  - [ ] Tests for page expansion in sidebar
+
+- [ ] **[TASK-123] Company Pages E2E Tests** (3 hours)
+  - [ ] Tests for company creation with auto-template
+  - [ ] Tests for company page navigation
+  - [ ] Tests for watch button toggle
+  - [ ] Tests for deal history display
+
+- [ ] **[TASK-124] Q&A Review E2E Tests** (2 hours)
+  - [ ] Tests for approve workflow
+  - [ ] Tests for edit workflow
+  - [ ] Tests for reject workflow
+  - [ ] Tests for activity logging
+
+- [ ] **[TASK-125] Update CLAUDE.md Files** (2 hours)
+  - [ ] Update `apps/web/CLAUDE.md` with new components
+  - [ ] Update `features/*/CLAUDE.md` with new patterns
+  - [ ] Document new Zustand stores
+  - [ ] Document new tRPC routers
+
+---
+
+## Progress Tracking
 
 ### Summary Statistics
 
 **By Phase:**
 
-- Phase 1: Foundation & Documentation - ✅ 100% (18 hours) - [Archive](./COMPLETED_WORK.md#phase-1-foundation--documentation-100-complete)
-- Phase 2: Docker & Infrastructure - ✅ 100% (1 hour) - [Archive](./COMPLETED_WORK.md#phase-2-docker--infrastructure-setup-)
-- Phase 3: Package Configuration - ✅ 100% (6 hours) - [Archive](./COMPLETED_WORK.md#phase-3-package-configuration--implementation-100-complete)
-- Phase 4: Environment Setup - ✅ 100% (1 hour documentation + 15 min execution) - [Archive](./COMPLETED_WORK.md#phase-4-environment-setup---complete-)
-- Phase 5: CLAUDE.md Expansion - ✅ 100% (12.5 hours) - [Archive](./COMPLETED_WORK.md#phase-5---claudemd-documentation-expansion-)
-- Phase 6: Foundation Packages - ✅ 100% (40 hours) - [Archive](./COMPLETED_WORK.md#phase-6-foundation-packages)
-- Phase 7: Frontend - ✅ 100% (10/11 tasks, ~50 hours) - TASK-022 (Mobile) skipped
-- Phase 8: Backend - ✅ 100% (17 hours) **COMPLETE January 3, 2026**
-- Phase 9: AI Stack - ✅ 100% (15/15 tasks, ~85 hours) **COMPLETE January 9, 2026**
-  - ✅ 9.1: packages/ai-core (4/4 core tasks) - January 5, 2026
-  - ✅ 9.2: packages/semantic-layer (4/4 tasks) - January 9, 2026
-  - ✅ 9.3: packages/data-plane (4/4 tasks) - January 5, 2026
-  - ✅ 9.4: packages/agents (3/3 tasks) - January 5, 2026
-- Phase 10: Features - ✅ 100% (15/15 tasks, ~0 hours remaining) - All templates complete
+- Phases 1-5: Foundation & Documentation - 100% - [Archive](./COMPLETED_WORK.md)
+- Phase 6: Foundation Packages - 100% - [Archive](./COMPLETED_WORK.md#phase-6-foundation-packages)
+- Phase 7: Frontend - 100% (10/11 tasks) - [Archive](./COMPLETED_WORK.md#phase-7-frontend-block-protocol--editor)
+- Phase 8: Backend - 100% - [Archive](./COMPLETED_WORK.md#phase-8-backend)
+- Phase 9: AI Stack - 100% - [Archive](./COMPLETED_WORK.md#phase-9-ai-stack)
+- Phase 10: Features - 100% - [Archive](./COMPLETED_WORK.md#phase-10-features)
+- **Phase 11: UI/UX Architecture - 15% (7/46 tasks)**
+
+**Phase 11 Breakdown:**
+
+| Sub-Phase | Tasks | Status |
+|-----------|-------|--------|
+| 11.0: Documentation | TASK-080, TASK-081 | 1/2 |
+| 11.1: Schema | TASK-082 to TASK-087 | ✅ 6/6 |
+| 11.2: Navigation | TASK-088 to TASK-093 | 0/6 |
+| 11.3: Command Palette | TASK-094 to TASK-100 | 0/7 |
+| 11.4: Company Pages | TASK-101 to TASK-106 | 0/6 |
+| 11.5: Watch List | TASK-107 to TASK-109 | 0/3 |
+| 11.6: Document Pages | TASK-110 to TASK-113 | 0/4 |
+| 11.7: Q&A Review | TASK-114 to TASK-118 | 0/5 |
+| 11.8: Pipeline Updates | TASK-119 to TASK-121 | 0/3 |
+| 11.9: Testing & Docs | TASK-122 to TASK-125 | 0/4 |
 
 **Total Time:**
 
-- Completed: ~250 hours (Phases 1-10)
-- Remaining: 0 hours (TASK-022 Mobile deferred)
-- Total: ~250 hours
-
-**Overall Progress: 100% Complete** 🎉
+- Completed (Phases 1-10): ~250 hours
+- Phase 11 Estimated: ~126 hours
+- Total Project: ~376 hours
 
 ---
 
-## 📍 Current Status & Next Actions
+## Current Status & Next Actions
 
-**Current Phase:** All Core Phases Complete! ✅
+**Current Phase:** Phase 11: UI/UX Architecture Restructure
 
-**Last Completed:**
-- ✅ [TASK-038] Knowledge Graph (Neo4j) (January 9, 2026)
-  - KnowledgeGraphService with Neo4j integration in semantic-layer
-  - Node upserts, relationship operations, query and traversal methods
-  - Auto-sync hook in FactExtractor.storeFacts()
-  - 27 unit tests (93 total in semantic-layer)
-- ✅ [TASK-071] Sourcing Service (January 9, 2026)
-  - SourcingService with company text search (name, industry, description, sector, location)
-  - sourcingRouter with 4 tRPC procedures (search, list, get, industries)
-  - Discovery validators in @trato-hive/shared
-- ✅ [TASK-073] Discovery Template (January 9, 2026)
-  - SearchBlock Tiptap extension with search input + results grid
-  - Company cards with "Add to Pipeline" action
-  - Deal creation modal for pipeline addition
-  - Slash command `/search` registered
+**Recently Completed:**
+- [TASK-082] DealCompany Junction Table ✅
+- [TASK-083] CompanyWatch Table ✅
+- [TASK-084] Page Type Enhancement ✅
+- [TASK-085] Migration Script ✅
+- [TASK-086] Update Seed Data ✅
+- [TASK-087] Schema Unit Tests ✅ (27 tests passing)
 
-**All Core Tasks Complete!** 🎉
+**In Progress:**
+- [TASK-080] Archive Completed Work (verify archive completeness)
 
-TASK-022 (Mobile Experience) has been deferred - not in current scope.
+**Next Up:**
+1. [TASK-088] Sidebar State Store
+2. [TASK-089] Sidebar Item Types
+3. [TASK-090] Pinned Section UI
+4. [TASK-091] Recent Section UI
 
-**Completed Phase 10 Tasks:**
+**Recommended Execution Order:**
 
-1. ~~[TASK-047] Deal Service Backend~~ ✅ DONE (Phase 8)
-2. ~~[TASK-048] Deal Template (Block Config)~~ ✅ DONE
-3. ~~[TASK-056] Dashboard Service~~ ✅ DONE
-4. ~~[TASK-058] Command Center Template~~ ✅ DONE
-5. ~~[TASK-060] VDR Service~~ ✅ DONE
-6. ~~[TASK-063] Diligence Template~~ ✅ DONE
-7. ~~[TASK-066] Generator Service~~ ✅ DONE
-8. ~~[TASK-071] Sourcing Service~~ ✅ DONE
-9. ~~[TASK-073] Discovery Template~~ ✅ DONE
+1. **Week 1: Foundation** - TASK-080 to TASK-087 (Documentation + Schema)
+2. **Week 2-3: Navigation** - TASK-088 to TASK-100 (Sidebar + Command Palette)
+3. **Week 4: Company System** - TASK-101 to TASK-109 (Company Pages + Watch List)
+4. **Week 5: Documents & Q&A** - TASK-110 to TASK-118 (Document Pages + Q&A Review)
+5. **Week 6: Polish** - TASK-119 to TASK-125 (Pipeline Updates + Testing)
 
-**After Each Completed Task:**
-
-- ✅ Update this file (PROJECT_STATUS.md) with completed checkboxes
-- ✅ Update CHANGELOG.md if user-visible changes
-- ✅ Update ERROR_LOG.md if errors discovered
-- ✅ Commit changes with semantic commit message
+**Key Architectural Decisions (Confirmed):**
+- Deal-Company Roles: `PLATFORM, ADD_ON, SELLER, BUYER, ADVISOR`
+- CompanyWatch: Separate table with userId, notes, tags, priority
+- URL Structure: `/companies/[id]` (clear separation from deals)
+- K Scope: Inherit from current page, toggle to expand
+- Migration: Auto-migrate existing `companyId` to `DealCompany` with PLATFORM role
 
 ---
 
-**Last Updated:** January 9, 2026
+**Last Updated:** January 15, 2026 (Phase 11.1 Schema Complete)
 **Maintained By:** All team members (update after every task)
 **Reference:** Root CLAUDE.md Section 5 (EPC Workflow)
 **Completed Work:** See [COMPLETED_WORK.md](./COMPLETED_WORK.md)
+**Plan File:** See `~/.claude/plans/mutable-soaring-nygaard.md` for detailed implementation plan
+
+**Files Modified in Phase 11.1:**
+- `packages/db/prisma/schema.prisma` - DealCompany, CompanyWatch, PageType additions
+- `packages/db/prisma/migrations/20260115_phase11_schema_updates/migration.sql` - Migration script
+- `packages/db/prisma/migrations/20260115_phase11_schema_updates/rollback.sql` - Rollback script
+- `packages/db/prisma/seed/phase11.ts` - Phase 11 seed data
+- `packages/db/prisma/seed.ts` - Updated to include Phase 11 seeding
+- `packages/db/src/schema.test.ts` - 27 unit tests for new schema
+- `packages/db/vitest.config.ts` - Vitest configuration
