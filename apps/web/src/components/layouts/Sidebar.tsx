@@ -16,7 +16,7 @@ import { api } from "@/trpc/react";
 import { PageTreeNode, type PageTreeNodeData } from "../deals/PageTreeNode";
 import { useSidebar } from "./SidebarContext";
 import { PinnedSection, RecentSection } from "../sidebar";
-import { useActivePageExpansion } from "@/hooks";
+import { useActivePageExpansion, useSidebarSync } from "@/hooks";
 import {
   DndContext,
   DragOverlay,
@@ -87,6 +87,9 @@ export function Sidebar() {
 
   // Auto-expand sidebar items when navigating to child pages
   useActivePageExpansion();
+
+  // Sync sidebar state with database (debounced)
+  useSidebarSync();
 
   // Check if we're on a deal page
   const dealId = params?.id as string | undefined;

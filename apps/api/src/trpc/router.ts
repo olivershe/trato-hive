@@ -29,6 +29,7 @@ import { generatorRouter } from '../routers/generator';
 import { sourcingRouter } from '../routers/sourcing';
 import { pageRouter } from '../routers/page';
 import { syncGroupRouter } from '../routers/sync-group';
+import { userRouter } from '../routers/user';
 
 /**
  * Root application router
@@ -44,6 +45,7 @@ export const appRouter = router({
   sourcing: sourcingRouter,
   page: pageRouter,
   syncGroup: syncGroupRouter,
+  user: userRouter,
 });
 
 /**

@@ -31,3 +31,6 @@ export {
   useIsExpanded,
   useToggleExpanded,
 } from "./useActivePageExpansion";
+
+// Sidebar database sync (Phase 11)
+export { useSidebarSync } from "./useSidebarSync";

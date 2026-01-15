@@ -21,6 +21,7 @@ model User {
   emailVerified DateTime?
   name          String?
   image         String?
+  preferences   Json?     // User preferences (sidebar pinned/recent items, settings)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
