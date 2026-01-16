@@ -1,4 +1,4 @@
-// @ts-nocheck - Citation type mismatch
+// @ts-nocheck - Citation type mismatch between CitationAttributes and local Citation interface
 /**
  * QueryBlock - Tiptap extension for AI-powered diligence Q&A
  *
@@ -172,25 +172,22 @@ export const QueryBlock = Node.create({
   },
 });
 
-// =============================================================================
-// Review Status Badge Component
-// =============================================================================
+// Status badge configuration
+const REVIEW_STATUS_CONFIG = {
+  PENDING: { bg: "bg-amber-100 dark:bg-amber-900/30", text: "text-amber-800 dark:text-amber-300", label: "Pending Review" },
+  APPROVED: { bg: "bg-emerald-100 dark:bg-emerald-900/30", text: "text-emerald-800 dark:text-emerald-300", label: "Approved" },
+  EDITED: { bg: "bg-blue-100 dark:bg-blue-900/30", text: "text-blue-800 dark:text-blue-300", label: "Edited" },
+  REJECTED: { bg: "bg-red-100 dark:bg-red-900/30", text: "text-red-800 dark:text-red-300", label: "Rejected" },
+} as const;
 
 interface ReviewStatusBadgeProps {
   status: QAReviewStatus;
 }
 
-function ReviewStatusBadge({ status }: ReviewStatusBadgeProps) {
+function ReviewStatusBadge({ status }: ReviewStatusBadgeProps): JSX.Element | null {
   if (!status) return null;
 
-  const config = {
-    PENDING: { bg: "bg-amber-100 dark:bg-amber-900/30", text: "text-amber-800 dark:text-amber-300", label: "Pending Review" },
-    APPROVED: { bg: "bg-emerald-100 dark:bg-emerald-900/30", text: "text-emerald-800 dark:text-emerald-300", label: "Approved" },
-    EDITED: { bg: "bg-blue-100 dark:bg-blue-900/30", text: "text-blue-800 dark:text-blue-300", label: "Edited" },
-    REJECTED: { bg: "bg-red-100 dark:bg-red-900/30", text: "text-red-800 dark:text-red-300", label: "Rejected" },
-  };
-
-  const { bg, text, label } = config[status];
+  const { bg, text, label } = REVIEW_STATUS_CONFIG[status];
 
   return (
     <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${bg} ${text}`}>
@@ -198,10 +195,6 @@ function ReviewStatusBadge({ status }: ReviewStatusBadgeProps) {
     </span>
   );
 }
-
-// =============================================================================
-// Answer With Inline Citations Component
-// =============================================================================
 
 interface AnswerWithCitationsProps {
   answer: string;
@@ -256,10 +249,6 @@ function AnswerWithCitations({ answer, citations }: AnswerWithCitationsProps) {
   );
 }
 
-// =============================================================================
-// Citation Card Component (for collapsible list)
-// =============================================================================
-
 interface CitationCardProps {
   citation: Citation;
   index: number;
@@ -310,10 +299,6 @@ function CitationCard({ citation, index }: CitationCardProps) {
     </button>
   );
 }
-
-// =============================================================================
-// Edit Modal Component
-// =============================================================================
 
 interface EditModalProps {
   isOpen: boolean;
@@ -371,10 +356,6 @@ function EditModal({ isOpen, originalAnswer, onSave, onCancel, isLoading }: Edit
     </div>
   );
 }
-
-// =============================================================================
-// Reject Modal Component
-// =============================================================================
 
 interface RejectModalProps {
   isOpen: boolean;
@@ -434,10 +415,6 @@ function RejectModal({ isOpen, onConfirm, onCancel, isLoading }: RejectModalProp
     </div>
   );
 }
-
-// =============================================================================
-// React Component
-// =============================================================================
 
 function QueryCard({ node, updateAttributes }: NodeViewProps) {
   const attrs = node.attrs as QueryAttributes;

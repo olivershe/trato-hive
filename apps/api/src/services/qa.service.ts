@@ -18,10 +18,6 @@ import type {
   ListQAAnswersInput,
 } from '@trato-hive/shared'
 
-// =============================================================================
-// Types
-// =============================================================================
-
 export interface QAAnswerListResult {
   items: QAAnswerWithReviewer[]
   pagination: {
@@ -62,9 +58,16 @@ export interface QAAnswerResult {
   activityId?: string
 }
 
-// =============================================================================
-// Service Class
-// =============================================================================
+// Shared include for reviewer relation
+const REVIEWER_INCLUDE = {
+  reviewer: {
+    select: {
+      id: true,
+      name: true,
+      email: true,
+    },
+  },
+} as const
 
 export class QAService {
   private activityService: ActivityService
@@ -72,10 +75,6 @@ export class QAService {
   constructor(private db: PrismaClient) {
     this.activityService = new ActivityService(db)
   }
-
-  // ===========================================================================
-  // Create QA Answer
-  // ===========================================================================
 
   /**
    * Create a new QAAnswer record after AI generates a response
@@ -89,31 +88,19 @@ export class QAService {
       data: {
         organizationId,
         question: input.question,
-        dealId: input.dealId || null,
-        documentId: input.documentId || null,
-        companyId: input.companyId || null,
+        dealId: input.dealId ?? null,
+        documentId: input.documentId ?? null,
+        companyId: input.companyId ?? null,
         answer: input.answer,
         citations: input.citations,
-        confidence: input.confidence || null,
+        confidence: input.confidence ?? null,
         status: 'PENDING',
       },
-      include: {
-        reviewer: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-      },
+      include: REVIEWER_INCLUDE,
     })
 
     return qaAnswer as QAAnswerWithReviewer
   }
-
-  // ===========================================================================
-  // Get QA Answer
-  // ===========================================================================
 
   /**
    * Get a single QAAnswer by ID
@@ -125,25 +112,10 @@ export class QAService {
   ): Promise<QAAnswerWithReviewer> {
     const qaAnswer = await this.db.qAAnswer.findUnique({
       where: { id },
-      include: {
-        reviewer: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-      },
+      include: REVIEWER_INCLUDE,
     })
 
-    if (!qaAnswer) {
-      throw new TRPCError({
-        code: 'NOT_FOUND',
-        message: 'Q&A answer not found',
-      })
-    }
-
-    if (qaAnswer.organizationId !== organizationId) {
+    if (!qaAnswer || qaAnswer.organizationId !== organizationId) {
       throw new TRPCError({
         code: 'NOT_FOUND',
         message: 'Q&A answer not found',
@@ -152,10 +124,6 @@ export class QAService {
 
     return qaAnswer as QAAnswerWithReviewer
   }
-
-  // ===========================================================================
-  // Approve QA Answer
-  // ===========================================================================
 
   /**
    * Approve an AI-generated answer
@@ -166,14 +134,7 @@ export class QAService {
     reviewerId: string,
     organizationId: string
   ): Promise<QAAnswerResult> {
-    const qaAnswer = await this.getById(input.qaAnswerId, organizationId)
-
-    if (qaAnswer.status !== 'PENDING') {
-      throw new TRPCError({
-        code: 'BAD_REQUEST',
-        message: 'Q&A answer has already been reviewed',
-      })
-    }
+    const qaAnswer = await this.getByIdForReview(input.qaAnswerId, organizationId)
 
     await this.db.qAAnswer.update({
       where: { id: input.qaAnswerId },
@@ -186,7 +147,7 @@ export class QAService {
 
     const activity = await this.activityService.log({
       userId: reviewerId,
-      dealId: qaAnswer.dealId || undefined,
+      dealId: qaAnswer.dealId ?? undefined,
       type: ActivityType.QA_APPROVED,
       description: `Approved Q&A answer for: "${this.truncateQuestion(qaAnswer.question)}"`,
       metadata: {
@@ -202,10 +163,6 @@ export class QAService {
     }
   }
 
-  // ===========================================================================
-  // Edit QA Answer
-  // ===========================================================================
-
   /**
    * Edit and approve an AI-generated answer
    * Sets status to EDITED and logs activity with diff
@@ -215,14 +172,7 @@ export class QAService {
     reviewerId: string,
     organizationId: string
   ): Promise<QAAnswerResult> {
-    const qaAnswer = await this.getById(input.qaAnswerId, organizationId)
-
-    if (qaAnswer.status !== 'PENDING') {
-      throw new TRPCError({
-        code: 'BAD_REQUEST',
-        message: 'Q&A answer has already been reviewed',
-      })
-    }
+    const qaAnswer = await this.getByIdForReview(input.qaAnswerId, organizationId)
 
     await this.db.qAAnswer.update({
       where: { id: input.qaAnswerId },
@@ -236,7 +186,7 @@ export class QAService {
 
     const activity = await this.activityService.log({
       userId: reviewerId,
-      dealId: qaAnswer.dealId || undefined,
+      dealId: qaAnswer.dealId ?? undefined,
       type: ActivityType.QA_EDITED,
       description: `Edited Q&A answer for: "${this.truncateQuestion(qaAnswer.question)}"`,
       metadata: {
@@ -254,10 +204,6 @@ export class QAService {
     }
   }
 
-  // ===========================================================================
-  // Reject QA Answer
-  // ===========================================================================
-
   /**
    * Reject an AI-generated answer
    * Sets status to REJECTED and logs activity
@@ -267,20 +213,13 @@ export class QAService {
     reviewerId: string,
     organizationId: string
   ): Promise<QAAnswerResult> {
-    const qaAnswer = await this.getById(input.qaAnswerId, organizationId)
-
-    if (qaAnswer.status !== 'PENDING') {
-      throw new TRPCError({
-        code: 'BAD_REQUEST',
-        message: 'Q&A answer has already been reviewed',
-      })
-    }
+    const qaAnswer = await this.getByIdForReview(input.qaAnswerId, organizationId)
 
     await this.db.qAAnswer.update({
       where: { id: input.qaAnswerId },
       data: {
         status: 'REJECTED',
-        rejectionReason: input.reason || null,
+        rejectionReason: input.reason ?? null,
         reviewerId,
         reviewedAt: new Date(),
       },
@@ -288,7 +227,7 @@ export class QAService {
 
     const activity = await this.activityService.log({
       userId: reviewerId,
-      dealId: qaAnswer.dealId || undefined,
+      dealId: qaAnswer.dealId ?? undefined,
       type: ActivityType.QA_REJECTED,
       description: `Rejected Q&A answer for: "${this.truncateQuestion(qaAnswer.question)}"`,
       metadata: {
@@ -304,10 +243,6 @@ export class QAService {
       activityId: activity.id,
     }
   }
-
-  // ===========================================================================
-  // List QA Answers
-  // ===========================================================================
 
   /**
    * List Q&A answers with filtering and pagination
@@ -334,15 +269,7 @@ export class QAService {
         orderBy: { createdAt: 'desc' },
         skip,
         take: pageSize,
-        include: {
-          reviewer: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-            },
-          },
-        },
+        include: REVIEWER_INCLUDE,
       }),
       this.db.qAAnswer.count({ where }),
     ])
@@ -358,9 +285,24 @@ export class QAService {
     }
   }
 
-  // ===========================================================================
-  // Private Helpers
-  // ===========================================================================
+  /**
+   * Get QA answer for review operations, validating it can be reviewed
+   */
+  private async getByIdForReview(
+    id: string,
+    organizationId: string
+  ): Promise<QAAnswerWithReviewer> {
+    const qaAnswer = await this.getById(id, organizationId)
+
+    if (qaAnswer.status !== 'PENDING') {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'Q&A answer has already been reviewed',
+      })
+    }
+
+    return qaAnswer
+  }
 
   /**
    * Truncate question for activity description

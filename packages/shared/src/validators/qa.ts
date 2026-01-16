@@ -6,15 +6,7 @@
  */
 import { z } from 'zod'
 
-// =============================================================================
-// Enums
-// =============================================================================
-
 export const qaAnswerStatusSchema = z.enum(['PENDING', 'APPROVED', 'EDITED', 'REJECTED'])
-
-// =============================================================================
-// Citation Schema
-// =============================================================================
 
 export const qaCitationSchema = z.object({
   id: z.string(),
@@ -28,10 +20,6 @@ export const qaCitationSchema = z.object({
 
 export type QACitationInput = z.infer<typeof qaCitationSchema>
 
-// =============================================================================
-// Create QA Answer
-// =============================================================================
-
 export const createQAAnswerSchema = z.object({
   question: z.string().min(1).max(2000),
   dealId: z.string().cuid().optional().nullable(),
@@ -44,29 +32,17 @@ export const createQAAnswerSchema = z.object({
 
 export type CreateQAAnswerInput = z.infer<typeof createQAAnswerSchema>
 
-// =============================================================================
-// Get QA Answer
-// =============================================================================
-
 export const getQAAnswerSchema = z.object({
   id: z.string().cuid(),
 })
 
 export type GetQAAnswerInput = z.infer<typeof getQAAnswerSchema>
 
-// =============================================================================
-// Approve QA Answer
-// =============================================================================
-
 export const approveQAAnswerSchema = z.object({
   qaAnswerId: z.string().cuid(),
 })
 
 export type ApproveQAAnswerInput = z.infer<typeof approveQAAnswerSchema>
-
-// =============================================================================
-// Edit QA Answer
-// =============================================================================
 
 export const editQAAnswerSchema = z.object({
   qaAnswerId: z.string().cuid(),
@@ -75,20 +51,12 @@ export const editQAAnswerSchema = z.object({
 
 export type EditQAAnswerInput = z.infer<typeof editQAAnswerSchema>
 
-// =============================================================================
-// Reject QA Answer
-// =============================================================================
-
 export const rejectQAAnswerSchema = z.object({
   qaAnswerId: z.string().cuid(),
   reason: z.string().max(1000).optional(),
 })
 
 export type RejectQAAnswerInput = z.infer<typeof rejectQAAnswerSchema>
-
-// =============================================================================
-// List QA Answers
-// =============================================================================
 
 export const listQAAnswersSchema = z.object({
   dealId: z.string().cuid().optional(),
