@@ -12,8 +12,15 @@ import {
   Loader2,
   AlertCircle,
   Filter,
+  Eye,
+  ChevronDown,
+  ChevronRight,
+  ExternalLink,
+  Trash2,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useWatch } from "@/hooks/useWatch";
 
 function formatRevenue(value: number | null): string {
   if (!value) return "N/A";
@@ -21,6 +28,212 @@ function formatRevenue(value: number | null): string {
   if (value >= 1000000) return `$${(value / 1000000).toFixed(0)}M`;
   if (value >= 1000) return `$${(value / 1000).toFixed(0)}K`;
   return `$${value.toFixed(0)}`;
+}
+
+const priorityLabels: Record<number, { label: string; className: string }> = {
+  0: { label: "Low", className: "bg-charcoal/10 text-charcoal/70" },
+  1: { label: "Medium", className: "bg-amber-100 text-amber-700" },
+  2: { label: "High", className: "bg-red-100 text-red-700" },
+};
+
+/**
+ * Single watched company card with remove action
+ */
+function WatchedCompanyCard({
+  watch,
+}: {
+  watch: {
+    id: string;
+    companyId: string;
+    notes: string | null;
+    tags: string[];
+    priority: number;
+    company: {
+      id: string;
+      name: string;
+      industry: string | null;
+      sector: string | null;
+      location: string | null;
+      employees: number | null;
+      revenue: number | null;
+      status: string;
+    };
+  };
+}) {
+  const { removeFromWatch, isLoading } = useWatch(watch.companyId);
+  const priority = priorityLabels[watch.priority] ?? priorityLabels[0];
+
+  return (
+    <div className="bg-alabaster rounded-xl p-4 border border-gold/10 hover:border-orange/30 transition-colors min-w-[280px] max-w-[320px] flex-shrink-0">
+      {/* Header */}
+      <div className="flex items-start justify-between mb-2">
+        <div className="flex-1 min-w-0">
+          <h4 className="font-semibold text-charcoal truncate">{watch.company.name}</h4>
+          {watch.company.industry && (
+            <p className="text-xs text-charcoal/60 truncate">
+              {watch.company.industry}
+              {watch.company.sector && ` · ${watch.company.sector}`}
+            </p>
+          )}
+        </div>
+        <span className={`px-2 py-0.5 rounded text-[10px] font-medium flex-shrink-0 ml-2 ${priority.className}`}>
+          {priority.label}
+        </span>
+      </div>
+
+      {/* Tags */}
+      {watch.tags.length > 0 && (
+        <div className="flex flex-wrap gap-1 mb-2">
+          {watch.tags.slice(0, 3).map((tag) => (
+            <span
+              key={tag}
+              className="px-2 py-0.5 bg-bone text-charcoal/70 rounded text-[10px]"
+            >
+              {tag}
+            </span>
+          ))}
+          {watch.tags.length > 3 && (
+            <span className="px-2 py-0.5 text-charcoal/50 text-[10px]">
+              +{watch.tags.length - 3}
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Notes preview */}
+      {watch.notes && (
+        <p className="text-xs text-charcoal/60 line-clamp-2 mb-3">{watch.notes}</p>
+      )}
+
+      {/* Quick info */}
+      <div className="flex items-center gap-3 text-xs text-charcoal/50 mb-3">
+        {watch.company.location && (
+          <span className="flex items-center gap-1">
+            <MapPin className="w-3 h-3" />
+            {watch.company.location.split(",")[0]}
+          </span>
+        )}
+        {watch.company.revenue && (
+          <span className="flex items-center gap-1">
+            <DollarSign className="w-3 h-3" />
+            {formatRevenue(Number(watch.company.revenue))}
+          </span>
+        )}
+      </div>
+
+      {/* Actions */}
+      <div className="flex items-center gap-2">
+        <Link
+          href={`/companies/${watch.company.id}`}
+          className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 bg-bone text-charcoal/80 rounded-lg text-xs font-medium hover:bg-gold/20 transition-colors"
+        >
+          <ExternalLink className="w-3 h-3" />
+          View
+        </Link>
+        <button
+          onClick={() => removeFromWatch()}
+          disabled={isLoading}
+          className="p-1.5 text-charcoal/40 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+          title="Remove from watch list"
+        >
+          <Trash2 className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * [TASK-108] Watch List Section
+ */
+function WatchedCompaniesSection() {
+  const [isExpanded, setIsExpanded] = useState(true);
+  const [priorityFilter, setPriorityFilter] = useState<number | undefined>(undefined);
+
+  const { data: watchData, isLoading } = api.watch.list.useQuery({
+    page: 1,
+    pageSize: 20,
+    filter: priorityFilter !== undefined ? { priority: priorityFilter } : undefined,
+    sort: { field: "priority", order: "desc" },
+  });
+
+  // Don't render section if no watched companies (after loading)
+  if (!isLoading && (!watchData?.items || watchData.items.length === 0) && priorityFilter === undefined) {
+    return null;
+  }
+
+  return (
+    <div className="mb-8">
+      {/* Section Header */}
+      <div className="flex items-center justify-between mb-4">
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="flex items-center gap-2 text-charcoal font-semibold hover:text-orange transition-colors"
+        >
+          {isExpanded ? (
+            <ChevronDown className="w-5 h-5" />
+          ) : (
+            <ChevronRight className="w-5 h-5" />
+          )}
+          <Eye className="w-5 h-5 text-orange" />
+          Watched Companies
+          {watchData?.pagination?.total !== undefined && (
+            <span className="text-xs text-charcoal/50 bg-bone px-2 py-0.5 rounded-full font-normal">
+              {watchData.pagination.total}
+            </span>
+          )}
+        </button>
+
+        {/* Priority Filter */}
+        {isExpanded && (
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-charcoal/50">Filter:</span>
+            <select
+              value={priorityFilter ?? ""}
+              onChange={(e) =>
+                setPriorityFilter(e.target.value ? Number(e.target.value) : undefined)
+              }
+              className="text-xs px-2 py-1 bg-alabaster border border-gold/20 rounded-lg text-charcoal focus:outline-none focus:border-orange"
+            >
+              <option value="">All</option>
+              <option value="2">High Priority</option>
+              <option value="1">Medium Priority</option>
+              <option value="0">Low Priority</option>
+            </select>
+          </div>
+        )}
+      </div>
+
+      {/* Content */}
+      {isExpanded && (
+        <>
+          {isLoading ? (
+            <div className="flex items-center justify-center h-32 bg-alabaster rounded-xl border border-gold/10">
+              <Loader2 className="w-6 h-6 animate-spin text-orange" />
+            </div>
+          ) : !watchData?.items || watchData.items.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-32 bg-alabaster rounded-xl border border-gold/10">
+              <Eye className="w-8 h-8 text-charcoal/20 mb-2" />
+              <p className="text-sm text-charcoal/50">
+                {priorityFilter !== undefined
+                  ? "No companies match this filter"
+                  : "No companies in your watch list"}
+              </p>
+            </div>
+          ) : (
+            <div className="flex gap-4 overflow-x-auto pb-2 -mx-2 px-2">
+              {watchData.items.map((watch) => (
+                <WatchedCompanyCard
+                  key={watch.id}
+                  watch={watch}
+                />
+              ))}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
 }
 
 export default function DiscoveryPage() {
@@ -73,6 +286,9 @@ export default function DiscoveryPage() {
         title="Discovery"
         subtitle="Find and evaluate potential M&A opportunities"
       />
+
+      {/* Watched Companies Section [TASK-108] */}
+      <WatchedCompaniesSection />
 
       {/* Search and Filters */}
       <div className="flex flex-col md:flex-row gap-4 mb-6">

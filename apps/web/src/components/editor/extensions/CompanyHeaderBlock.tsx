@@ -7,10 +7,8 @@ import {
   DollarSign,
   MapPin,
   Globe,
-  Eye,
-  EyeOff,
 } from "lucide-react";
-import { useState } from "react";
+import { WatchButton } from "@/components/companies/WatchButton";
 
 export interface CompanyHeaderAttributes {
   companyId: string;
@@ -118,7 +116,7 @@ function formatEmployees(employees: number | null): string {
 
 function CompanyHeaderCard({ node }: { node: any }) {
   const {
-    companyId: _companyId, // Available for future tRPC integration
+    companyId,
     name,
     industry,
     sector,
@@ -127,15 +125,7 @@ function CompanyHeaderCard({ node }: { node: any }) {
     location,
     website,
     status,
-    isWatched: initialWatched,
   } = node.attrs as CompanyHeaderAttributes;
-
-  const [isWatched, setIsWatched] = useState(initialWatched);
-
-  const handleWatchToggle = () => {
-    // TODO: Hook into tRPC watch.add/watch.remove when TASK-109 is complete
-    setIsWatched(!isWatched);
-  };
 
   return (
     <NodeViewWrapper className="my-8 font-sans">
@@ -174,27 +164,7 @@ function CompanyHeaderCard({ node }: { node: any }) {
           </div>
 
           {/* Watch Button */}
-          <button
-            onClick={handleWatchToggle}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              isWatched
-                ? "bg-orange/10 text-orange border border-orange/30 hover:bg-orange/20"
-                : "bg-alabaster dark:bg-panel-dark text-charcoal/70 dark:text-cultured-white/70 border border-gold/20 hover:bg-bone dark:hover:bg-panel-darker"
-            }`}
-            title={isWatched ? "Remove from watch list" : "Add to watch list"}
-          >
-            {isWatched ? (
-              <>
-                <Eye className="w-4 h-4" />
-                Watching
-              </>
-            ) : (
-              <>
-                <EyeOff className="w-4 h-4" />
-                Watch
-              </>
-            )}
-          </button>
+          {companyId && <WatchButton companyId={companyId} />}
         </div>
 
         {/* Metrics Grid */}

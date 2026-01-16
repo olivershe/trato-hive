@@ -14,12 +14,11 @@ import {
   MapPin,
   Globe,
   Briefcase,
-  Eye,
-  EyeOff,
   FileText,
   CheckCircle2,
 } from "lucide-react";
 import { useState } from "react";
+import { WatchButton } from "@/components/companies/WatchButton";
 import dynamic from "next/dynamic";
 
 // Dynamic import to avoid SSR issues with Tiptap
@@ -72,7 +71,6 @@ export default function CompanyDetailPage() {
   const params = useParams();
   const companyId = params.id as string;
   const [activeTab, setActiveTab] = useState<"overview" | "editor">("overview");
-  const [isWatched, setIsWatched] = useState(false);
 
   // Fetch company data with its associated page
   const {
@@ -126,11 +124,6 @@ export default function CompanyDetailPage() {
   }
   const dealHistory: DealHistoryEntry[] = (companyWithDeals as { dealHistory?: DealHistoryEntry[] })?.dealHistory || [];
 
-  const handleWatchToggle = () => {
-    // TODO: Hook into tRPC watch.add/watch.remove when TASK-109 is complete
-    setIsWatched(!isWatched);
-  };
-
   return (
     <>
       <div className="p-6">
@@ -166,26 +159,7 @@ export default function CompanyDetailPage() {
               )}
             </div>
 
-            <button
-              onClick={handleWatchToggle}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                isWatched
-                  ? "bg-orange/10 text-orange border border-orange/30 hover:bg-orange/20"
-                  : "bg-alabaster text-charcoal/70 border border-gold/20 hover:bg-bone"
-              }`}
-            >
-              {isWatched ? (
-                <>
-                  <Eye className="w-4 h-4" />
-                  Watching
-                </>
-              ) : (
-                <>
-                  <EyeOff className="w-4 h-4" />
-                  Watch
-                </>
-              )}
-            </button>
+            <WatchButton companyId={companyId} />
           </div>
         </div>
 
