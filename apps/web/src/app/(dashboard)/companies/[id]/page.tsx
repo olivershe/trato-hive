@@ -21,7 +21,6 @@ import { useState } from "react";
 import { WatchButton } from "@/components/companies/WatchButton";
 import dynamic from "next/dynamic";
 
-// Dynamic import to avoid SSR issues with Tiptap
 const BlockEditor = dynamic(
   () => import("@/components/editor/BlockEditor").then((mod) => mod.BlockEditor),
   {
@@ -34,14 +33,35 @@ const BlockEditor = dynamic(
   }
 );
 
-// Status badge styles
-const statusBadgeStyles: Record<string, string> = {
+const STATUS_BADGE_STYLES: Record<string, string> = {
   PROSPECT: "bg-blue-100 text-blue-700",
   RESEARCHING: "bg-violet-100 text-violet-700",
   ENGAGED: "bg-amber-100 text-amber-700",
   PIPELINE: "bg-emerald-100 text-emerald-700",
   ARCHIVED: "bg-gray-100 text-gray-700",
 };
+
+const DEAL_STAGE_STYLES: Record<string, string> = {
+  CLOSED_WON: "bg-green-100 text-green-700",
+  CLOSED_LOST: "bg-red-100 text-red-700",
+  DEFAULT: "bg-blue-100 text-blue-700",
+};
+
+const DEAL_ROLE_STYLES: Record<string, string> = {
+  PLATFORM: "bg-charcoal text-white",
+  ADD_ON: "bg-orange/20 text-orange",
+  SELLER: "bg-emerald-100 text-emerald-700",
+  BUYER: "bg-blue-100 text-blue-700",
+  DEFAULT: "bg-violet-100 text-violet-700",
+};
+
+function getDealStageStyle(stage: string): string {
+  return DEAL_STAGE_STYLES[stage] || DEAL_STAGE_STYLES.DEFAULT;
+}
+
+function getDealRoleStyle(role: string): string {
+  return DEAL_ROLE_STYLES[role] || DEAL_ROLE_STYLES.DEFAULT;
+}
 
 function formatStatusName(status: string): string {
   return status
@@ -54,16 +74,16 @@ function formatRevenue(revenue: number | string | null): string {
   if (!revenue) return "N/A";
   const value = typeof revenue === "string" ? parseFloat(revenue) : revenue;
   if (isNaN(value)) return "N/A";
-  if (value >= 1000000000) return `$${(value / 1000000000).toFixed(1)}B`;
-  if (value >= 1000000) return `$${(value / 1000000).toFixed(0)}M`;
-  if (value >= 1000) return `$${(value / 1000).toFixed(0)}K`;
+  if (value >= 1_000_000_000) return `$${(value / 1_000_000_000).toFixed(1)}B`;
+  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(0)}M`;
+  if (value >= 1_000) return `$${(value / 1_000).toFixed(0)}K`;
   return `$${value.toFixed(0)}`;
 }
 
 function formatEmployees(employees: number | null): string {
   if (!employees) return "N/A";
-  if (employees >= 10000) return `${(employees / 1000).toFixed(0)}K+`;
-  if (employees >= 1000) return `${(employees / 1000).toFixed(1)}K`;
+  if (employees >= 10_000) return `${(employees / 1_000).toFixed(0)}K+`;
+  if (employees >= 1_000) return `$${(employees / 1_000).toFixed(1)}K`;
   return employees.toLocaleString();
 }
 
@@ -143,7 +163,7 @@ export default function CompanyDetailPage() {
                 <h1 className="text-2xl font-bold text-charcoal">{company.name}</h1>
                 <span
                   className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    statusBadgeStyles[company.status] || "bg-gray-100 text-gray-700"
+                    STATUS_BADGE_STYLES[company.status] || "bg-gray-100 text-gray-700"
                   }`}
                 >
                   {formatStatusName(company.status)}
@@ -277,32 +297,12 @@ export default function CompanyDetailPage() {
                         <p className="text-sm font-medium text-charcoal">
                           {deal.name}
                         </p>
-                        <span
-                          className={`px-2 py-0.5 rounded text-[10px] font-medium ${
-                            deal.stage === "CLOSED_WON"
-                              ? "bg-green-100 text-green-700"
-                              : deal.stage === "CLOSED_LOST"
-                              ? "bg-red-100 text-red-700"
-                              : "bg-blue-100 text-blue-700"
-                          }`}
-                        >
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-medium ${getDealStageStyle(deal.stage)}`}>
                           {deal.stage.replace(/_/g, " ")}
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span
-                          className={`px-2 py-0.5 rounded text-[10px] font-medium ${
-                            deal.role === "PLATFORM"
-                              ? "bg-charcoal text-white"
-                              : deal.role === "ADD_ON"
-                              ? "bg-orange/20 text-orange"
-                              : deal.role === "SELLER"
-                              ? "bg-emerald-100 text-emerald-700"
-                              : deal.role === "BUYER"
-                              ? "bg-blue-100 text-blue-700"
-                              : "bg-violet-100 text-violet-700"
-                          }`}
-                        >
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-medium ${getDealRoleStyle(deal.role)}`}>
                           {deal.role.replace(/_/g, " ")}
                         </span>
                         {deal.value && (

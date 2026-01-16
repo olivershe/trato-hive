@@ -1,10 +1,7 @@
 /**
  * Watch Service
- *
  * Business logic for CompanyWatch CRUD operations.
- * Enforces multi-tenancy via organizationId on all operations.
- *
- * [TASK-109] Watch tRPC Procedures - Service layer
+ * [TASK-109]
  */
 import { TRPCError } from '@trpc/server';
 import type { PrismaClient, CompanyWatch, Prisma } from '@trato-hive/db';
@@ -14,9 +11,6 @@ import type {
   WatchListInput,
 } from '@trato-hive/shared';
 
-/**
- * Watch entry with company details
- */
 export interface WatchWithCompany extends CompanyWatch {
   company: {
     id: string;
@@ -30,9 +24,6 @@ export interface WatchWithCompany extends CompanyWatch {
   };
 }
 
-/**
- * Paginated watch list result
- */
 export interface WatchListResult {
   items: WatchWithCompany[];
   pagination: {
@@ -46,10 +37,10 @@ export interface WatchListResult {
 export class WatchService {
   constructor(private db: PrismaClient) {}
 
-  /**
-   * Validate company belongs to user's organization
-   * Multi-tenancy enforcement
-   */
+  private watchKey(companyId: string, userId: string) {
+    return { companyId_userId: { companyId, userId } };
+  }
+
   private async validateCompanyAccess(
     companyId: string,
     organizationId: string
@@ -60,35 +51,41 @@ export class WatchService {
     });
 
     if (!company || company.organizationId !== organizationId) {
-      throw new TRPCError({
-        code: 'NOT_FOUND',
-        message: 'Company not found',
-      });
+      throw new TRPCError({ code: 'NOT_FOUND', message: 'Company not found' });
     }
   }
 
-  /**
-   * Add company to watch list
-   * Creates a new CompanyWatch entry for the user
-   */
+  private async getWatch(
+    companyId: string,
+    userId: string
+  ): Promise<CompanyWatch | null> {
+    return this.db.companyWatch.findUnique({
+      where: this.watchKey(companyId, userId),
+    });
+  }
+
+  private async requireWatch(
+    companyId: string,
+    userId: string
+  ): Promise<CompanyWatch> {
+    const watch = await this.getWatch(companyId, userId);
+    if (!watch) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Company is not in watch list',
+      });
+    }
+    return watch;
+  }
+
   async add(
     input: WatchAddInput,
     userId: string,
     organizationId: string
   ): Promise<CompanyWatch> {
-    // Validate company access
     await this.validateCompanyAccess(input.companyId, organizationId);
 
-    // Check if already watching
-    const existing = await this.db.companyWatch.findUnique({
-      where: {
-        companyId_userId: {
-          companyId: input.companyId,
-          userId,
-        },
-      },
-    });
-
+    const existing = await this.getWatch(input.companyId, userId);
     if (existing) {
       throw new TRPCError({
         code: 'CONFLICT',
@@ -96,7 +93,6 @@ export class WatchService {
       });
     }
 
-    // Create watch entry
     return this.db.companyWatch.create({
       data: {
         companyId: input.companyId,
@@ -108,94 +104,38 @@ export class WatchService {
     });
   }
 
-  /**
-   * Remove company from watch list
-   */
   async remove(
     companyId: string,
     userId: string,
     organizationId: string
   ): Promise<CompanyWatch> {
-    // Validate company access
     await this.validateCompanyAccess(companyId, organizationId);
+    await this.requireWatch(companyId, userId);
 
-    // Find existing watch
-    const existing = await this.db.companyWatch.findUnique({
-      where: {
-        companyId_userId: {
-          companyId,
-          userId,
-        },
-      },
-    });
-
-    if (!existing) {
-      throw new TRPCError({
-        code: 'NOT_FOUND',
-        message: 'Company is not in watch list',
-      });
-    }
-
-    // Delete watch entry
     return this.db.companyWatch.delete({
-      where: {
-        companyId_userId: {
-          companyId,
-          userId,
-        },
-      },
+      where: this.watchKey(companyId, userId),
     });
   }
 
-  /**
-   * Update watch entry (notes, tags, priority)
-   */
   async update(
     input: WatchUpdateInput,
     userId: string,
     organizationId: string
   ): Promise<CompanyWatch> {
-    // Validate company access
     await this.validateCompanyAccess(input.companyId, organizationId);
+    await this.requireWatch(input.companyId, userId);
 
-    // Find existing watch
-    const existing = await this.db.companyWatch.findUnique({
-      where: {
-        companyId_userId: {
-          companyId: input.companyId,
-          userId,
-        },
-      },
-    });
-
-    if (!existing) {
-      throw new TRPCError({
-        code: 'NOT_FOUND',
-        message: 'Company is not in watch list',
-      });
-    }
-
-    // Build update data
     const updateData: Prisma.CompanyWatchUpdateInput = {};
     if (input.notes !== undefined) updateData.notes = input.notes;
     if (input.tags !== undefined) updateData.tags = input.tags;
     if (input.priority !== undefined) updateData.priority = input.priority;
 
-    // Update watch entry
     return this.db.companyWatch.update({
-      where: {
-        companyId_userId: {
-          companyId: input.companyId,
-          userId,
-        },
-      },
+      where: this.watchKey(input.companyId, userId),
       data: updateData,
     });
   }
 
-  /**
-   * List watched companies with pagination and filters
-   */
   async list(
     input: WatchListInput,
     userId: string,
@@ -204,58 +144,39 @@ export class WatchService {
     const { page = 1, pageSize = 20, filter, sort } = input;
     const skip = (page - 1) * pageSize;
 
-    // Build where clause
     const where: Prisma.CompanyWatchWhereInput = {
       userId,
-      company: {
-        organizationId, // Multi-tenancy enforcement
-      },
+      company: { organizationId },
+      ...(filter?.priority !== undefined && { priority: filter.priority }),
+      ...(filter?.tags?.length && { tags: { hasSome: filter.tags } }),
     };
 
-    if (filter?.priority !== undefined) {
-      where.priority = filter.priority;
-    }
-
-    if (filter?.tags && filter.tags.length > 0) {
-      where.tags = {
-        hasSome: filter.tags,
-      };
-    }
-
-    // Build orderBy
-    let orderBy: Prisma.CompanyWatchOrderByWithRelationInput;
     const sortField = sort?.field || 'createdAt';
     const sortOrder = sort?.order || 'desc';
 
-    if (sortField === 'companyName') {
-      orderBy = { company: { name: sortOrder } };
-    } else if (sortField === 'priority') {
-      orderBy = { priority: sortOrder };
-    } else {
-      orderBy = { createdAt: sortOrder };
-    }
+    const orderBy: Prisma.CompanyWatchOrderByWithRelationInput =
+      sortField === 'companyName'
+        ? { company: { name: sortOrder } }
+        : { [sortField]: sortOrder };
 
-    // Execute queries in parallel
+    const companySelect = {
+      id: true,
+      name: true,
+      industry: true,
+      sector: true,
+      location: true,
+      employees: true,
+      revenue: true,
+      status: true,
+    };
+
     const [items, total] = await Promise.all([
       this.db.companyWatch.findMany({
         where,
         orderBy,
         skip,
         take: pageSize,
-        include: {
-          company: {
-            select: {
-              id: true,
-              name: true,
-              industry: true,
-              sector: true,
-              location: true,
-              employees: true,
-              revenue: true,
-              status: true,
-            },
-          },
-        },
+        include: { company: { select: companySelect } },
       }),
       this.db.companyWatch.count({ where }),
     ]);
@@ -271,29 +192,13 @@ export class WatchService {
     };
   }
 
-  /**
-   * Check if a specific company is watched by the user
-   */
   async isWatched(
     companyId: string,
     userId: string,
     organizationId: string
   ): Promise<{ isWatched: boolean; watch: CompanyWatch | null }> {
-    // Validate company access
     await this.validateCompanyAccess(companyId, organizationId);
-
-    const watch = await this.db.companyWatch.findUnique({
-      where: {
-        companyId_userId: {
-          companyId,
-          userId,
-        },
-      },
-    });
-
-    return {
-      isWatched: !!watch,
-      watch,
-    };
+    const watch = await this.getWatch(companyId, userId);
+    return { isWatched: !!watch, watch };
   }
 }

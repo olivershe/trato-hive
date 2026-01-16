@@ -20,7 +20,6 @@ export interface CompanyHeaderAttributes {
   location: string | null;
   website: string | null;
   status: string;
-  isWatched: boolean;
 }
 
 declare module "@tiptap/core" {
@@ -47,7 +46,6 @@ export const CompanyHeaderBlock = Node.create({
       location: { default: null },
       website: { default: null },
       status: { default: "PROSPECT" },
-      isWatched: { default: false },
     };
   },
 
@@ -81,8 +79,7 @@ export const CompanyHeaderBlock = Node.create({
   },
 });
 
-// Status badge styles
-const statusBadgeStyles: Record<string, string> = {
+const STATUS_BADGE_STYLES: Record<string, string> = {
   PROSPECT: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
   RESEARCHING: "bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400",
   ENGAGED: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
@@ -101,16 +98,16 @@ function formatRevenue(revenue: string | null): string {
   if (!revenue) return "N/A";
   const value = parseFloat(revenue);
   if (isNaN(value)) return revenue;
-  if (value >= 1000000000) return `$${(value / 1000000000).toFixed(1)}B`;
-  if (value >= 1000000) return `$${(value / 1000000).toFixed(0)}M`;
-  if (value >= 1000) return `$${(value / 1000).toFixed(0)}K`;
+  if (value >= 1_000_000_000) return `$${(value / 1_000_000_000).toFixed(1)}B`;
+  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(0)}M`;
+  if (value >= 1_000) return `$${(value / 1_000).toFixed(0)}K`;
   return `$${value.toFixed(0)}`;
 }
 
 function formatEmployees(employees: number | null): string {
   if (!employees) return "N/A";
-  if (employees >= 10000) return `${(employees / 1000).toFixed(0)}K+`;
-  if (employees >= 1000) return `${(employees / 1000).toFixed(1)}K`;
+  if (employees >= 10_000) return `${(employees / 1_000).toFixed(0)}K+`;
+  if (employees >= 1_000) return `${(employees / 1_000).toFixed(1)}K`;
   return employees.toLocaleString();
 }
 
@@ -144,7 +141,7 @@ function CompanyHeaderCard({ node }: { node: any }) {
               </span>
               <span
                 className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest ${
-                  statusBadgeStyles[status] || "bg-gray-100 text-gray-700"
+                  STATUS_BADGE_STYLES[status] || "bg-gray-100 text-gray-700"
                 }`}
               >
                 {formatStatusName(status)}

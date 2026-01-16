@@ -3,9 +3,6 @@
 import { api } from '@/trpc/react';
 import { useCallback } from 'react';
 
-/**
- * Watch state for a company
- */
 export interface WatchState {
   isWatched: boolean;
   isLoading: boolean;
@@ -16,107 +13,64 @@ export interface WatchState {
 
 /**
  * Hook for managing company watch state with optimistic updates
- *
- * [TASK-107] Watch Button Component - Custom hook
- *
- * @example
- * ```tsx
- * const { isWatched, isLoading, toggleWatch } = useWatch(companyId);
- *
- * return (
- *   <button onClick={toggleWatch} disabled={isLoading}>
- *     {isWatched ? 'Watching' : 'Watch'}
- *   </button>
- * );
- * ```
+ * [TASK-107]
  */
 export function useWatch(companyId: string) {
   const utils = api.useUtils();
 
-  // Query watch status
   const { data, isLoading: isQueryLoading } = api.watch.isWatched.useQuery(
     { companyId },
     { enabled: !!companyId }
   );
 
-  // Add mutation with optimistic update
-  const addMutation = api.watch.add.useMutation({
-    onMutate: async ({ companyId }) => {
-      // Cancel outgoing refetches
-      await utils.watch.isWatched.cancel({ companyId });
+  const invalidateQueries = (id: string) => {
+    utils.watch.isWatched.invalidate({ companyId: id });
+    utils.watch.list.invalidate();
+  };
 
-      // Snapshot previous value
-      const previousData = utils.watch.isWatched.getData({ companyId });
-
-      // Optimistically update
-      utils.watch.isWatched.setData({ companyId }, {
-        isWatched: true,
-        watch: {
-          id: 'optimistic',
-          companyId,
-          userId: 'optimistic',
-          notes: null,
-          tags: [],
-          priority: 0,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      });
-
+  const createOptimisticConfig = <T extends { companyId: string }>(
+    optimisticValue: { isWatched: boolean; watch: any }
+  ) => ({
+    onMutate: async ({ companyId: id }: T) => {
+      await utils.watch.isWatched.cancel({ companyId: id });
+      const previousData = utils.watch.isWatched.getData({ companyId: id });
+      utils.watch.isWatched.setData({ companyId: id }, optimisticValue);
       return { previousData };
     },
-    onError: (_error, { companyId }, context) => {
-      // Revert optimistic update on error
+    onError: (_error: unknown, { companyId: id }: T, context: { previousData?: any } | undefined) => {
       if (context?.previousData) {
-        utils.watch.isWatched.setData({ companyId }, context.previousData);
+        utils.watch.isWatched.setData({ companyId: id }, context.previousData);
       }
     },
-    onSettled: (_data, _error, { companyId }) => {
-      // Refetch to sync with server
-      utils.watch.isWatched.invalidate({ companyId });
-      utils.watch.list.invalidate();
+    onSettled: (_data: unknown, _error: unknown, { companyId: id }: T) => {
+      invalidateQueries(id);
     },
   });
 
-  // Remove mutation with optimistic update
-  const removeMutation = api.watch.remove.useMutation({
-    onMutate: async ({ companyId }) => {
-      // Cancel outgoing refetches
-      await utils.watch.isWatched.cancel({ companyId });
+  const addMutation = api.watch.add.useMutation(
+    createOptimisticConfig({
+      isWatched: true,
+      watch: {
+        id: 'optimistic',
+        companyId,
+        userId: 'optimistic',
+        notes: null,
+        tags: [],
+        priority: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    })
+  );
 
-      // Snapshot previous value
-      const previousData = utils.watch.isWatched.getData({ companyId });
+  const removeMutation = api.watch.remove.useMutation(
+    createOptimisticConfig({ isWatched: false, watch: null })
+  );
 
-      // Optimistically update
-      utils.watch.isWatched.setData({ companyId }, {
-        isWatched: false,
-        watch: null,
-      });
-
-      return { previousData };
-    },
-    onError: (_error, { companyId }, context) => {
-      // Revert optimistic update on error
-      if (context?.previousData) {
-        utils.watch.isWatched.setData({ companyId }, context.previousData);
-      }
-    },
-    onSettled: (_data, _error, { companyId }) => {
-      // Refetch to sync with server
-      utils.watch.isWatched.invalidate({ companyId });
-      utils.watch.list.invalidate();
-    },
-  });
-
-  // Update mutation
   const updateMutation = api.watch.update.useMutation({
-    onSettled: () => {
-      utils.watch.isWatched.invalidate({ companyId });
-      utils.watch.list.invalidate();
-    },
+    onSettled: () => invalidateQueries(companyId),
   });
 
-  // Toggle watch state
   const toggleWatch = useCallback(() => {
     if (data?.isWatched) {
       removeMutation.mutate({ companyId });
@@ -125,42 +79,30 @@ export function useWatch(companyId: string) {
     }
   }, [data?.isWatched, companyId, addMutation, removeMutation]);
 
-  // Add to watch list with options
   const addToWatch = useCallback(
     (options?: { notes?: string; tags?: string[]; priority?: number }) => {
-      addMutation.mutate({
-        companyId,
-        notes: options?.notes,
-        tags: options?.tags,
-        priority: options?.priority,
-      });
+      addMutation.mutate({ companyId, ...options });
     },
     [companyId, addMutation]
   );
 
-  // Remove from watch list
   const removeFromWatch = useCallback(() => {
     removeMutation.mutate({ companyId });
   }, [companyId, removeMutation]);
 
-  // Update watch entry
   const updateWatch = useCallback(
     (options: { notes?: string | null; tags?: string[]; priority?: number }) => {
-      updateMutation.mutate({
-        companyId,
-        ...options,
-      });
+      updateMutation.mutate({ companyId, ...options });
     },
     [companyId, updateMutation]
   );
 
   const isWatched = data?.isWatched ?? false;
   const isMutating = addMutation.isPending || removeMutation.isPending || updateMutation.isPending;
-  const isLoading = isQueryLoading || isMutating;
 
   return {
     isWatched,
-    isLoading,
+    isLoading: isQueryLoading || isMutating,
     isMutating,
     watch: data?.watch ?? null,
     notes: data?.watch?.notes ?? null,

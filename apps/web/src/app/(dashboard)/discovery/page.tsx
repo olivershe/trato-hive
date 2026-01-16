@@ -24,44 +24,51 @@ import { useWatch } from "@/hooks/useWatch";
 
 function formatRevenue(value: number | null): string {
   if (!value) return "N/A";
-  if (value >= 1000000000) return `$${(value / 1000000000).toFixed(1)}B`;
-  if (value >= 1000000) return `$${(value / 1000000).toFixed(0)}M`;
-  if (value >= 1000) return `$${(value / 1000).toFixed(0)}K`;
+  if (value >= 1_000_000_000) return `$${(value / 1_000_000_000).toFixed(1)}B`;
+  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(0)}M`;
+  if (value >= 1_000) return `$${(value / 1_000).toFixed(0)}K`;
   return `$${value.toFixed(0)}`;
 }
 
-const priorityLabels: Record<number, { label: string; className: string }> = {
+const PRIORITY_CONFIG = {
   0: { label: "Low", className: "bg-charcoal/10 text-charcoal/70" },
   1: { label: "Medium", className: "bg-amber-100 text-amber-700" },
   2: { label: "High", className: "bg-red-100 text-red-700" },
-};
+} as const;
 
-/**
- * Single watched company card with remove action
- */
-function WatchedCompanyCard({
-  watch,
-}: {
-  watch: {
+const STATUS_STYLES = {
+  PIPELINE: "bg-emerald-100 text-emerald-700",
+  ENGAGED: "bg-orange/20 text-orange",
+  DEFAULT: "bg-charcoal/10 text-charcoal/70",
+} as const;
+
+function getStatusStyle(status: string): string {
+  if (status === "PIPELINE") return STATUS_STYLES.PIPELINE;
+  if (status === "ENGAGED") return STATUS_STYLES.ENGAGED;
+  return STATUS_STYLES.DEFAULT;
+}
+
+interface WatchedCompany {
+  id: string;
+  companyId: string;
+  notes: string | null;
+  tags: string[];
+  priority: number;
+  company: {
     id: string;
-    companyId: string;
-    notes: string | null;
-    tags: string[];
-    priority: number;
-    company: {
-      id: string;
-      name: string;
-      industry: string | null;
-      sector: string | null;
-      location: string | null;
-      employees: number | null;
-      revenue: number | null;
-      status: string;
-    };
+    name: string;
+    industry: string | null;
+    sector: string | null;
+    location: string | null;
+    employees: number | null;
+    revenue: number | null;
+    status: string;
   };
-}) {
+}
+
+function WatchedCompanyCard({ watch }: { watch: WatchedCompany }) {
   const { removeFromWatch, isLoading } = useWatch(watch.companyId);
-  const priority = priorityLabels[watch.priority] ?? priorityLabels[0];
+  const priority = PRIORITY_CONFIG[watch.priority as 0 | 1 | 2] ?? PRIORITY_CONFIG[0];
 
   return (
     <div className="bg-alabaster rounded-xl p-4 border border-gold/10 hover:border-orange/30 transition-colors min-w-[280px] max-w-[320px] flex-shrink-0">
@@ -364,16 +371,7 @@ export default function DiscoveryPage() {
                   )}
                 </div>
                 <span
-                  className={`
-                    px-2 py-0.5 rounded text-xs font-medium
-                    ${
-                      company.status === "PIPELINE"
-                        ? "bg-emerald-100 text-emerald-700"
-                        : company.status === "ENGAGED"
-                        ? "bg-orange/20 text-orange"
-                        : "bg-charcoal/10 text-charcoal/70"
-                    }
-                  `}
+                  className={`px-2 py-0.5 rounded text-xs font-medium ${getStatusStyle(company.status)}`}
                 >
                   {company.status.toLowerCase()}
                 </span>
