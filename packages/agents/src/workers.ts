@@ -74,8 +74,10 @@ export class DocumentProcessingWorker {
   private worker: Worker<DocumentProcessingJob, ProcessDocumentResult>;
   private connection: IORedis;
   private documentAgent: DocumentAgent;
+  private db: PrismaClient;
 
   constructor(config: WorkerConfig, deps: WorkerDependencies) {
+    this.db = deps.db;
     this.connection = new IORedis(config.redisUrl, {
       maxRetriesPerRequest: null,
     });
@@ -101,8 +103,23 @@ export class DocumentProcessingWorker {
     );
 
     // Set up event handlers
-    this.worker.on('completed', (job, result) => {
+    this.worker.on('completed', async (job, result) => {
       console.log(`Document ${job.data.documentId} processed successfully`, result);
+
+      // [TASK-113] Create document page after successful processing
+      // Only create page if chunks were created (document has content)
+      if (result.chunksCreated > 0) {
+        try {
+          await this.createDocumentPage(
+            job.data.documentId,
+            job.data.organizationId
+          );
+          console.log(`Document page created for ${job.data.documentId}`);
+        } catch (error) {
+          // Log but don't fail - page creation is not critical
+          console.error(`Failed to create document page for ${job.data.documentId}:`, error);
+        }
+      }
     });
 
     this.worker.on('failed', (job, error) => {
@@ -126,6 +143,147 @@ export class DocumentProcessingWorker {
     await job.updateProgress(100);
 
     return result;
+  }
+
+  /**
+   * Create a document page with template blocks
+   * [TASK-113] Auto-create pages after document processing
+   */
+  private async createDocumentPage(
+    documentId: string,
+    organizationId: string
+  ): Promise<void> {
+    // Use transaction to ensure atomic page creation
+    await this.db.$transaction(async (tx) => {
+      // 1. Get the document
+      const document = await tx.document.findFirst({
+        where: {
+          id: documentId,
+          organizationId,
+        },
+      });
+
+      if (!document) {
+        throw new Error(`Document ${documentId} not found`);
+      }
+
+      // 2. Check if page already exists
+      const existingPage = await tx.page.findFirst({
+        where: {
+          documentId,
+          type: 'DOCUMENT_PAGE',
+        },
+      });
+
+      if (existingPage) {
+        // Page already exists, skip creation
+        return;
+      }
+
+      // 3. Get or create deal for page association
+      let dealId = document.dealId;
+
+      if (!dealId) {
+        // Create a shadow deal to hold the document page
+        const shadowDeal = await tx.deal.create({
+          data: {
+            name: `${document.name} - Document`,
+            type: 'OTHER',
+            stage: 'SOURCING',
+            organizationId,
+            companyId: document.companyId,
+          },
+        });
+        dealId = shadowDeal.id;
+
+        // Update document with the shadow deal
+        await tx.document.update({
+          where: { id: documentId },
+          data: { dealId },
+        });
+      }
+
+      // 4. Create the document page
+      const page = await tx.page.create({
+        data: {
+          dealId,
+          documentId,
+          type: 'DOCUMENT_PAGE',
+          title: document.name,
+          icon: '📄',
+          order: 0,
+        },
+      });
+
+      // 5. Create template blocks
+      const createdBy = document.uploadedById;
+
+      await tx.block.createMany({
+        data: [
+          {
+            pageId: page.id,
+            type: 'document_viewer',
+            order: 0,
+            properties: {
+              documentId,
+              currentPage: 1,
+              totalPages: 1,
+              zoomLevel: 1,
+              viewMode: 'fit-width',
+              highlightedChunkId: null,
+            },
+            createdBy,
+          },
+          {
+            pageId: page.id,
+            type: 'heading',
+            order: 1,
+            properties: {
+              text: 'Extracted Facts',
+              level: 2,
+            },
+            createdBy,
+          },
+          {
+            pageId: page.id,
+            type: 'extracted_facts',
+            order: 2,
+            properties: {
+              documentId,
+              title: 'Extracted Facts',
+              maxItems: 50,
+              groupByType: true,
+            },
+            createdBy,
+          },
+          {
+            pageId: page.id,
+            type: 'heading',
+            order: 3,
+            properties: {
+              text: 'Q&A',
+              level: 2,
+            },
+            createdBy,
+          },
+          {
+            pageId: page.id,
+            type: 'query',
+            order: 4,
+            properties: {
+              query: '',
+              dealId,
+              companyId: document.companyId,
+              documentId,
+              status: 'idle',
+              answer: null,
+              errorMessage: null,
+            },
+            createdBy,
+          },
+        ],
+      });
+    });
   }
 
   async close(): Promise<void> {

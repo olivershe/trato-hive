@@ -31,6 +31,7 @@ import { syncGroupRouter } from '../routers/sync-group';
 import { userRouter } from '../routers/user';
 import { searchRouter } from '../routers/search';
 import { watchRouter } from '../routers/watch';
+import { documentRouter } from '../routers/document';
 
 /**
  * Root application router
@@ -50,6 +51,7 @@ export const appRouter = router({
   user: userRouter,
   search: searchRouter,
   watch: watchRouter,
+  document: documentRouter,
 });
 
 /**
