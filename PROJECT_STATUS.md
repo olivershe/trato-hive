@@ -282,29 +282,29 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 
 | Task ID | Task | Status | Est. Hours | Dependencies |
 |---------|------|--------|------------|--------------|
-| **[TASK-107]** | Watch Button Component | Pending | 2 | TASK-083 |
-| **[TASK-108]** | Watch List View | Pending | 3 | TASK-083 |
-| **[TASK-109]** | Watch tRPC Procedures | Pending | 2 | TASK-083 |
+| **[TASK-107]** | Watch Button Component | ✅ COMPLETE | 2 | TASK-083 |
+| **[TASK-108]** | Watch List View | ✅ COMPLETE | 3 | TASK-083 |
+| **[TASK-109]** | Watch tRPC Procedures | ✅ COMPLETE | 2 | TASK-083 |
 
 **Task Details:**
 
-- [ ] **[TASK-107] Watch Button Component** (2 hours)
-  - [ ] Create `WatchButton.tsx` component
-  - [ ] Toggle watch/unwatch on click
-  - [ ] Visual states: Watching (filled), Not watching (outline)
-  - [ ] Integrate into CompanyHeaderBlock and company cards
+- [x] **[TASK-107] Watch Button Component** (2 hours) - ✅ COMPLETE
+  - [x] Create `WatchButton.tsx` component
+  - [x] Toggle watch/unwatch on click
+  - [x] Visual states: Watching (filled), Not watching (outline)
+  - [x] Integrate into CompanyHeaderBlock and company cards
 
-- [ ] **[TASK-108] Watch List View** (3 hours)
-  - [ ] Add "Watched Companies" section to Discovery module
-  - [ ] Display watched companies with notes and tags
-  - [ ] Filter by priority, tags, date added
-  - [ ] Quick actions: Remove watch, Open company, Add note
+- [x] **[TASK-108] Watch List View** (3 hours) - ✅ COMPLETE
+  - [x] Add "Watched Companies" section to Discovery module
+  - [x] Display watched companies with notes and tags
+  - [x] Filter by priority, tags, date added
+  - [x] Quick actions: Remove watch, Open company, Add note
 
-- [ ] **[TASK-109] Watch tRPC Procedures** (2 hours)
-  - [ ] `watch.add` - Add company to watch list with notes/tags
-  - [ ] `watch.remove` - Remove company from watch list
-  - [ ] `watch.list` - Get user's watched companies with pagination
-  - [ ] `watch.update` - Update notes, tags, priority
+- [x] **[TASK-109] Watch tRPC Procedures** (2 hours) - ✅ COMPLETE
+  - [x] `watch.add` - Add company to watch list with notes/tags
+  - [x] `watch.remove` - Remove company from watch list
+  - [x] `watch.list` - Get user's watched companies with pagination
+  - [x] `watch.update` - Update notes, tags, priority
 
 ---
 
@@ -471,7 +471,7 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 - Phase 8: Backend - 100% - [Archive](./COMPLETED_WORK.md#phase-8-backend)
 - Phase 9: AI Stack - 100% - [Archive](./COMPLETED_WORK.md#phase-9-ai-stack)
 - Phase 10: Features - 100% - [Archive](./COMPLETED_WORK.md#phase-10-features)
-- **Phase 11: UI/UX Architecture - 57% (26/46 tasks)**
+- **Phase 11: UI/UX Architecture - 63% (29/46 tasks)**
 
 **Phase 11 Breakdown:**
 
@@ -482,7 +482,7 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 | 11.2: Navigation | TASK-088 to TASK-093 | ✅ 6/6 |
 | 11.3: Command Palette | TASK-094 to TASK-100 | ✅ 7/7 |
 | 11.4: Company Pages | TASK-101 to TASK-106 | ✅ 6/6 |
-| 11.5: Watch List | TASK-107 to TASK-109 | 0/3 |
+| 11.5: Watch List | TASK-107 to TASK-109 | ✅ 3/3 |
 | 11.6: Document Pages | TASK-110 to TASK-113 | 0/4 |
 | 11.7: Q&A Review | TASK-114 to TASK-118 | 0/5 |
 | 11.8: Pipeline Updates | TASK-119 to TASK-121 | 0/3 |
@@ -501,21 +501,18 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 **Current Phase:** Phase 11: UI/UX Architecture Restructure
 
 **Recently Completed:**
-- [TASK-101] CompanyHeaderBlock ✅
-- [TASK-102] Company Page Route ✅
-- [TASK-103] Company Page Template ✅
-- [TASK-104] Deal History DatabaseView ✅
-- [TASK-105] Related Companies Section ✅
-- [TASK-106] Company tRPC Router ✅
+- [TASK-107] Watch Button Component ✅
+- [TASK-108] Watch List View ✅
+- [TASK-109] Watch tRPC Procedures ✅
 
 **In Progress:**
 - [TASK-080] Archive Completed Work (verify archive completeness)
 
 **Next Up:**
-1. [TASK-107] Watch Button Component
-2. [TASK-108] Watch List View
-3. [TASK-109] Watch tRPC Procedures
-4. [TASK-110] DocumentViewerBlock
+1. [TASK-110] DocumentViewerBlock
+2. [TASK-111] Document Page Route
+3. [TASK-112] Document Page Template
+4. [TASK-113] Document Agent Integration
 
 **Recommended Execution Order:**
 
@@ -534,10 +531,20 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 
 ---
 
-**Last Updated:** January 15, 2026 (Phase 11.4 Company Pages Complete)
+**Last Updated:** January 16, 2026 (Phase 11.5 Watch List System Complete)
 **Maintained By:** All team members (update after every task)
 **Reference:** Root CLAUDE.md Section 5 (EPC Workflow)
 **Completed Work:** See [COMPLETED_WORK.md](./COMPLETED_WORK.md)
+
+**Files Created/Modified in Phase 11.5:**
+- `packages/shared/src/validators/watch.ts` - Zod schemas for watch operations
+- `apps/api/src/services/watch.service.ts` - Watch service with multi-tenancy validation
+- `apps/api/src/routers/watch.ts` - Watch tRPC router (add, remove, update, list, isWatched)
+- `apps/web/src/hooks/useWatch.ts` - Custom hook with optimistic updates
+- `apps/web/src/components/companies/WatchButton.tsx` - Reusable watch button component
+- `apps/web/src/app/(dashboard)/discovery/page.tsx` - Added Watched Companies section
+- `apps/web/src/components/editor/extensions/CompanyHeaderBlock.tsx` - Integrated WatchButton
+- `apps/web/src/app/(dashboard)/companies/[id]/page.tsx` - Integrated WatchButton
 
 **Files Created/Modified in Phase 11.4:**
 - `apps/web/src/components/editor/extensions/CompanyHeaderBlock.tsx` - Company header Tiptap extension
