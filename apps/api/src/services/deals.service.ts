@@ -261,7 +261,61 @@ export class DealService {
         ],
       });
 
-      // 8. Create deal header block on root page
+      // 8. Create Q&A sub-page with template blocks [TASK-118]
+      const qaPage = await tx.page.create({
+        data: {
+          dealId: deal.id,
+          parentPageId: rootPage.id,
+          title: 'Q&A',
+          icon: '💬',
+          order: 5,
+        },
+      });
+
+      // 9. Create Q&A template blocks
+      await tx.block.createMany({
+        data: [
+          {
+            pageId: qaPage.id,
+            type: 'heading',
+            order: 0,
+            properties: { text: 'AI-Powered Q&A', level: 1 },
+            createdBy: userId,
+          },
+          {
+            pageId: qaPage.id,
+            type: 'paragraph',
+            order: 1,
+            properties: { text: 'Ask questions about this deal and get AI-generated answers with citations from your documents.' },
+            createdBy: userId,
+          },
+          {
+            pageId: qaPage.id,
+            type: 'queryBlock',
+            order: 2,
+            properties: {
+              query: '',
+              dealId: deal.id,
+              status: 'idle',
+              showReview: true,
+              answer: null,
+              errorMessage: null,
+              qaAnswerId: null,
+              reviewStatus: null,
+            },
+            createdBy: userId,
+          },
+          {
+            pageId: qaPage.id,
+            type: 'heading',
+            order: 3,
+            properties: { text: 'Q&A History', level: 2 },
+            createdBy: userId,
+          },
+        ],
+      });
+
+      // 10. Create deal header block on root page
       await tx.block.create({
         data: {
           pageId: rootPage.id,

@@ -36,6 +36,7 @@ model User {
   databases        Database[]           @relation("DatabaseCreator")
   databaseEntries  DatabaseEntry[]      @relation("DatabaseEntryCreator")
   watchedCompanies CompanyWatch[] // Companies this user is watching
+  reviewedQAAnswers QAAnswer[]    @relation("QAAnswerReviewer") // Q&A answers reviewed by user
 
   @@map("users")
 }
@@ -173,6 +174,7 @@ model Company {
   documents     Document[]
   facts         Fact[]
   pages         Page[] // Company pages
+  qaAnswers     QAAnswer[] // Q&A answers for this company
 
   @@index([organizationId])
   @@index([status])
@@ -239,6 +241,7 @@ model Deal {
   activities    Activity[]
   pages         Page[] // Deals have multiple nested pages
   databases     Database[] // Databases scoped to this deal
+  qaAnswers     QAAnswer[] // Q&A answers for this deal
 
   @@index([organizationId])
   @@index([stage])
@@ -352,9 +355,10 @@ model Document {
   uploadedBy   User         @relation(fields: [uploadedById], references: [id])
 
   // Relations
-  chunks DocumentChunk[]
-  facts  Fact[]
-  pages  Page[] @relation("DocumentPage") // Document pages
+  chunks    DocumentChunk[]
+  facts     Fact[]
+  pages     Page[] @relation("DocumentPage") // Document pages
+  qaAnswers QAAnswer[] // Q&A answers referencing this document
 
   @@index([organizationId])
   @@index([companyId])
@@ -451,6 +455,20 @@ enum ActivityType {
   USER_ACTION
   AI_SUGGESTION_ACCEPTED
   AI_SUGGESTION_DISMISSED
+  QA_APPROVED
+  QA_EDITED
+  QA_REJECTED
+}
+
+// =============================================================================
+// Q&A ANSWER STATUS (Q&A Review Flow)
+// =============================================================================
+
+enum QAAnswerStatus {
+  PENDING   // AI generated, awaiting review
+  APPROVED  // Reviewer accepted as-is
+  EDITED    // Reviewer modified before accepting
+  REJECTED  // Reviewer rejected
 }
 
 enum ActivityStatus {
@@ -675,4 +693,43 @@ model Block {
   @@index([pageId, order])
   @@index([syncGroupId])
   @@map("blocks")
+}
+
+// =============================================================================
+// Q&A ANSWERS (Q&A Review Flow - Layer 4: Agentic)
+// =============================================================================
+
+model QAAnswer {
+  id             String @id @default(cuid())
+  organizationId String
+
+  question   String  @db.Text
+  dealId     String?
+  documentId String?
+  companyId  String?
+
+  answer     String @db.Text
+  citations  Json   @db.JsonB // Array of QACitation objects
+  confidence Float?
+
+  status          QAAnswerStatus @default(PENDING)
+  editedAnswer    String?        @db.Text
+  rejectionReason String?        @db.Text
+
+  reviewerId String?
+  reviewedAt DateTime?
+  reviewer   User?     @relation("QAAnswerReviewer", fields: [reviewerId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  deal     Deal?     @relation(fields: [dealId], references: [id], onDelete: SetNull)
+  document Document? @relation(fields: [documentId], references: [id], onDelete: SetNull)
+  company  Company?  @relation(fields: [companyId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId])
+  @@index([dealId])
+  @@index([documentId])
+  @@index([status])
+  @@map("qa_answers")
 }

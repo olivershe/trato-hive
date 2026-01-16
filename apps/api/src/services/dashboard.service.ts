@@ -102,6 +102,9 @@ const ACTIVITY_LABELS: Record<string, string> = {
   USER_ACTION: 'User Actions',
   AI_SUGGESTION_ACCEPTED: 'AI Suggestions Accepted',
   AI_SUGGESTION_DISMISSED: 'AI Suggestions Dismissed',
+  QA_APPROVED: 'Q&A Approved',
+  QA_EDITED: 'Q&A Edited',
+  QA_REJECTED: 'Q&A Rejected',
 };
 
 export class DashboardService {
