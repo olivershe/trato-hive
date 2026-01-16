@@ -164,7 +164,7 @@ describe('Dashboard Router Integration', () => {
       const result = await caller.dashboard.activitySummary({ hoursBack: 48 });
 
       expect(result.totalActivities).toBe(8);
-      expect(result.summary).toHaveLength(9); // All activity types
+      expect(result.summary).toHaveLength(12); // All activity types (including QA_APPROVED, QA_EDITED, QA_REJECTED)
     });
 
     it('should filter by time range', async () => {

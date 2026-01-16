@@ -131,3 +131,16 @@ export type {
   SidebarSection,
 } from './sidebar'
 export { SidebarItemType } from './sidebar'
+
+// Q&A Answer Types (Q&A Review Flow)
+export type {
+  QAAnswerStatusValue,
+  QACitation,
+  QAAnswer,
+  QAAnswerWithReviewer,
+  QAAnswerWithDeal,
+  QAApprovedMetadata,
+  QAEditedMetadata,
+  QARejectedMetadata,
+} from './qa'
+export { QAAnswerStatus } from './qa'

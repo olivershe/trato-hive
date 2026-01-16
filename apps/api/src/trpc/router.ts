@@ -32,6 +32,7 @@ import { userRouter } from '../routers/user';
 import { searchRouter } from '../routers/search';
 import { watchRouter } from '../routers/watch';
 import { documentRouter } from '../routers/document';
+import { qaRouter } from '../routers/qa';
 
 /**
  * Root application router
@@ -52,6 +53,7 @@ export const appRouter = router({
   search: searchRouter,
   watch: watchRouter,
   document: documentRouter,
+  qa: qaRouter,
 });
 
 /**

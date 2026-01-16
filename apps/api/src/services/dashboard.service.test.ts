@@ -287,7 +287,7 @@ describe('DashboardService', () => {
 
       const result = await service.getActivitySummary(TEST_IDS.org, { hoursBack: 48 });
 
-      expect(result.summary.length).toBe(9); // All 9 activity types
+      expect(result.summary.length).toBe(12); // All 12 activity types (including QA_APPROVED, QA_EDITED, QA_REJECTED)
       expect(result.summary.every((s) => s.count === 0)).toBe(true);
     });
 

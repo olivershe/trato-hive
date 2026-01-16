@@ -6,6 +6,7 @@
  * Uses the DiligenceAgent via tRPC for RAG-based answers with citations.
  *
  * Phase 1 Enhancement: Inline citations [1][2] that reveal source on click.
+ * [TASK-116] Q&A Review Flow: Approve/Edit/Reject workflow for AI answers.
  */
 import { Node, mergeAttributes } from "@tiptap/core";
 import { ReactNodeViewRenderer, NodeViewWrapper, NodeViewProps } from "@tiptap/react";
@@ -18,6 +19,9 @@ import {
   RefreshCw,
   FileText,
   Sparkles,
+  Check,
+  Pencil,
+  X,
 } from "lucide-react";
 import { api } from "@/trpc/react";
 import { useCitation } from "@/components/citation";
@@ -26,6 +30,8 @@ import { useCitation } from "@/components/citation";
 // Types
 // =============================================================================
 
+export type QAReviewStatus = "PENDING" | "APPROVED" | "EDITED" | "REJECTED" | null;
+
 export interface QueryAttributes {
   query: string;
   dealId: string | null;
@@ -33,6 +39,10 @@ export interface QueryAttributes {
   status: "idle" | "loading" | "complete" | "error";
   answer: string | null;
   errorMessage: string | null;
+  // Review flow attributes
+  showReview: boolean;
+  qaAnswerId: string | null;
+  reviewStatus: QAReviewStatus;
 }
 
 interface Citation {
@@ -119,6 +129,9 @@ export const QueryBlock = Node.create({
       status: { default: "idle" },
       answer: { default: null },
       errorMessage: { default: null },
+      showReview: { default: true },
+      qaAnswerId: { default: null },
+      reviewStatus: { default: null },
     };
   },
 
@@ -148,6 +161,9 @@ export const QueryBlock = Node.create({
               status: "idle",
               answer: null,
               errorMessage: null,
+              showReview: true,
+              qaAnswerId: null,
+              reviewStatus: null,
               ...attrs,
             },
           });
@@ -155,6 +171,33 @@ export const QueryBlock = Node.create({
     };
   },
 });
+
+// =============================================================================
+// Review Status Badge Component
+// =============================================================================
+
+interface ReviewStatusBadgeProps {
+  status: QAReviewStatus;
+}
+
+function ReviewStatusBadge({ status }: ReviewStatusBadgeProps) {
+  if (!status) return null;
+
+  const config = {
+    PENDING: { bg: "bg-amber-100 dark:bg-amber-900/30", text: "text-amber-800 dark:text-amber-300", label: "Pending Review" },
+    APPROVED: { bg: "bg-emerald-100 dark:bg-emerald-900/30", text: "text-emerald-800 dark:text-emerald-300", label: "Approved" },
+    EDITED: { bg: "bg-blue-100 dark:bg-blue-900/30", text: "text-blue-800 dark:text-blue-300", label: "Edited" },
+    REJECTED: { bg: "bg-red-100 dark:bg-red-900/30", text: "text-red-800 dark:text-red-300", label: "Rejected" },
+  };
+
+  const { bg, text, label } = config[status];
+
+  return (
+    <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${bg} ${text}`}>
+      {label}
+    </span>
+  );
+}
 
 // =============================================================================
 // Answer With Inline Citations Component
@@ -269,15 +312,144 @@ function CitationCard({ citation, index }: CitationCardProps) {
 }
 
 // =============================================================================
+// Edit Modal Component
+// =============================================================================
+
+interface EditModalProps {
+  isOpen: boolean;
+  originalAnswer: string;
+  onSave: (editedAnswer: string) => void;
+  onCancel: () => void;
+  isLoading: boolean;
+}
+
+function EditModal({ isOpen, originalAnswer, onSave, onCancel, isLoading }: EditModalProps) {
+  const [editedAnswer, setEditedAnswer] = useState(originalAnswer);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <div className="bg-white dark:bg-deep-grey rounded-lg shadow-xl w-full max-w-2xl mx-4 max-h-[80vh] flex flex-col">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-bone dark:border-charcoal/30">
+          <h3 className="text-sm font-semibold text-charcoal dark:text-cultured-white">
+            Edit Answer
+          </h3>
+          <button
+            onClick={onCancel}
+            className="p-1 rounded hover:bg-bone dark:hover:bg-charcoal/30 transition-colors"
+          >
+            <X className="w-4 h-4 text-charcoal/60 dark:text-cultured-white/60" />
+          </button>
+        </div>
+        <div className="p-4 flex-1 overflow-auto">
+          <textarea
+            value={editedAnswer}
+            onChange={(e) => setEditedAnswer(e.target.value)}
+            className="w-full h-64 px-3 py-2 rounded-lg border border-bone dark:border-charcoal/30 bg-white dark:bg-charcoal/20 text-charcoal dark:text-cultured-white text-sm resize-none focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-500"
+            placeholder="Edit the AI answer..."
+          />
+        </div>
+        <div className="flex justify-end gap-2 px-4 py-3 border-t border-bone dark:border-charcoal/30">
+          <button
+            onClick={onCancel}
+            disabled={isLoading}
+            className="px-3 py-1.5 text-sm font-medium text-charcoal/70 dark:text-cultured-white/70 hover:text-charcoal dark:hover:text-cultured-white transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => onSave(editedAnswer)}
+            disabled={isLoading || !editedAnswer.trim()}
+            className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed text-white rounded-md text-sm font-medium transition-colors flex items-center gap-1"
+          >
+            {isLoading && <Loader2 className="w-3 h-3 animate-spin" />}
+            Save & Approve
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// =============================================================================
+// Reject Modal Component
+// =============================================================================
+
+interface RejectModalProps {
+  isOpen: boolean;
+  onConfirm: (reason?: string) => void;
+  onCancel: () => void;
+  isLoading: boolean;
+}
+
+function RejectModal({ isOpen, onConfirm, onCancel, isLoading }: RejectModalProps) {
+  const [reason, setReason] = useState("");
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <div className="bg-white dark:bg-deep-grey rounded-lg shadow-xl w-full max-w-md mx-4">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-bone dark:border-charcoal/30">
+          <h3 className="text-sm font-semibold text-charcoal dark:text-cultured-white">
+            Reject Answer
+          </h3>
+          <button
+            onClick={onCancel}
+            className="p-1 rounded hover:bg-bone dark:hover:bg-charcoal/30 transition-colors"
+          >
+            <X className="w-4 h-4 text-charcoal/60 dark:text-cultured-white/60" />
+          </button>
+        </div>
+        <div className="p-4">
+          <p className="text-sm text-charcoal/70 dark:text-cultured-white/70 mb-3">
+            Optionally provide a reason for rejecting this answer:
+          </p>
+          <textarea
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            className="w-full h-24 px-3 py-2 rounded-lg border border-bone dark:border-charcoal/30 bg-white dark:bg-charcoal/20 text-charcoal dark:text-cultured-white text-sm resize-none focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-red-500"
+            placeholder="Reason (optional)..."
+          />
+        </div>
+        <div className="flex justify-end gap-2 px-4 py-3 border-t border-bone dark:border-charcoal/30">
+          <button
+            onClick={onCancel}
+            disabled={isLoading}
+            className="px-3 py-1.5 text-sm font-medium text-charcoal/70 dark:text-cultured-white/70 hover:text-charcoal dark:hover:text-cultured-white transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => onConfirm(reason || undefined)}
+            disabled={isLoading}
+            className="px-3 py-1.5 bg-red-600 hover:bg-red-700 disabled:bg-red-400 disabled:cursor-not-allowed text-white rounded-md text-sm font-medium transition-colors flex items-center gap-1"
+          >
+            {isLoading && <Loader2 className="w-3 h-3 animate-spin" />}
+            Reject
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// =============================================================================
 // React Component
 // =============================================================================
 
 function QueryCard({ node, updateAttributes }: NodeViewProps) {
   const attrs = node.attrs as QueryAttributes;
-  const { query, dealId, companyId, status, answer, errorMessage } = attrs;
+  const { query, dealId, companyId, status, answer, errorMessage, showReview, qaAnswerId, reviewStatus } = attrs;
   const [inputValue, setInputValue] = useState(query);
   const [citations, setCitations] = useState<Citation[]>([]);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showRejectModal, setShowRejectModal] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // tRPC utilities
+  const utils = api.useUtils();
 
   // Mutation for asking questions
   const askMutation = api.diligence.askQuestion.useMutation({
@@ -291,6 +463,17 @@ function QueryCard({ node, updateAttributes }: NodeViewProps) {
       if (data.citations) {
         setCitations(data.citations);
       }
+      // If showReview is enabled, create a QAAnswer record
+      if (showReview) {
+        createQAAnswer.mutate({
+          question: query || inputValue.trim(),
+          dealId: dealId || undefined,
+          companyId: companyId || undefined,
+          answer: data.answer,
+          citations: data.citations || [],
+          confidence: data.confidence || null,
+        });
+      }
     },
     onError: (error) => {
       updateAttributes({
@@ -298,6 +481,45 @@ function QueryCard({ node, updateAttributes }: NodeViewProps) {
         answer: null,
         errorMessage: error.message,
       });
+    },
+  });
+
+  // Mutation for creating QA answer
+  const createQAAnswer = api.qa.create.useMutation({
+    onSuccess: (data) => {
+      updateAttributes({
+        qaAnswerId: data.id,
+        reviewStatus: data.status,
+      });
+    },
+  });
+
+  // Mutation for approving
+  const approveMutation = api.qa.approve.useMutation({
+    onSuccess: () => {
+      updateAttributes({ reviewStatus: "APPROVED" });
+      utils.qa.list.invalidate();
+    },
+  });
+
+  // Mutation for editing
+  const editMutation = api.qa.edit.useMutation({
+    onSuccess: (_, variables) => {
+      updateAttributes({
+        reviewStatus: "EDITED",
+        answer: variables.editedAnswer,
+      });
+      setShowEditModal(false);
+      utils.qa.list.invalidate();
+    },
+  });
+
+  // Mutation for rejecting
+  const rejectMutation = api.qa.reject.useMutation({
+    onSuccess: () => {
+      updateAttributes({ reviewStatus: "REJECTED" });
+      setShowRejectModal(false);
+      utils.qa.list.invalidate();
     },
   });
 
@@ -309,6 +531,8 @@ function QueryCard({ node, updateAttributes }: NodeViewProps) {
       status: "loading",
       answer: null,
       errorMessage: null,
+      qaAnswerId: null,
+      reviewStatus: null,
     });
     setCitations([]);
 
@@ -335,6 +559,8 @@ function QueryCard({ node, updateAttributes }: NodeViewProps) {
         status: "loading",
         answer: null,
         errorMessage: null,
+        qaAnswerId: null,
+        reviewStatus: null,
       });
       setCitations([]);
 
@@ -354,9 +580,29 @@ function QueryCard({ node, updateAttributes }: NodeViewProps) {
       status: "idle",
       answer: null,
       errorMessage: null,
+      qaAnswerId: null,
+      reviewStatus: null,
     });
     inputRef.current?.focus();
   }, [updateAttributes]);
+
+  const handleApprove = useCallback(() => {
+    if (!qaAnswerId) return;
+    approveMutation.mutate({ qaAnswerId });
+  }, [qaAnswerId, approveMutation]);
+
+  const handleEdit = useCallback((editedAnswer: string) => {
+    if (!qaAnswerId) return;
+    editMutation.mutate({ qaAnswerId, editedAnswer });
+  }, [qaAnswerId, editMutation]);
+
+  const handleReject = useCallback((reason?: string) => {
+    if (!qaAnswerId) return;
+    rejectMutation.mutate({ qaAnswerId, reason });
+  }, [qaAnswerId, rejectMutation]);
+
+  const isReviewPending = showReview && qaAnswerId && reviewStatus === "PENDING";
+  const isReviewActionLoading = approveMutation.isPending || editMutation.isPending || rejectMutation.isPending;
 
   return (
     <NodeViewWrapper className="my-6 font-sans">
@@ -370,6 +616,7 @@ function QueryCard({ node, updateAttributes }: NodeViewProps) {
             <h3 className="text-sm font-semibold text-charcoal dark:text-cultured-white">
               Ask AI
             </h3>
+            {reviewStatus && <ReviewStatusBadge status={reviewStatus} />}
           </div>
           {status === "complete" && (
             <button
@@ -461,6 +708,43 @@ function QueryCard({ node, updateAttributes }: NodeViewProps) {
               <AnswerWithCitations answer={answer} citations={citations} />
             </div>
 
+            {/* Review Actions - Only show when review is pending */}
+            {isReviewPending && (
+              <div className="flex items-center gap-2 pt-2 border-t border-bone dark:border-charcoal/30">
+                <span className="text-xs text-charcoal/60 dark:text-cultured-white/60 mr-2">
+                  Review this answer:
+                </span>
+                <button
+                  onClick={handleApprove}
+                  disabled={isReviewActionLoading}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 disabled:cursor-not-allowed text-white rounded-md text-xs font-medium transition-colors"
+                >
+                  {approveMutation.isPending ? (
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                  ) : (
+                    <Check className="w-3 h-3" />
+                  )}
+                  Approve
+                </button>
+                <button
+                  onClick={() => setShowEditModal(true)}
+                  disabled={isReviewActionLoading}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed text-white rounded-md text-xs font-medium transition-colors"
+                >
+                  <Pencil className="w-3 h-3" />
+                  Edit
+                </button>
+                <button
+                  onClick={() => setShowRejectModal(true)}
+                  disabled={isReviewActionLoading}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-charcoal/10 hover:bg-charcoal/20 dark:bg-cultured-white/10 dark:hover:bg-cultured-white/20 text-charcoal/70 dark:text-cultured-white/70 rounded-md text-xs font-medium transition-colors"
+                >
+                  <X className="w-3 h-3" />
+                  Reject
+                </button>
+              </div>
+            )}
+
             {/* Citations Summary - Collapsible reference list */}
             {citations.length > 0 && (
               <details className="group">
@@ -482,6 +766,23 @@ function QueryCard({ node, updateAttributes }: NodeViewProps) {
           </div>
         )}
       </div>
+
+      {/* Edit Modal */}
+      <EditModal
+        isOpen={showEditModal}
+        originalAnswer={answer || ""}
+        onSave={handleEdit}
+        onCancel={() => setShowEditModal(false)}
+        isLoading={editMutation.isPending}
+      />
+
+      {/* Reject Modal */}
+      <RejectModal
+        isOpen={showRejectModal}
+        onConfirm={handleReject}
+        onCancel={() => setShowRejectModal(false)}
+        isLoading={rejectMutation.isPending}
+      />
     </NodeViewWrapper>
   );
 }

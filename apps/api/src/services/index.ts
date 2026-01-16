@@ -40,3 +40,9 @@ export {
   type PageTreeNode,
   type BreadcrumbItem,
 } from './page.service';
+export {
+  QAService,
+  type QAAnswerListResult,
+  type QAAnswerWithReviewer,
+  type QAAnswerResult,
+} from './qa.service';
