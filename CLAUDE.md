@@ -16,6 +16,7 @@
    - **Test:** Run `pnpm test` and `pnpm typecheck`
    - **Commit:** Use `@git-workflow-manager` with `[TASK-###]` in message
    - **PR:** Open PR via `@git-workflow-manager`
+   - **Simplify:** Use `@code-simplifier` on PR to refine code for clarity and consistency
    - **Update:** After merge, update `PROJECT_STATUS.md`
 
 # 📚 Context Loading (Read Order)
@@ -76,6 +77,7 @@ Data flows upward from infrastructure to experience. **See `/docs/architecture/`
 - **7-Layer Architecture:** Data ownership rules critical for Modules 2-5 (see `/docs/architecture/`)
 - **@architecture-review:** Invoke for multi-layer changes, new packages, DB schema changes
 - **@design-review:** Invoke for significant UI/UX changes before PR merge
+- **@code-simplifier:** Invoke on PRs to refine code for clarity, consistency, and maintainability
 
 **Logging (When Required):**
 - **CHANGELOG.md:** User-visible changes, API changes, DB migrations
