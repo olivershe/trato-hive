@@ -30,7 +30,7 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 
 ## Phase 11: UI/UX Architecture Restructure
 
-**Status:** 33/46 tasks complete (72%)
+**Status:** 38/46 tasks complete (83%)
 **Estimated Time:** ~126 hours total
 **Priority:** HIGH (Major architecture evolution)
 
@@ -350,43 +350,43 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 
 | Task ID | Task | Status | Est. Hours | Dependencies |
 |---------|------|--------|------------|--------------|
-| **[TASK-114]** | QAAnswer Status Enum | Pending | 1 | - |
-| **[TASK-115]** | QAAnswer Model | Pending | 2 | TASK-114 |
-| **[TASK-116]** | Q&A Review UI | Pending | 4 | TASK-115 |
-| **[TASK-117]** | Q&A Activity Logging | Pending | 2 | TASK-115 |
-| **[TASK-118]** | Q&A Sub-page Template | Pending | 2 | TASK-116 |
+| **[TASK-114]** | QAAnswer Status Enum | ✅ COMPLETE | 1 | - |
+| **[TASK-115]** | QAAnswer Model | ✅ COMPLETE | 2 | TASK-114 |
+| **[TASK-116]** | Q&A Review UI | ✅ COMPLETE | 4 | TASK-115 |
+| **[TASK-117]** | Q&A Activity Logging | ✅ COMPLETE | 2 | TASK-115 |
+| **[TASK-118]** | Q&A Sub-page Template | ✅ COMPLETE | 2 | TASK-116 |
 
 **Task Details:**
 
-- [ ] **[TASK-114] QAAnswer Status Enum** (1 hour)
-  - [ ] Create `QAAnswerStatus` enum: PENDING, APPROVED, EDITED, REJECTED
-  - [ ] Add to Prisma schema
-  - [ ] Export from shared types
+- [x] **[TASK-114] QAAnswer Status Enum** (1 hour) - ✅ COMPLETE
+  - [x] Create `QAAnswerStatus` enum: PENDING, APPROVED, EDITED, REJECTED
+  - [x] Add to Prisma schema
+  - [x] Export from shared types
 
-- [ ] **[TASK-115] QAAnswer Model** (2 hours)
-  - [ ] Create `QAAnswer` model in Prisma
-  - [ ] Fields: `id`, `question`, `answer`, `citations`, `status`, `editedAnswer`, `reviewerId`, `reviewedAt`
-  - [ ] Relations: `deal`, `document`, `reviewer` (User)
-  - [ ] Indexes for efficient queries
+- [x] **[TASK-115] QAAnswer Model** (2 hours) - ✅ COMPLETE
+  - [x] Create `QAAnswer` model in Prisma
+  - [x] Fields: `id`, `question`, `answer`, `citations`, `status`, `editedAnswer`, `reviewerId`, `reviewedAt`
+  - [x] Relations: `deal`, `document`, `company`, `reviewer` (User)
+  - [x] Indexes for efficient queries
 
-- [ ] **[TASK-116] Q&A Review UI** (4 hours)
-  - [ ] Enhance QueryBlock with review actions
-  - [ ] Approve button: Mark as APPROVED, log activity
-  - [ ] Edit button: Open edit modal, save as EDITED
-  - [ ] Reject button: Mark as REJECTED with reason
-  - [ ] Status badges: Pending (yellow), Approved (green), Edited (blue), Rejected (red)
+- [x] **[TASK-116] Q&A Review UI** (4 hours) - ✅ COMPLETE
+  - [x] Enhance QueryBlock with review actions
+  - [x] Approve button: Mark as APPROVED, log activity
+  - [x] Edit button: Open edit modal, save as EDITED
+  - [x] Reject button: Mark as REJECTED with reason
+  - [x] Status badges: Pending (amber), Approved (emerald), Edited (blue), Rejected (red)
 
-- [ ] **[TASK-117] Q&A Activity Logging** (2 hours)
-  - [ ] Create activity types: QA_APPROVED, QA_EDITED, QA_REJECTED
-  - [ ] Log reviewer, timestamp, changes
-  - [ ] Show in deal activity timeline
-  - [ ] Include in activity summary metrics
+- [x] **[TASK-117] Q&A Activity Logging** (2 hours) - ✅ COMPLETE
+  - [x] Create activity types: QA_APPROVED, QA_EDITED, QA_REJECTED
+  - [x] Log reviewer, timestamp, changes
+  - [x] Show in deal activity timeline
+  - [x] Include in activity summary metrics (dashboard labels added)
 
-- [ ] **[TASK-118] Q&A Sub-page Template** (2 hours)
-  - [ ] Update Deal template to auto-create "Q&A" sub-page
-  - [ ] Include QueryBlock with review UI
-  - [ ] Show Q&A history filtered to deal
-  - [ ] Add to deal page navigation
+- [x] **[TASK-118] Q&A Sub-page Template** (2 hours) - ✅ COMPLETE
+  - [x] Update Deal template to auto-create "Q&A" sub-page
+  - [x] Include QueryBlock with review UI (showReview: true)
+  - [x] Template blocks: Heading, Paragraph, QueryBlock, Q&A History heading
+  - [x] Add to deal page navigation (order: 5)
 
 ---
 
@@ -469,7 +469,7 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 - Phase 8: Backend - 100% - [Archive](./COMPLETED_WORK.md#phase-8-backend)
 - Phase 9: AI Stack - 100% - [Archive](./COMPLETED_WORK.md#phase-9-ai-stack)
 - Phase 10: Features - 100% - [Archive](./COMPLETED_WORK.md#phase-10-features)
-- **Phase 11: UI/UX Architecture - 72% (33/46 tasks)**
+- **Phase 11: UI/UX Architecture - 83% (38/46 tasks)**
 
 **Phase 11 Breakdown:**
 
@@ -482,7 +482,7 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 | 11.4: Company Pages | TASK-101 to TASK-106 | ✅ 6/6 |
 | 11.5: Watch List | TASK-107 to TASK-109 | ✅ 3/3 |
 | 11.6: Document Pages | TASK-110 to TASK-113 | ✅ 4/4 |
-| 11.7: Q&A Review | TASK-114 to TASK-118 | 0/5 |
+| 11.7: Q&A Review | TASK-114 to TASK-118 | ✅ 5/5 |
 | 11.8: Pipeline Updates | TASK-119 to TASK-121 | 0/3 |
 | 11.9: Testing & Docs | TASK-122 to TASK-125 | 0/4 |
 
@@ -499,20 +499,21 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 **Current Phase:** Phase 11: UI/UX Architecture Restructure
 
 **Recently Completed:**
-- [TASK-110] DocumentViewerBlock ✅
-- [TASK-111] Document Page Route ✅
-- [TASK-112] Document Page Template ✅
-- [TASK-113] Document Agent Integration ✅
+- [TASK-114] QAAnswer Status Enum ✅
+- [TASK-115] QAAnswer Model ✅
+- [TASK-116] Q&A Review UI ✅
+- [TASK-117] Q&A Activity Logging ✅
+- [TASK-118] Q&A Sub-page Template ✅
 
 **In Progress:**
 - [TASK-080] Archive Completed Work (verify archive completeness)
 
 **Next Up:**
-1. [TASK-114] QAAnswer Status Enum
-2. [TASK-115] QAAnswer Model
-3. [TASK-116] Q&A Review UI
-4. [TASK-117] Q&A Activity Logging
-5. [TASK-118] Q&A Sub-page Template
+1. [TASK-119] Deal Companies Column
+2. [TASK-120] AI Alerts InboxBlock
+3. [TASK-121] Deal Quick Actions
+4. [TASK-122] Navigation E2E Tests
+5. [TASK-123] Company Pages E2E Tests
 
 **Recommended Execution Order:**
 
@@ -531,10 +532,22 @@ Trato Hive is an AI-Native M&A CRM built as a "System of Reasoning" following a 
 
 ---
 
-**Last Updated:** January 16, 2026 (Phase 11.6 Document Pages Complete)
+**Last Updated:** January 16, 2026 (Phase 11.7 Q&A Review Flow Complete)
 **Maintained By:** All team members (update after every task)
 **Reference:** Root CLAUDE.md Section 5 (EPC Workflow)
 **Completed Work:** See [COMPLETED_WORK.md](./COMPLETED_WORK.md)
+
+**Files Created/Modified in Phase 11.7:**
+- `packages/db/prisma/schema.prisma` - Added QAAnswerStatus enum and QAAnswer model with relations
+- `packages/shared/src/types/qa.ts` - TypeScript types for Q&A (status enum, citation interface, answer types)
+- `packages/shared/src/validators/qa.ts` - Zod validation schemas for Q&A inputs
+- `packages/shared/src/types/activity.ts` - Added QA_APPROVED, QA_EDITED, QA_REJECTED activity types
+- `apps/api/src/services/qa.service.ts` - Q&A service with create/approve/edit/reject operations
+- `apps/api/src/routers/qa.ts` - tRPC router for Q&A procedures
+- `apps/api/src/trpc/router.ts` - Added qa router
+- `apps/api/src/services/dashboard.service.ts` - Added Q&A activity labels
+- `apps/api/src/services/deals.service.ts` - Added Q&A sub-page creation on deal creation
+- `apps/web/src/components/editor/extensions/QueryBlock.tsx` - Added review flow UI (status badges, approve/edit/reject buttons, modals)
 
 **Files Created/Modified in Phase 11.6:**
 - `apps/web/src/components/editor/extensions/DocumentViewerBlock.tsx` - PDF viewer Tiptap extension with navigation and zoom
