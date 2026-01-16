@@ -27,6 +27,8 @@ import { InlineCitationMark } from "./extensions/InlineCitationMark";
 import { AIAnswerBlock } from "./extensions/AIAnswerBlock";
 import { DealHistoryBlock } from "./extensions/DealHistoryBlock";
 import { RelatedCompaniesBlock } from "./extensions/RelatedCompaniesBlock";
+import { DocumentViewerBlock } from "./extensions/DocumentViewerBlock";
+import { ExtractedFactsBlock } from "./extensions/ExtractedFactsBlock";
 import GlobalDragHandle from "tiptap-extension-global-drag-handle";
 import AutoJoiner from "tiptap-extension-auto-joiner";
 import Focus from "@tiptap/extension-focus";
@@ -168,6 +170,8 @@ export const defaultExtensions: any[] = [
     AIAnswerBlock,
     DealHistoryBlock,
     RelatedCompaniesBlock,
+    DocumentViewerBlock,
+    ExtractedFactsBlock,
     GlobalDragHandle.configure({
         dragHandleWidth: 24,
         scrollTreshold: 100,
