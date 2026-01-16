@@ -7,10 +7,8 @@ import {
   DollarSign,
   MapPin,
   Globe,
-  Eye,
-  EyeOff,
 } from "lucide-react";
-import { useState } from "react";
+import { WatchButton } from "@/components/companies/WatchButton";
 
 export interface CompanyHeaderAttributes {
   companyId: string;
@@ -22,7 +20,6 @@ export interface CompanyHeaderAttributes {
   location: string | null;
   website: string | null;
   status: string;
-  isWatched: boolean;
 }
 
 declare module "@tiptap/core" {
@@ -49,7 +46,6 @@ export const CompanyHeaderBlock = Node.create({
       location: { default: null },
       website: { default: null },
       status: { default: "PROSPECT" },
-      isWatched: { default: false },
     };
   },
 
@@ -83,8 +79,7 @@ export const CompanyHeaderBlock = Node.create({
   },
 });
 
-// Status badge styles
-const statusBadgeStyles: Record<string, string> = {
+const STATUS_BADGE_STYLES: Record<string, string> = {
   PROSPECT: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
   RESEARCHING: "bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400",
   ENGAGED: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
@@ -103,22 +98,22 @@ function formatRevenue(revenue: string | null): string {
   if (!revenue) return "N/A";
   const value = parseFloat(revenue);
   if (isNaN(value)) return revenue;
-  if (value >= 1000000000) return `$${(value / 1000000000).toFixed(1)}B`;
-  if (value >= 1000000) return `$${(value / 1000000).toFixed(0)}M`;
-  if (value >= 1000) return `$${(value / 1000).toFixed(0)}K`;
+  if (value >= 1_000_000_000) return `$${(value / 1_000_000_000).toFixed(1)}B`;
+  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(0)}M`;
+  if (value >= 1_000) return `$${(value / 1_000).toFixed(0)}K`;
   return `$${value.toFixed(0)}`;
 }
 
 function formatEmployees(employees: number | null): string {
   if (!employees) return "N/A";
-  if (employees >= 10000) return `${(employees / 1000).toFixed(0)}K+`;
-  if (employees >= 1000) return `${(employees / 1000).toFixed(1)}K`;
+  if (employees >= 10_000) return `${(employees / 1_000).toFixed(0)}K+`;
+  if (employees >= 1_000) return `${(employees / 1_000).toFixed(1)}K`;
   return employees.toLocaleString();
 }
 
 function CompanyHeaderCard({ node }: { node: any }) {
   const {
-    companyId: _companyId, // Available for future tRPC integration
+    companyId,
     name,
     industry,
     sector,
@@ -127,15 +122,7 @@ function CompanyHeaderCard({ node }: { node: any }) {
     location,
     website,
     status,
-    isWatched: initialWatched,
   } = node.attrs as CompanyHeaderAttributes;
-
-  const [isWatched, setIsWatched] = useState(initialWatched);
-
-  const handleWatchToggle = () => {
-    // TODO: Hook into tRPC watch.add/watch.remove when TASK-109 is complete
-    setIsWatched(!isWatched);
-  };
 
   return (
     <NodeViewWrapper className="my-8 font-sans">
@@ -154,7 +141,7 @@ function CompanyHeaderCard({ node }: { node: any }) {
               </span>
               <span
                 className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest ${
-                  statusBadgeStyles[status] || "bg-gray-100 text-gray-700"
+                  STATUS_BADGE_STYLES[status] || "bg-gray-100 text-gray-700"
                 }`}
               >
                 {formatStatusName(status)}
@@ -174,27 +161,7 @@ function CompanyHeaderCard({ node }: { node: any }) {
           </div>
 
           {/* Watch Button */}
-          <button
-            onClick={handleWatchToggle}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              isWatched
-                ? "bg-orange/10 text-orange border border-orange/30 hover:bg-orange/20"
-                : "bg-alabaster dark:bg-panel-dark text-charcoal/70 dark:text-cultured-white/70 border border-gold/20 hover:bg-bone dark:hover:bg-panel-darker"
-            }`}
-            title={isWatched ? "Remove from watch list" : "Add to watch list"}
-          >
-            {isWatched ? (
-              <>
-                <Eye className="w-4 h-4" />
-                Watching
-              </>
-            ) : (
-              <>
-                <EyeOff className="w-4 h-4" />
-                Watch
-              </>
-            )}
-          </button>
+          {companyId && <WatchButton companyId={companyId} />}
         </div>
 
         {/* Metrics Grid */}
