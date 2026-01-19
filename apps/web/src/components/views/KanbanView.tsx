@@ -115,11 +115,11 @@ function KanbanColumn({ id, title, deals, onStageChange }: KanbanColumnProps) {
     return (
         <div
             ref={setNodeRef}
-            className="flex flex-col bg-alabaster dark:bg-charcoal/50 rounded-lg border border-gold/10 h-full"
+            className="flex flex-col bg-alabaster dark:bg-charcoal/50 rounded-lg border border-gold/10 shadow-[0_1px_3px_rgba(0,0,0,0.04),0_4px_12px_rgba(0,0,0,0.03)] h-full"
         >
             <div className="p-4 border-b border-gold/10 flex justify-between items-center">
-                <h3 className="font-bold text-charcoal dark:text-cultured-white">{title}</h3>
-                <span className="text-xs font-mono bg-white dark:bg-deep-grey text-gold px-2 py-0.5 rounded-full">
+                <h3 className="font-bold text-charcoal dark:text-cultured-white text-balance">{title}</h3>
+                <span className="text-xs font-mono bg-white dark:bg-deep-grey text-gold px-2 py-0.5 rounded-full tabular-nums">
                     {deals.length}
                 </span>
             </div>
@@ -209,12 +209,15 @@ function DealCard({
     return (
         <div
             className={cn(
-                "bg-white dark:bg-deep-grey p-4 rounded-md border border-gold/20 shadow-sm hover:shadow-md transition-shadow group relative",
+                "bg-white dark:bg-deep-grey p-4 rounded-md border border-gold/20 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_2px_8px_rgba(0,0,0,0.03)] hover:shadow-[0_2px_4px_rgba(0,0,0,0.06),0_4px_12px_rgba(0,0,0,0.05)] transition-[box-shadow] group relative",
                 isOverlay
-                    ? "shadow-xl border-gold rotate-2 cursor-grabbing"
+                    ? "shadow-[0_4px_12px_rgba(0,0,0,0.1),0_8px_24px_rgba(0,0,0,0.08)] border-gold rotate-2 cursor-grabbing"
                     : "cursor-pointer hover:border-orange/50"
             )}
             onClick={onClick}
+            onKeyDown={onClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } } : undefined}
+            role={onClick ? "button" : undefined}
+            tabIndex={onClick ? 0 : undefined}
         >
             {showQuickActions && onStageChange && (
                 <DealQuickActions
@@ -226,18 +229,20 @@ function DealCard({
             )}
 
             {dragHandleProps && (
-                <div
-                    className="absolute top-2 right-2 p-1 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity z-20"
+                <button
+                    type="button"
+                    className="absolute top-2 right-2 p-1 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-[opacity] z-20 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange focus-visible:ring-offset-2 rounded"
+                    aria-label={`Drag ${deal.title}`}
                     {...dragHandleProps}
                     onClick={(e) => e.stopPropagation()}
                 >
-                    <GripVertical className="w-4 h-4 text-charcoal/40" />
-                </div>
+                    <GripVertical className="w-4 h-4 text-charcoal/40" aria-hidden="true" />
+                </button>
             )}
 
             <div className="flex justify-between items-start mb-2">
                 <CompaniesCell companies={deal.companies} variant="card" />
-                {isOverlay && <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />}
+                {isOverlay && <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse motion-reduce:animate-none" aria-hidden="true" />}
             </div>
 
             <h4 className="font-bold text-charcoal dark:text-cultured-white mb-3 text-lg font-serif">
@@ -246,11 +251,11 @@ function DealCard({
 
             <div className="flex items-center justify-between text-charcoal/60 dark:text-cultured-white/60 text-sm">
                 <div className="flex items-center gap-1">
-                    <DollarSign className="w-3.5 h-3.5" />
-                    <span className="font-mono font-semibold">{deal.value}</span>
+                    <DollarSign className="w-3.5 h-3.5" aria-hidden="true" />
+                    <span className="font-mono font-semibold tabular-nums">{deal.value}</span>
                 </div>
                 <div className="flex items-center gap-1">
-                    <Calendar className="w-3.5 h-3.5" />
+                    <Calendar className="w-3.5 h-3.5" aria-hidden="true" />
                     <span>{deal.date}</span>
                 </div>
             </div>
