@@ -294,6 +294,9 @@ importers:
       react-hook-form:
         specifier: ^7.53.2
         version: 7.66.0(react@19.2.0)
+      react-hotkeys-hook:
+        specifier: ^5.2.3
+        version: 5.2.3(react-dom@19.2.0)(react@19.2.0)
       recharts:
         specifier: ^3.6.0
         version: 3.6.0(@types/react@19.2.4)(react-dom@19.2.0)(react-is@17.0.2)(react@19.2.0)(redux@5.0.1)
@@ -12177,6 +12180,16 @@ packages:
       react: ^16.8.0 || ^17 || ^18 || ^19
     dependencies:
       react: 19.2.0
+    dev: false
+
+  /react-hotkeys-hook@5.2.3(react-dom@19.2.0)(react@19.2.0):
+    resolution: {integrity: sha512-Q27F8EuImYJOVSXAjSQrQPj9cx4GSNY+WdSdk5tSNN085H8/a00W6LZp0PrytEDwF6iT0pGTJeVEDKPRpEK2Bg==}
+    peerDependencies:
+      react: '>=16.8.0'
+      react-dom: '>=16.8.0'
+    dependencies:
+      react: 19.2.0
+      react-dom: 19.2.0(react@19.2.0)
     dev: false
 
   /react-is@16.13.1:

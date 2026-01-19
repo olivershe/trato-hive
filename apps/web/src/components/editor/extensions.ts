@@ -33,6 +33,7 @@ import { CompanyEmbedBlock } from "./extensions/CompanyEmbedBlock";
 import GlobalDragHandle from "tiptap-extension-global-drag-handle";
 import AutoJoiner from "tiptap-extension-auto-joiner";
 import Focus from "@tiptap/extension-focus";
+import { ImageUploadNode } from "@/components/tiptap-node/image-upload-node";
 
 // Re-export for dynamic configuration
 export { PageMention } from "./extensions/PageMention";
@@ -83,6 +84,43 @@ const tiptapImage = Image.extend({
 
 const characterCount = CharacterCount.configure({
     limit: 50000,
+});
+
+// Image upload handler - converts to base64 for now
+// TODO: Replace with S3 upload in production
+const uploadImage = async (
+    file: File,
+    onProgress?: (event: { progress: number }) => void
+): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+
+        reader.onloadstart = () => onProgress?.({ progress: 0 });
+        reader.onprogress = (e) => {
+            if (e.lengthComputable) {
+                onProgress?.({ progress: (e.loaded / e.total) * 100 });
+            }
+        };
+        reader.onloadend = () => onProgress?.({ progress: 100 });
+
+        reader.onload = () => {
+            if (typeof reader.result === "string") {
+                resolve(reader.result);
+            } else {
+                reject(new Error("Failed to read file"));
+            }
+        };
+        reader.onerror = () => reject(new Error("Failed to read file"));
+
+        reader.readAsDataURL(file);
+    });
+};
+
+const imageUploadNode = ImageUploadNode.configure({
+    accept: "image/*",
+    maxSize: 10 * 1024 * 1024, // 10MB
+    upload: uploadImage,
+    onError: (error) => console.error("Image upload error:", error),
 });
 
 export const defaultExtensions: any[] = [
@@ -136,6 +174,7 @@ export const defaultExtensions: any[] = [
     placeholder,
     // Note: Link is handled internally by Novel - removed to avoid duplicates
     tiptapImage,
+    imageUploadNode,
     characterCount,
     TaskList.configure({
         HTMLAttributes: {

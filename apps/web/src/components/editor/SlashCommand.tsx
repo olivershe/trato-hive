@@ -331,22 +331,10 @@ export const suggestionItems = [
     {
         title: "Image",
         description: "Upload an image from your computer",
-        searchTerms: ["photo", "picture", "media"],
-        icon: <ImageIcon size={18} />,
+        searchTerms: ["photo", "picture", "media", "upload"],
+        icon: <ImageIcon size={18} className="text-orange" />,
         command: ({ editor, range }: any) => {
-            editor.chain().focus().deleteRange(range).run();
-            // Mock upload
-            const input = document.createElement("input");
-            input.type = "file";
-            input.accept = "image/*";
-            input.onchange = async () => {
-                if (input.files?.length) {
-                    const file = input.files[0];
-                    const url = URL.createObjectURL(file);
-                    editor.chain().focus().setImage({ src: url }).run();
-                }
-            };
-            input.click();
+            editor.chain().focus().deleteRange(range).insertContent({ type: "imageUpload" }).run();
         },
     },
     {
