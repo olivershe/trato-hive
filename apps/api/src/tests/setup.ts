@@ -76,6 +76,11 @@ export function createMockDeal(overrides?: Partial<Deal>): Deal {
     actualCloseDate: null,
     description: null,
     notes: null,
+    // Notion-style database fields
+    leadPartnerId: null,
+    priority: 'NONE' as const,
+    source: null,
+    customFields: null,
     createdAt: new Date(),
     updatedAt: new Date(),
     ...overrides,

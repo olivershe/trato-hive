@@ -1,7 +1,8 @@
 "use client";
 
+import { useCallback } from "react";
 import { PageHeader } from "@/components/layouts/PageHeader";
-import { ViewProvider, useView } from "@/components/views/ViewContext";
+import { ViewProvider, useView, type DealFilters } from "@/components/views/ViewContext";
 import { ViewSwitcher } from "@/components/views/ViewSwitcher";
 import { KanbanView } from "@/components/views/KanbanView";
 import { TableView } from "@/components/views/TableView";
@@ -9,9 +10,28 @@ import { TimelineView } from "@/components/views/TimelineView";
 import { CalendarView } from "@/components/views/CalendarView";
 import { AnalyticsView } from "@/components/views/AnalyticsView";
 import { AlertsBlock } from "@/components/alerts/AlertsBlock";
+import { DealSidePanel } from "@/components/deals/DealSidePanel";
+import { DealsFilterBar, type FilterState } from "@/components/deals/DealsFilterBar";
 import { Loader2, AlertCircle, Plus } from "lucide-react";
 import { api } from "@/trpc/react";
 import { useState } from "react";
+
+// Filter bar wrapper that connects to ViewContext
+function DealsFilterBarWrapper() {
+  const { setDealFilters } = useView();
+
+  const handleFilterChange = useCallback((filters: FilterState) => {
+    // Convert FilterState to DealFilters
+    const dealFilters: DealFilters = {
+      stages: filters.stages,
+      priorities: filters.priorities,
+      sources: filters.sources,
+    };
+    setDealFilters(dealFilters);
+  }, [setDealFilters]);
+
+  return <DealsFilterBar onFilterChange={handleFilterChange} />;
+}
 
 function DealsToolbar() {
   const { refetch } = useView();
@@ -94,9 +114,28 @@ function DealsPipelineContent() {
   }
 }
 
+// Wrapper for DealSidePanel that has access to ViewContext
+function DealSidePanelWrapper() {
+  const { selectedDealId, setSelectedDealId, refetch } = useView();
+
+  return (
+    <DealSidePanel
+      dealId={selectedDealId}
+      open={selectedDealId !== null}
+      onOpenChange={(open) => {
+        if (!open) {
+          setSelectedDealId(null);
+          // Refetch deals when side panel closes to update the list
+          refetch();
+        }
+      }}
+    />
+  );
+}
+
 export default function DealsPage() {
   return (
-    <ViewProvider>
+    <ViewProvider defaultView="table">
       <PageHeader
         title="Deals Pipeline"
         subtitle="Track and manage your M&A opportunities"
@@ -104,8 +143,12 @@ export default function DealsPage() {
       {/* [TASK-120] AI Alerts at top of pipeline */}
       <AlertsBlock />
       <ViewSwitcher />
+      {/* [TASK-131] Filter bar with URL persistence */}
+      <DealsFilterBarWrapper />
       <DealsToolbar />
       <DealsPipelineContent />
+      {/* [TASK-128] Notion-style side panel for deal details */}
+      <DealSidePanelWrapper />
     </ViewProvider>
   );
 }

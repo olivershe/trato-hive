@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import {
     DndContext,
     DragOverlay,
@@ -33,7 +32,7 @@ const COLUMNS: { id: DealStage; title: string }[] = [
 ];
 
 export function KanbanView() {
-    const { deals, updateDeal } = useView();
+    const { deals, updateDeal, setSelectedDealId } = useView();
     const [activeId, setActiveId] = useState<string | null>(null);
 
     const columns = useMemo(() => {
@@ -88,6 +87,7 @@ export function KanbanView() {
                         title={col.title}
                         deals={col.deals}
                         onStageChange={handleStageChange}
+                        onDealClick={setSelectedDealId}
                     />
                 ))}
             </div>
@@ -107,9 +107,10 @@ interface KanbanColumnProps {
     title: string;
     deals: Deal[];
     onStageChange: (dealId: string, stage: DealStage) => void;
+    onDealClick: (dealId: string) => void;
 }
 
-function KanbanColumn({ id, title, deals, onStageChange }: KanbanColumnProps) {
+function KanbanColumn({ id, title, deals, onStageChange, onDealClick }: KanbanColumnProps) {
     const { setNodeRef } = useDroppable({ id });
 
     return (
@@ -130,6 +131,7 @@ function KanbanColumn({ id, title, deals, onStageChange }: KanbanColumnProps) {
                             key={deal.id}
                             deal={deal}
                             onStageChange={(stage) => onStageChange(deal.id, stage)}
+                            onDealClick={onDealClick}
                         />
                     ))}
                 </SortableContext>
@@ -146,10 +148,10 @@ function KanbanColumn({ id, title, deals, onStageChange }: KanbanColumnProps) {
 interface SortableDealCardProps {
     deal: Deal;
     onStageChange: (stage: DealStage) => void;
+    onDealClick: (dealId: string) => void;
 }
 
-function SortableDealCard({ deal, onStageChange }: SortableDealCardProps) {
-    const router = useRouter();
+function SortableDealCard({ deal, onStageChange, onDealClick }: SortableDealCardProps) {
     const [isHovered, setIsHovered] = useState(false);
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
         id: deal.id,
@@ -162,8 +164,9 @@ function SortableDealCard({ deal, onStageChange }: SortableDealCardProps) {
     };
 
     function handleClick(): void {
+        // Only open side panel if quick actions are not hovered
         if (!isHovered) {
-            router.push(`/deals/${deal.id}`);
+            onDealClick(deal.id);
         }
     }
 

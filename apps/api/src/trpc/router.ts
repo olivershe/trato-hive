@@ -20,6 +20,7 @@ import { router } from './init';
 import { blockRouter } from '../routers/block';
 import { companyRouter } from '../routers/company';
 import { dealsRouter } from '../routers/deals';
+import { dealFieldsRouter } from '../routers/deal-fields';
 import { databasesRouter } from '../routers/databases';
 import { dashboardRouter } from '../routers/dashboard';
 import { diligenceRouter } from '../routers/diligence';
@@ -42,6 +43,7 @@ export const appRouter = router({
   block: blockRouter,
   company: companyRouter,
   deal: dealsRouter,
+  dealField: dealFieldsRouter,
   database: databasesRouter,
   dashboard: dashboardRouter,
   diligence: diligenceRouter,

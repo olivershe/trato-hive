@@ -37,6 +37,8 @@ model User {
   databaseEntries  DatabaseEntry[]      @relation("DatabaseEntryCreator")
   watchedCompanies CompanyWatch[] // Companies this user is watching
   reviewedQAAnswers QAAnswer[]    @relation("QAAnswerReviewer") // Q&A answers reviewed by user
+  leadDeals        Deal[]         @relation("DealLeadPartner") // Deals where user is lead partner
+  dealViewConfigs  DealViewConfig[] // User's deal view preferences
 
   @@map("users")
 }
@@ -96,11 +98,12 @@ model Organization {
   updatedAt DateTime @updatedAt
 
   // Relations
-  members   OrganizationMember[]
-  deals     Deal[]
-  companies Company[]
-  documents Document[]
-  databases Database[]
+  members          OrganizationMember[]
+  deals            Deal[]
+  companies        Company[]
+  documents        Document[]
+  databases        Database[]
+  dealFieldSchemas DealFieldSchema[] // Custom field definitions
 
   @@map("organizations")
 }
@@ -203,6 +206,34 @@ enum DealType {
   OTHER
 }
 
+enum DealPriority {
+  NONE
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum DealSource {
+  REFERRAL
+  OUTBOUND
+  INBOUND
+  AUCTION
+  NETWORK
+  OTHER
+}
+
+enum FieldType {
+  TEXT
+  NUMBER
+  SELECT
+  MULTI_SELECT
+  DATE
+  PERSON
+  CHECKBOX
+  URL
+}
+
 enum DealCompanyRole {
   PLATFORM // Primary target company
   ADD_ON   // Bolt-on acquisition
@@ -229,6 +260,13 @@ model Deal {
   description String? @db.Text
   notes       String? @db.Text
 
+  // Notion-style database fields
+  leadPartnerId String?
+  leadPartner   User?        @relation("DealLeadPartner", fields: [leadPartnerId], references: [id], onDelete: SetNull)
+  priority      DealPriority @default(NONE)
+  source        DealSource?
+  customFields  Json?        @db.JsonB // { "field_cuid": value, ... }
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -246,6 +284,7 @@ model Deal {
   @@index([organizationId])
   @@index([stage])
   @@index([companyId])
+  @@index([leadPartnerId])
   @@map("deals")
 }
 
@@ -732,4 +771,54 @@ model QAAnswer {
   @@index([documentId])
   @@index([status])
   @@map("qa_answers")
+}
+
+// =============================================================================
+// DEAL FIELD SCHEMA (Custom Fields for Notion-style Database)
+// =============================================================================
+
+model DealFieldSchema {
+  id             String    @id @default(cuid())
+  organizationId String
+  name           String    // Display name: "Deal Source", "Industry"
+  type           FieldType // TEXT, SELECT, DATE, etc.
+  options        Json?     @db.JsonB // For SELECT: ["Option A", "Option B"]
+  required       Boolean   @default(false)
+  order          Int       @default(0) // Display order
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+  @@map("deal_field_schemas")
+}
+
+// =============================================================================
+// DEAL VIEW CONFIG (User View Preferences for Notion-style Database)
+// =============================================================================
+
+model DealViewConfig {
+  id             String   @id @default(cuid())
+  userId         String
+  organizationId String
+  columnOrder    String[] @default([]) // Includes custom field IDs
+  hiddenColumns  String[] @default([])
+  columnWidths   Json     @default("{}") @db.JsonB
+  defaultView    String   @default("table")
+  sortBy         String?
+  sortDirection  String?
+  filters        Json?    @db.JsonB
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, organizationId])
+  @@index([userId])
+  @@index([organizationId])
+  @@map("deal_view_configs")
 }

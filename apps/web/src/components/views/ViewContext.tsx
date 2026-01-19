@@ -1,10 +1,17 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useMemo } from 'react';
 import { api } from '@/trpc/react';
 import { Deal, DealCompany } from './mock-data';
 
 export type ViewType = 'kanban' | 'table' | 'timeline' | 'calendar' | 'analytics';
+
+// Filter state for deals pipeline
+export interface DealFilters {
+    stages: string[];
+    priorities: string[];
+    sources: string[];
+}
 
 // Map database stage to simplified view stage
 type ViewStage = "SOURCING" | "DILIGENCE" | "CLOSING";
@@ -62,31 +69,40 @@ function formatDate(date: Date | null): string {
 interface ViewContextType {
     currentView: ViewType;
     setView: (view: ViewType) => void;
-    filters: Record<string, unknown>;
-    setFilter: (key: string, value: unknown) => void;
+    dealFilters: DealFilters;
+    setDealFilters: (filters: DealFilters) => void;
     viewTitle: string;
     setViewTitle: (title: string) => void;
     deals: Deal[];
+    allDeals: Deal[];
     updateDeal: (id: string, updates: Partial<Deal>) => void;
     isLoading: boolean;
     error: Error | null;
     refetch: () => void;
+    // Side panel state (Notion-style database)
+    selectedDealId: string | null;
+    setSelectedDealId: (id: string | null) => void;
 }
 
 const ViewContext = createContext<ViewContextType | undefined>(undefined);
 
+const DEFAULT_FILTERS: DealFilters = {
+    stages: [],
+    priorities: [],
+    sources: [],
+};
+
 export function ViewProvider({
     children,
     defaultView = 'kanban',
-    defaultFilters = {}
 }: {
     children: ReactNode;
     defaultView?: ViewType;
-    defaultFilters?: Record<string, unknown>;
 }) {
     const [currentView, setView] = useState<ViewType>(defaultView);
-    const [filters, setFilters] = useState(defaultFilters);
+    const [dealFilters, setDealFilters] = useState<DealFilters>(DEFAULT_FILTERS);
     const [viewTitle, setViewTitle] = useState("Deal Pipeline");
+    const [selectedDealId, setSelectedDealId] = useState<string | null>(null);
 
     // Fetch deals from API
     const {
@@ -107,7 +123,8 @@ export function ViewProvider({
 
     // Transform API data to view model
     // Note: API returns Deal with company and dealCompanies relations included
-    const deals: Deal[] =
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const allDeals: (Deal & { dbStage: string; priority?: string; source?: string })[] = useMemo(() =>
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         dealsData?.items.map((deal: any) => {
             // Transform dealCompanies: sort PLATFORM first, then by createdAt
@@ -133,17 +150,37 @@ export function ViewProvider({
                 company: deal.company?.name || companies[0]?.name || "No Company",
                 companies,
                 stage: mapStageToView(deal.stage),
+                dbStage: deal.stage, // Keep original stage for filtering
+                priority: deal.priority,
+                source: deal.source,
                 date: formatDate(deal.expectedCloseDate),
                 closingDate: deal.expectedCloseDate
                     ? new Date(deal.expectedCloseDate)
                     : new Date(),
                 probability: deal.probability ?? 50,
+                customFields: deal.customFields,
             };
-        }) ?? [];
+        }) ?? [],
+    [dealsData]);
 
-    const setFilter = (key: string, value: unknown) => {
-        setFilters(prev => ({ ...prev, [key]: value }));
-    };
+    // Apply filters to deals
+    const deals = useMemo(() => {
+        return allDeals.filter((deal) => {
+            // Stage filter
+            if (dealFilters.stages.length > 0 && !dealFilters.stages.includes(deal.dbStage)) {
+                return false;
+            }
+            // Priority filter
+            if (dealFilters.priorities.length > 0 && deal.priority && !dealFilters.priorities.includes(deal.priority)) {
+                return false;
+            }
+            // Source filter
+            if (dealFilters.sources.length > 0 && deal.source && !dealFilters.sources.includes(deal.source)) {
+                return false;
+            }
+            return true;
+        });
+    }, [allDeals, dealFilters]);
 
     const updateDeal = (id: string, updates: Partial<Deal>) => {
         // Map view stage to database stage if provided
@@ -171,15 +208,18 @@ export function ViewProvider({
         <ViewContext.Provider value={{
             currentView,
             setView,
-            filters,
-            setFilter,
+            dealFilters,
+            setDealFilters,
             viewTitle,
             setViewTitle,
             deals,
+            allDeals,
             updateDeal,
             isLoading,
             error: error as Error | null,
             refetch,
+            selectedDealId,
+            setSelectedDealId,
         }}>
             {children}
         </ViewContext.Provider>

@@ -15,8 +15,9 @@ import {
   applySuggestionSchema,
   dismissSuggestionSchema,
   generateSuggestionsSchema,
+  updateViewConfigSchema,
 } from '@trato-hive/shared';
-import { ActivityType } from '@trato-hive/db';
+import { ActivityType, Prisma } from '@trato-hive/db';
 
 export const dealsRouter = router({
   /**
@@ -177,4 +178,112 @@ export const dealsRouter = router({
       // CompanyId support can be added later
       return { fieldSuggestions: [], totalFacts: 0 };
     }),
+
+  // ===========================================================================
+  // View Config Procedures (Notion-style Database)
+  // ===========================================================================
+
+  /**
+   * deal.getViewConfig - Get user's view preferences
+   * Auth: organizationProtectedProcedure
+   * Returns: View config or default values
+   */
+  getViewConfig: organizationProtectedProcedure.query(async ({ ctx }) => {
+    const config = await ctx.db.dealViewConfig.findUnique({
+      where: {
+        userId_organizationId: {
+          userId: ctx.session.user.id,
+          organizationId: ctx.organizationId,
+        },
+      },
+    });
+
+    // Return config or defaults
+    return (
+      config ?? {
+        id: null,
+        userId: ctx.session.user.id,
+        organizationId: ctx.organizationId,
+        columnOrder: [],
+        hiddenColumns: [],
+        columnWidths: {},
+        defaultView: 'table',
+        sortBy: null,
+        sortDirection: null,
+        filters: null,
+      }
+    );
+  }),
+
+  /**
+   * deal.updateViewConfig - Update user's view preferences
+   * Auth: organizationProtectedProcedure
+   * Side effect: Creates or updates DealViewConfig
+   */
+  updateViewConfig: organizationProtectedProcedure
+    .input(updateViewConfigSchema)
+    .mutation(async ({ ctx, input }) => {
+      // Build update data with proper null handling for Prisma JSON fields
+      const updateData: Prisma.DealViewConfigUpdateInput = {};
+      if (input.columnOrder !== undefined) updateData.columnOrder = input.columnOrder;
+      if (input.hiddenColumns !== undefined) updateData.hiddenColumns = input.hiddenColumns;
+      if (input.columnWidths !== undefined) updateData.columnWidths = input.columnWidths;
+      if (input.defaultView !== undefined) updateData.defaultView = input.defaultView;
+      if (input.sortBy !== undefined) updateData.sortBy = input.sortBy;
+      if (input.sortDirection !== undefined) updateData.sortDirection = input.sortDirection;
+      if (input.filters !== undefined) {
+        updateData.filters = input.filters
+          ? (input.filters as Prisma.InputJsonValue)
+          : Prisma.JsonNull;
+      }
+
+      const config = await ctx.db.dealViewConfig.upsert({
+        where: {
+          userId_organizationId: {
+            userId: ctx.session.user.id,
+            organizationId: ctx.organizationId,
+          },
+        },
+        create: {
+          userId: ctx.session.user.id,
+          organizationId: ctx.organizationId,
+          columnOrder: input.columnOrder ?? [],
+          hiddenColumns: input.hiddenColumns ?? [],
+          columnWidths: input.columnWidths ?? {},
+          defaultView: input.defaultView ?? 'table',
+          sortBy: input.sortBy ?? null,
+          sortDirection: input.sortDirection ?? null,
+          filters: input.filters
+            ? (input.filters as Prisma.InputJsonValue)
+            : Prisma.JsonNull,
+        },
+        update: updateData,
+      });
+
+      return config;
+    }),
+
+  /**
+   * deal.getOrganizationMembers - Get organization members for lead partner selector
+   * Auth: organizationProtectedProcedure
+   * Returns: List of users in the organization
+   */
+  getOrganizationMembers: organizationProtectedProcedure.query(async ({ ctx }) => {
+    const members = await ctx.db.organizationMember.findMany({
+      where: { organizationId: ctx.organizationId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            image: true,
+          },
+        },
+      },
+      orderBy: { user: { name: 'asc' } },
+    });
+
+    return members.map((m) => m.user);
+  }),
 });

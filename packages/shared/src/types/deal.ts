@@ -61,6 +61,49 @@ export const DealType = {
 export type DealTypeValue = (typeof DealType)[keyof typeof DealType]
 
 /**
+ * DealPriority - Priority level for deals
+ */
+export const DealPriority = {
+  NONE: 'NONE',
+  LOW: 'LOW',
+  MEDIUM: 'MEDIUM',
+  HIGH: 'HIGH',
+  URGENT: 'URGENT',
+} as const
+
+export type DealPriorityValue = (typeof DealPriority)[keyof typeof DealPriority]
+
+/**
+ * DealSource - How the deal was sourced
+ */
+export const DealSource = {
+  REFERRAL: 'REFERRAL',
+  OUTBOUND: 'OUTBOUND',
+  INBOUND: 'INBOUND',
+  AUCTION: 'AUCTION',
+  NETWORK: 'NETWORK',
+  OTHER: 'OTHER',
+} as const
+
+export type DealSourceValue = (typeof DealSource)[keyof typeof DealSource]
+
+/**
+ * FieldType - Types for custom fields
+ */
+export const FieldType = {
+  TEXT: 'TEXT',
+  NUMBER: 'NUMBER',
+  SELECT: 'SELECT',
+  MULTI_SELECT: 'MULTI_SELECT',
+  DATE: 'DATE',
+  PERSON: 'PERSON',
+  CHECKBOX: 'CHECKBOX',
+  URL: 'URL',
+} as const
+
+export type FieldTypeValue = (typeof FieldType)[keyof typeof FieldType]
+
+/**
  * Deal - Core CRM entity for M&A transactions
  */
 export interface Deal {
@@ -77,6 +120,56 @@ export interface Deal {
   actualCloseDate: Date | null
   description: string | null
   notes: string | null
+  // Notion-style database fields
+  leadPartnerId: string | null
+  priority: DealPriorityValue
+  source: DealSourceValue | null
+  customFields: Record<string, unknown> | null
+  createdAt: Date
+  updatedAt: Date
+}
+
+/**
+ * DealWithLeadPartner - Deal with lead partner user details
+ */
+export interface DealWithLeadPartner extends Deal {
+  leadPartner: {
+    id: string
+    name: string | null
+    email: string
+    image: string | null
+  } | null
+}
+
+/**
+ * DealFieldSchema - Custom field definition for organization
+ */
+export interface DealFieldSchema {
+  id: string
+  organizationId: string
+  name: string
+  type: FieldTypeValue
+  options: string[] | null
+  required: boolean
+  order: number
+  createdAt: Date
+  updatedAt: Date
+}
+
+/**
+ * DealViewConfig - User's view preferences for deals database
+ */
+export interface DealViewConfig {
+  id: string
+  userId: string
+  organizationId: string
+  columnOrder: string[]
+  hiddenColumns: string[]
+  columnWidths: Record<string, number>
+  defaultView: string
+  sortBy: string | null
+  sortDirection: 'asc' | 'desc' | null
+  filters: Record<string, unknown> | null
   createdAt: Date
   updatedAt: Date
 }

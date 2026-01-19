@@ -161,6 +161,7 @@ describe('DealService', () => {
           type: 'ACQUISITION' as DealType,
           stage: 'SOURCING' as DealStage,
           currency: 'USD',
+          priority: 'NONE',
         },
         TEST_IDS.org,
         TEST_IDS.user
@@ -196,6 +197,7 @@ describe('DealService', () => {
           type: 'ACQUISITION' as DealType,
           stage: 'SOURCING' as DealStage,
           currency: 'USD',
+          priority: 'NONE',
         },
         TEST_IDS.org,
         TEST_IDS.user

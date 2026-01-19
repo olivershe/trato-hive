@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
     useReactTable,
@@ -10,6 +10,7 @@ import {
     createColumnHelper,
     type SortingState,
     type CellContext,
+    type ColumnDef,
 } from "@tanstack/react-table";
 import { useView } from "./ViewContext";
 import type { Deal } from "./mock-data";
@@ -21,9 +22,14 @@ import {
     ExternalLink,
     ArrowRightCircle,
     ChevronRight,
+    Plus,
+    Settings,
 } from "lucide-react";
 import { CompaniesCell } from "./CompaniesCell";
 import { cn } from "@/lib/utils";
+import { api } from "@/trpc/react";
+import { AddFieldDialog } from "@/components/deals/AddFieldDialog";
+import { CustomFieldsManager } from "@/components/deals/CustomFieldsManager";
 
 const STAGES = [
     { id: "SOURCING", label: "Sourcing" },
@@ -178,14 +184,27 @@ function ActionsCell({ deal, onStageChange }: ActionsCellProps) {
 }
 
 export function TableView() {
-    const { deals, updateDeal } = useView();
+    const { deals, updateDeal, setSelectedDealId } = useView();
     const [sorting, setSorting] = useState<SortingState>([]);
+    const [addFieldOpen, setAddFieldOpen] = useState(false);
+    const [manageFieldsOpen, setManageFieldsOpen] = useState(false);
+
+    // Fetch custom fields
+    const { data: customFields } = api.dealField.list.useQuery();
 
     function handleStageChange(dealId: string, stage: StageId): void {
         updateDeal(dealId, { stage });
     }
 
-    const columns = [
+    // Handle row click to open side panel
+    function handleRowClick(dealId: string): void {
+        setSelectedDealId(dealId);
+    }
+
+    // Build columns including custom fields
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const columns = useMemo(() => {
+        const baseColumns: ColumnDef<Deal, any>[] = [
         columnHelper.accessor("title", {
             header: "Deal Name",
             cell: (info) => (
@@ -238,7 +257,46 @@ export function TableView() {
                 </span>
             ),
         }),
-        columnHelper.display({
+        ];
+
+        // Add custom field columns
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const customFieldColumns: ColumnDef<Deal, any>[] = (customFields ?? []).map((field) => ({
+            id: `custom_${field.id}`,
+            header: field.name,
+            accessorFn: (row: Deal) => {
+                const customFieldsData = row.customFields as Record<string, unknown> | null;
+                return customFieldsData?.[field.id] ?? null;
+            },
+            cell: ({ getValue }: CellContext<Deal, unknown>) => {
+                const value = getValue();
+                if (value == null) {
+                    return <span className="text-charcoal/30 dark:text-cultured-white/30 italic">—</span>;
+                }
+                if (field.type === "CHECKBOX") {
+                    return value ? "✓" : "—";
+                }
+                if (field.type === "DATE" && value) {
+                    return new Date(String(value)).toLocaleDateString();
+                }
+                if (Array.isArray(value)) {
+                    return (
+                        <div className="flex flex-wrap gap-1">
+                            {value.map((v, i) => (
+                                <span key={i} className="px-1.5 py-0.5 text-xs bg-gold/10 text-gold rounded">
+                                    {String(v)}
+                                </span>
+                            ))}
+                        </div>
+                    );
+                }
+                return <span className="text-charcoal/80 dark:text-cultured-white/80">{String(value)}</span>;
+            },
+        }));
+
+        // Actions column (always last)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const actionsColumn: ColumnDef<Deal, any> = {
             id: "actions",
             header: () => <span className="sr-only">Actions</span>,
             cell: (info: CellContext<Deal, unknown>) => (
@@ -247,8 +305,10 @@ export function TableView() {
                     onStageChange={(stage) => handleStageChange(info.row.original.id, stage)}
                 />
             ),
-        }),
-    ];
+        };
+
+        return [...baseColumns, ...customFieldColumns, actionsColumn];
+    }, [customFields]);
 
     const table = useReactTable({
         data: deals,
@@ -301,6 +361,27 @@ export function TableView() {
                                     </th>
                                 );
                             })}
+                            {/* Add column button */}
+                            <th className="p-2 w-10">
+                                <div className="flex items-center gap-1">
+                                    <button
+                                        onClick={() => setAddFieldOpen(true)}
+                                        className="p-1.5 rounded hover:bg-gold/10 text-charcoal/40 hover:text-gold transition-colors"
+                                        aria-label="Add custom field"
+                                        title="Add column"
+                                    >
+                                        <Plus className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                        onClick={() => setManageFieldsOpen(true)}
+                                        className="p-1.5 rounded hover:bg-gold/10 text-charcoal/40 hover:text-gold transition-colors"
+                                        aria-label="Manage custom fields"
+                                        title="Manage columns"
+                                    >
+                                        <Settings className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            </th>
                         </tr>
                     ))}
                 </thead>
@@ -308,13 +389,24 @@ export function TableView() {
                     {table.getRowModel().rows.map((row) => (
                         <tr
                             key={row.id}
-                            className="border-b border-gold/10 last:border-0 hover:bg-gold/5 transition-[background-color]"
+                            onClick={() => handleRowClick(row.original.id)}
+                            className="border-b border-gold/10 last:border-0 hover:bg-gold/5 transition-[background-color] cursor-pointer"
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    handleRowClick(row.original.id);
+                                }
+                            }}
                         >
                             {row.getVisibleCells().map((cell) => (
                                 <td key={cell.id} className="p-4 pb-5">
                                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                 </td>
                             ))}
+                            {/* Empty cell to match add column header */}
+                            <td className="p-2 w-10" />
                         </tr>
                     ))}
                 </tbody>
@@ -324,6 +416,16 @@ export function TableView() {
                     No deals found.
                 </div>
             )}
+
+            {/* Custom Fields Dialogs */}
+            <AddFieldDialog
+                open={addFieldOpen}
+                onOpenChange={setAddFieldOpen}
+            />
+            <CustomFieldsManager
+                open={manageFieldsOpen}
+                onOpenChange={setManageFieldsOpen}
+            />
         </div>
     );
 }

@@ -1,0 +1,268 @@
+/**
+ * AddFieldDialog - Dialog for creating new custom fields
+ *
+ * Opens from the "+" button in table header.
+ * Allows users to create custom fields with name, type, and options.
+ */
+"use client";
+
+import { useState, useCallback } from "react";
+import { X, Plus } from "lucide-react";
+import { api } from "@/trpc/react";
+
+// =============================================================================
+// Types
+// =============================================================================
+
+interface AddFieldDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSuccess?: () => void;
+}
+
+const FIELD_TYPES = [
+  { value: "TEXT", label: "Text", description: "Single line of text" },
+  { value: "NUMBER", label: "Number", description: "Numeric value" },
+  { value: "SELECT", label: "Select", description: "Single choice from options" },
+  { value: "MULTI_SELECT", label: "Multi-select", description: "Multiple choices from options" },
+  { value: "DATE", label: "Date", description: "Date picker" },
+  { value: "PERSON", label: "Person", description: "Team member" },
+  { value: "CHECKBOX", label: "Checkbox", description: "Yes/No toggle" },
+  { value: "URL", label: "URL", description: "Web link" },
+] as const;
+
+type FieldType = (typeof FIELD_TYPES)[number]["value"];
+
+// =============================================================================
+// Main Component
+// =============================================================================
+
+export function AddFieldDialog({ open, onOpenChange, onSuccess }: AddFieldDialogProps) {
+  const [name, setName] = useState("");
+  const [type, setType] = useState<FieldType>("TEXT");
+  const [options, setOptions] = useState<string[]>([]);
+  const [newOption, setNewOption] = useState("");
+  const [required, setRequired] = useState(false);
+
+  const utils = api.useUtils();
+  const createMutation = api.dealField.create.useMutation({
+    onSuccess: () => {
+      utils.dealField.list.invalidate();
+      onOpenChange(false);
+      resetForm();
+      onSuccess?.();
+    },
+  });
+
+  const resetForm = useCallback(() => {
+    setName("");
+    setType("TEXT");
+    setOptions([]);
+    setNewOption("");
+    setRequired(false);
+  }, []);
+
+  const handleClose = useCallback(() => {
+    onOpenChange(false);
+    resetForm();
+  }, [onOpenChange, resetForm]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) return;
+
+    createMutation.mutate({
+      name: name.trim(),
+      type,
+      options: type === "SELECT" || type === "MULTI_SELECT" ? options : null,
+      required,
+    });
+  };
+
+  const handleAddOption = () => {
+    if (newOption.trim() && !options.includes(newOption.trim())) {
+      setOptions([...options, newOption.trim()]);
+      setNewOption("");
+    }
+  };
+
+  const handleRemoveOption = (index: number) => {
+    setOptions(options.filter((_, i) => i !== index));
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleAddOption();
+    }
+  };
+
+  const showOptionsInput = type === "SELECT" || type === "MULTI_SELECT";
+
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      {/* Overlay */}
+      <div
+        className="fixed inset-0 bg-charcoal/20 backdrop-blur-sm"
+        onClick={handleClose}
+        aria-hidden="true"
+      />
+
+      {/* Dialog */}
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="add-field-title"
+        className="relative z-50 w-full max-w-md mx-4 bg-white dark:bg-deep-grey rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] border border-gold/10"
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b border-gold/10">
+          <h2 id="add-field-title" className="text-lg font-semibold text-charcoal dark:text-cultured-white">
+            Add Custom Field
+          </h2>
+          <button
+            onClick={handleClose}
+            className="p-1.5 rounded-lg text-charcoal/50 hover:text-charcoal hover:bg-alabaster transition-colors dark:text-cultured-white/50 dark:hover:text-cultured-white dark:hover:bg-charcoal"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="p-4 space-y-4">
+          {/* Field Name */}
+          <div className="space-y-2">
+            <label
+              htmlFor="field-name"
+              className="block text-sm font-medium text-charcoal/70 dark:text-cultured-white/70"
+            >
+              Field Name
+            </label>
+            <input
+              id="field-name"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g., Industry, Region, Deal Source"
+              autoFocus
+              className="w-full px-3 py-2 rounded-lg border border-gold/20 bg-alabaster dark:bg-charcoal text-charcoal dark:text-cultured-white placeholder:text-charcoal/40 dark:placeholder:text-cultured-white/40 focus:border-gold focus:ring-1 focus:ring-gold/30 transition-colors"
+            />
+          </div>
+
+          {/* Field Type */}
+          <div className="space-y-2">
+            <label
+              htmlFor="field-type"
+              className="block text-sm font-medium text-charcoal/70 dark:text-cultured-white/70"
+            >
+              Field Type
+            </label>
+            <select
+              id="field-type"
+              value={type}
+              onChange={(e) => setType(e.target.value as FieldType)}
+              className="w-full px-3 py-2 rounded-lg border border-gold/20 bg-alabaster dark:bg-charcoal text-charcoal dark:text-cultured-white focus:border-gold focus:ring-1 focus:ring-gold/30 transition-colors"
+            >
+              {FIELD_TYPES.map((ft) => (
+                <option key={ft.value} value={ft.value}>
+                  {ft.label} - {ft.description}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Options (for SELECT/MULTI_SELECT) */}
+          {showOptionsInput && (
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-charcoal/70 dark:text-cultured-white/70">
+                Options
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newOption}
+                  onChange={(e) => setNewOption(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Add an option..."
+                  className="flex-1 px-3 py-2 rounded-lg border border-gold/20 bg-alabaster dark:bg-charcoal text-charcoal dark:text-cultured-white placeholder:text-charcoal/40 dark:placeholder:text-cultured-white/40 focus:border-gold focus:ring-1 focus:ring-gold/30 transition-colors"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddOption}
+                  disabled={!newOption.trim()}
+                  className="px-3 py-2 rounded-lg bg-gold/10 text-gold hover:bg-gold/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <Plus className="w-5 h-5" />
+                </button>
+              </div>
+              {options.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {options.map((opt, index) => (
+                    <span
+                      key={index}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gold/10 text-gold text-sm"
+                    >
+                      {opt}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveOption(index)}
+                        className="p-0.5 rounded-full hover:bg-gold/20 transition-colors"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+              {options.length === 0 && (
+                <p className="text-sm text-charcoal/40 dark:text-cultured-white/40 italic">
+                  Add at least one option for this field type
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Required Toggle */}
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={required}
+              onChange={(e) => setRequired(e.target.checked)}
+              className="w-4 h-4 rounded border-gold/30 text-gold focus:ring-gold/30"
+            />
+            <span className="text-sm text-charcoal/70 dark:text-cultured-white/70">
+              Required field
+            </span>
+          </label>
+
+          {/* Actions */}
+          <div className="flex justify-end gap-3 pt-4 border-t border-gold/10">
+            <button
+              type="button"
+              onClick={handleClose}
+              className="px-4 py-2 rounded-lg text-charcoal/70 hover:text-charcoal hover:bg-alabaster transition-colors dark:text-cultured-white/70 dark:hover:text-cultured-white dark:hover:bg-charcoal"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={!name.trim() || createMutation.isPending || (showOptionsInput && options.length === 0)}
+              className="px-4 py-2 rounded-lg bg-orange text-white hover:bg-orange/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {createMutation.isPending ? "Creating..." : "Create Field"}
+            </button>
+          </div>
+
+          {/* Error */}
+          {createMutation.error && (
+            <p className="text-sm text-red-500 mt-2">
+              {createMutation.error.message}
+            </p>
+          )}
+        </form>
+      </div>
+    </div>
+  );
+}
