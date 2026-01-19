@@ -3,10 +3,11 @@
 
 import { BubbleMenu } from "@tiptap/react/menus";
 import { type Editor } from "@tiptap/core";
-import { Bold, Italic, Strikethrough, Code, Sparkles } from "lucide-react";
-import { useState } from "react";
+import { Bold, Italic, Strikethrough, Code, Sparkles, Link2 } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { HexagonSpinner } from "../ui/HexagonSpinner";
+import { useLinkPopover } from "@/components/tiptap-ui/link-popover";
 
 interface EditorBubbleMenuProps {
     editor: Editor;
@@ -14,6 +15,23 @@ interface EditorBubbleMenuProps {
 
 export function EditorBubbleMenu({ editor }: EditorBubbleMenuProps) {
     const [isAIActive, setIsAIActive] = useState(false);
+    const [isLinkActive, setIsLinkActive] = useState(false);
+    const linkInputRef = useRef<HTMLInputElement>(null);
+
+    const {
+        url,
+        setUrl,
+        setLink,
+        removeLink,
+        isActive: hasLink,
+    } = useLinkPopover({ editor });
+
+    // Focus input when link mode activates
+    useEffect(() => {
+        if (isLinkActive && linkInputRef.current) {
+            linkInputRef.current.focus();
+        }
+    }, [isLinkActive]);
 
     if (!editor) return null;
 
@@ -42,7 +60,7 @@ export function EditorBubbleMenu({ editor }: EditorBubbleMenuProps) {
             className="flex w-fit max-w-[90vw] overflow-hidden rounded-full border border-gold/20 bg-alabaster/80 p-1 shadow-xl backdrop-blur-md dark:bg-charcoal/80 dark:border-white/10"
         >
             <AnimatePresence mode="wait">
-                {!isAIActive ? (
+                {!isAIActive && !isLinkActive ? (
                     <motion.div
                         key="formatting"
                         initial={{ opacity: 0, scale: 0.95 }}
@@ -86,6 +104,55 @@ export function EditorBubbleMenu({ editor }: EditorBubbleMenuProps) {
                         >
                             <Code className="w-4 h-4" />
                         </BubbleButton>
+                        <BubbleButton
+                            onClick={() => setIsLinkActive(true)}
+                            isActive={hasLink}
+                        >
+                            <Link2 className="w-4 h-4" />
+                        </BubbleButton>
+                    </motion.div>
+                ) : isLinkActive ? (
+                    <motion.div
+                        key="link-input"
+                        initial={{ opacity: 0, width: 0 }}
+                        animate={{ opacity: 1, width: "auto" }}
+                        exit={{ opacity: 0, width: 0 }}
+                        className="flex items-center gap-2 px-2"
+                    >
+                        <Link2 className="h-4 w-4 text-charcoal/60 dark:text-white/60" />
+                        <input
+                            ref={linkInputRef}
+                            type="url"
+                            value={url}
+                            onChange={(e) => setUrl(e.target.value)}
+                            placeholder="Paste a link..."
+                            className="h-6 min-w-[200px] bg-transparent text-sm text-charcoal placeholder:text-charcoal/40 focus:outline-none dark:text-cultured-white dark:placeholder:text-white/40"
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                    e.preventDefault();
+                                    setLink();
+                                    setIsLinkActive(false);
+                                }
+                                if (e.key === "Escape") {
+                                    setIsLinkActive(false);
+                                    editor.chain().focus().run();
+                                }
+                            }}
+                        />
+                        {hasLink && (
+                            <button
+                                onClick={() => {
+                                    removeLink();
+                                    setIsLinkActive(false);
+                                }}
+                                className="rounded-full p-1 text-red-500 hover:bg-red-500/10 transition-colors"
+                                title="Remove link"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        )}
                     </motion.div>
                 ) : (
                     <motion.div
