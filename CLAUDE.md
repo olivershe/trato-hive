@@ -72,6 +72,20 @@ Data flows upward from infrastructure to experience. **See `/docs/architecture/`
 - **Context7 (MCP):** Use `mcp__context7__resolve-library-id` automatically for library docs.
 - **Git:** Use `@git-workflow-manager` for branches, commits, PRs. Never commit directly to main.
 
+# ✏️ Editor Development (Tiptap)
+**BEFORE building new editor features**, check `/tiptap-component` skill first:
+- **Use official Tiptap components** for: tables, emoji, image upload, formatting buttons, toolbars
+- **Build custom blocks** for: anything needing tRPC/API calls, M&A-specific features, AI blocks
+
+```bash
+# Add official component (from apps/web/)
+yes "" | npx @tiptap/cli add <component-name>
+
+# Examples: table-node, emoji-dropdown-menu, image-upload-button
+```
+
+Custom blocks go in `apps/web/src/components/editor/extensions/` and must be registered in `extensions.ts`.
+
 # 🏛️ Critical Workflows
 **Architecture & Agents:**
 - **7-Layer Architecture:** Data ownership rules critical for Modules 2-5 (see `/docs/architecture/`)
