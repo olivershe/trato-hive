@@ -27,13 +27,16 @@ export { CompanyStatus } from './company'
 export type {
   Deal,
   DealWithCompany,
+  DealWithCompanies,
   DealWithDocuments,
   DealWithFacts,
   Deal360,
   DealStageValue,
   DealTypeValue,
+  DealCompanyRoleValue,
+  DealCompanyRelation,
 } from './deal'
-export { DealStage, DealType } from './deal'
+export { DealStage, DealType, DealCompanyRole } from './deal'
 
 // Document Types
 export type {
@@ -144,3 +147,13 @@ export type {
   QARejectedMetadata,
 } from './qa'
 export { QAAnswerStatus } from './qa'
+
+// Alert Types (AI Pipeline Alerts)
+export type {
+  AlertTypeValue,
+  AlertPriorityValue,
+  AlertStatusValue,
+  DealAlert,
+  AlertListResult,
+} from './alert'
+export { AlertType, AlertPriority, AlertStatus } from './alert'

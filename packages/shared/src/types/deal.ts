@@ -7,6 +7,32 @@ import type { Company } from './company'
 import type { Document } from './document'
 
 /**
+ * DealCompanyRole - Role of company in a deal
+ * Maps to Prisma enum DealCompanyRole
+ */
+export const DealCompanyRole = {
+  PLATFORM: 'PLATFORM',
+  ADD_ON: 'ADD_ON',
+  SELLER: 'SELLER',
+  BUYER: 'BUYER',
+  ADVISOR: 'ADVISOR',
+} as const
+
+export type DealCompanyRoleValue = (typeof DealCompanyRole)[keyof typeof DealCompanyRole]
+
+/**
+ * DealCompanyRelation - Company associated with a deal via junction table
+ */
+export interface DealCompanyRelation {
+  id: string
+  dealId: string
+  companyId: string
+  role: DealCompanyRoleValue
+  createdAt: Date
+  company: Pick<Company, 'id' | 'name' | 'industry'>
+}
+
+/**
  * DealStage - Pipeline stages for deal progression
  */
 export const DealStage = {
@@ -61,6 +87,14 @@ export interface Deal {
  */
 export interface DealWithCompany extends Deal {
   company: Company | null
+}
+
+/**
+ * DealWithCompanies - Deal with all associated companies via junction table
+ * Used for: Pipeline view with multi-company display [TASK-119]
+ */
+export interface DealWithCompanies extends DealWithCompany {
+  dealCompanies: DealCompanyRelation[]
 }
 
 /**

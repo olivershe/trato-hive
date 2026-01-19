@@ -89,6 +89,18 @@ export class DealService {
               industry: true,
             },
           },
+          dealCompanies: {
+            include: {
+              company: {
+                select: {
+                  id: true,
+                  name: true,
+                  industry: true,
+                },
+              },
+            },
+            orderBy: { createdAt: 'asc' },
+          },
         },
       }),
       this.db.deal.count({ where }),

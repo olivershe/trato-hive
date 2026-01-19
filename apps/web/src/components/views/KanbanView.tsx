@@ -21,6 +21,8 @@ import { cn } from "@/lib/utils";
 import { DollarSign, Calendar, GripVertical } from "lucide-react";
 import { useView } from "./ViewContext";
 import { Deal } from "./mock-data";
+import { CompaniesCell } from "./CompaniesCell";
+import { DealQuickActions } from "@/components/deals/DealQuickActions";
 
 const COLUMNS = [
     { id: "SOURCING", title: "Sourcing" },
@@ -65,6 +67,11 @@ export function KanbanView() {
         setActiveId(null);
     }
 
+    // [TASK-121] Handle quick action stage change
+    const handleQuickStageChange = (dealId: string, stage: Deal["stage"]) => {
+        updateDeal(dealId, { stage });
+    };
+
     return (
         <DndContext
             onDragStart={handleDragStart}
@@ -73,7 +80,13 @@ export function KanbanView() {
         >
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-[600px] overflow-x-auto pb-4">
                 {columns.map(col => (
-                    <KanbanColumn key={col.id} id={col.id} title={col.title} deals={col.deals} />
+                    <KanbanColumn
+                        key={col.id}
+                        id={col.id}
+                        title={col.title}
+                        deals={col.deals}
+                        onStageChange={handleQuickStageChange}
+                    />
                 ))}
             </div>
 
@@ -89,7 +102,12 @@ export function KanbanView() {
     );
 }
 
-function KanbanColumn({ id, title, deals }: { id: string; title: string; deals: Deal[] }) {
+function KanbanColumn({ id, title, deals, onStageChange }: {
+    id: string;
+    title: string;
+    deals: Deal[];
+    onStageChange: (dealId: string, stage: Deal["stage"]) => void;
+}) {
     const { setNodeRef } = useDroppable({ id });
 
     return (
@@ -106,7 +124,11 @@ function KanbanColumn({ id, title, deals }: { id: string; title: string; deals: 
             <div className="p-3 flex-1 overflow-y-auto space-y-3">
                 <SortableContext items={deals.map(d => d.id)} strategy={verticalListSortingStrategy}>
                     {deals.map(deal => (
-                        <SortableDealCard key={deal.id} deal={deal} />
+                        <SortableDealCard
+                            key={deal.id}
+                            deal={deal}
+                            onStageChange={(stage) => onStageChange(deal.id, stage)}
+                        />
                     ))}
                 </SortableContext>
                 {deals.length === 0 && (
@@ -119,8 +141,9 @@ function KanbanColumn({ id, title, deals }: { id: string; title: string; deals: 
     );
 }
 
-function SortableDealCard({ deal }: { deal: Deal }) {
+function SortableDealCard({ deal, onStageChange }: { deal: Deal; onStageChange: (stage: Deal["stage"]) => void }) {
     const router = useRouter();
+    const [isHovered, setIsHovered] = useState(false);
     const {
         attributes,
         listeners,
@@ -137,25 +160,39 @@ function SortableDealCard({ deal }: { deal: Deal }) {
     };
 
     const handleClick = () => {
-        router.push(`/deals/${deal.id}`);
+        if (!isHovered) {
+            router.push(`/deals/${deal.id}`);
+        }
     };
 
     return (
-        <div ref={setNodeRef} style={style} {...attributes}>
+        <div
+            ref={setNodeRef}
+            style={style}
+            {...attributes}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+        >
             <DealCard
                 deal={deal}
                 onClick={handleClick}
                 dragHandleProps={listeners}
+                showQuickActions={isHovered && !isDragging}
+                onStageChange={onStageChange}
+                onCloseQuickActions={() => setIsHovered(false)}
             />
         </div>
     );
 }
 
-function DealCard({ deal, isOverlay, onClick, dragHandleProps }: {
+function DealCard({ deal, isOverlay, onClick, dragHandleProps, showQuickActions, onStageChange, onCloseQuickActions }: {
     deal: Deal,
     isOverlay?: boolean,
     onClick?: () => void,
-    dragHandleProps?: Record<string, unknown>
+    dragHandleProps?: Record<string, unknown>,
+    showQuickActions?: boolean,
+    onStageChange?: (stage: Deal["stage"]) => void,
+    onCloseQuickActions?: () => void,
 }) {
     return (
         <div
@@ -165,10 +202,20 @@ function DealCard({ deal, isOverlay, onClick, dragHandleProps }: {
             )}
             onClick={onClick}
         >
+            {/* [TASK-121] Quick Actions overlay on hover */}
+            {showQuickActions && onStageChange && (
+                <DealQuickActions
+                    dealId={deal.id}
+                    currentStage={deal.stage}
+                    onStageChange={onStageChange}
+                    onClose={onCloseQuickActions}
+                />
+            )}
+
             {/* Drag handle - only this area triggers drag */}
             {dragHandleProps && (
                 <div
-                    className="absolute top-2 right-2 p-1 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute top-2 right-2 p-1 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity z-20"
                     {...dragHandleProps}
                     onClick={(e) => e.stopPropagation()}
                 >
@@ -176,7 +223,8 @@ function DealCard({ deal, isOverlay, onClick, dragHandleProps }: {
                 </div>
             )}
             <div className="flex justify-between items-start mb-2">
-                <span className="text-xs font-bold text-gold uppercase tracking-wider">{deal.company}</span>
+                {/* [TASK-119] Multi-company display with role badges */}
+                <CompaniesCell companies={deal.companies} variant="card" />
                 {isOverlay && <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />}
             </div>
             <h4 className="font-bold text-charcoal dark:text-cultured-white mb-3 text-lg font-serif">

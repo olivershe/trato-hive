@@ -8,6 +8,7 @@ import { TableView } from "@/components/views/TableView";
 import { TimelineView } from "@/components/views/TimelineView";
 import { CalendarView } from "@/components/views/CalendarView";
 import { AnalyticsView } from "@/components/views/AnalyticsView";
+import { AlertsBlock } from "@/components/alerts/AlertsBlock";
 import { Loader2, AlertCircle, Plus } from "lucide-react";
 import { api } from "@/trpc/react";
 import { useState } from "react";
@@ -95,6 +96,8 @@ export default function DealsPage() {
         title="Deals Pipeline"
         subtitle="Track and manage your M&A opportunities"
       />
+      {/* [TASK-120] AI Alerts at top of pipeline */}
+      <AlertsBlock />
       <ViewSwitcher />
       <DealsToolbar />
       <DealsPipelineContent />
