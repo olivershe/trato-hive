@@ -1,5 +1,9 @@
 @import "../../../../packages/ui/src/index.css";
 
+/* Tiptap UI Components - CSS Variables & Animations */
+@import "./_variables.scss";
+@import "./_keyframe-animations.scss";
+
 /* Additional app-specific styles */
 :root {
     --app-max-width: 1440px;
