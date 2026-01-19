@@ -10,7 +10,7 @@ import { useSidebarStore } from '@/stores/sidebar'
  */
 const ROUTE_PATTERNS = {
   deal: /^\/deals\/([^/]+)$/,
-  company: /^\/discovery\/companies\/([^/]+)$/,
+  company: /^\/companies\/([^/]+)$/,
   document: /^\/documents\/([^/]+)$/,
   page: /^\/deals\/[^/]+\/pages\/([^/]+)$/,
 } as const

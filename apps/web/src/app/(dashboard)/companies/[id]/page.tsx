@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { WatchButton } from "@/components/companies/WatchButton";
+import { PinButton } from "@/components/sidebar";
 import dynamic from "next/dynamic";
 
 const BlockEditor = dynamic(
@@ -161,6 +162,14 @@ export default function CompanyDetailPage() {
             <div>
               <div className="flex items-center gap-3">
                 <h1 className="text-2xl font-bold text-charcoal">{company.name}</h1>
+                <PinButton
+                  item={{
+                    type: "company",
+                    title: company.name,
+                    href: `/companies/${companyId}`,
+                    icon: "🏢",
+                  }}
+                />
                 <span
                   className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
                     STATUS_BADGE_STYLES[company.status] || "bg-gray-100 text-gray-700"

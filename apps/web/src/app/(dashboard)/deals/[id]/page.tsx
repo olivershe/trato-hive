@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import dynamic from "next/dynamic";
+import { PinButton } from "@/components/sidebar";
 
 // Dynamic import to avoid SSR issues with Tiptap/Liveblocks
 const BlockEditor = dynamic(
@@ -125,6 +126,14 @@ export default function DealDetailPage() {
           <div>
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-bold text-charcoal">{deal.name}</h1>
+              <PinButton
+                item={{
+                  type: "deal",
+                  title: deal.name,
+                  href: `/deals/${dealId}`,
+                  icon: "💼",
+                }}
+              />
               <span
                 className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
                   stageBadgeStyles[deal.stage] || "bg-gray-100 text-gray-700"

@@ -30,11 +30,7 @@
 /* Base Styles */
 @layer base {
   body {
-    @apply bg-bone text-charcoal font-sans antialiased;
-  }
-
-  .dark body {
-    @apply bg-deep-grey text-cultured-white;
+    @apply bg-white text-charcoal font-sans antialiased;
   }
 }
 
@@ -59,6 +55,6 @@
 
   /* Standard focus-visible ring for interactive elements */
   .focus-ring {
-    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 focus-visible:ring-offset-2 focus-visible:ring-offset-alabaster dark:focus-visible:ring-offset-deep-grey;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 focus-visible:ring-offset-2 focus-visible:ring-offset-white;
   }
 }

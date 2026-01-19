@@ -3,9 +3,13 @@
 import { Sidebar } from "@/components/layouts/Sidebar";
 import { SidebarProvider, useSidebar } from "@/components/layouts/SidebarContext";
 import { CommandPaletteProvider } from "@/components/CommandPaletteProvider";
+import { useRecentTracker } from "@/hooks";
 
 function DashboardContent({ children }: { children: React.ReactNode }) {
   const { collapsed } = useSidebar();
+
+  // Track route visits for Recent section in sidebar
+  useRecentTracker();
 
   return (
     <div className="min-h-screen bg-white">

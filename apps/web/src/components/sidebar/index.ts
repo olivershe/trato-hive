@@ -6,3 +6,4 @@
 
 export { PinnedSection } from './PinnedSection'
 export { RecentSection } from './RecentSection'
+export { PinButton } from './PinButton'
