@@ -7,11 +7,9 @@
  *
  * Collapsible alerts block showing urgent AI-generated alerts.
  * Displays at top of Pipeline page with dismiss/snooze actions.
- *
- * Pattern follows InboxBlock from editor extensions.
  */
 
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import {
   AlertTriangle,
@@ -29,11 +27,19 @@ import { formatDistanceToNow } from "date-fns";
 import { api } from "@/trpc/react";
 import { cn } from "@/lib/utils";
 
-// Alert type icons and colors
-const ALERT_CONFIG: Record<
-  string,
-  { icon: React.ElementType; color: string; bgColor: string }
-> = {
+interface AlertConfig {
+  icon: React.ElementType;
+  color: string;
+  bgColor: string;
+}
+
+const DEFAULT_ALERT_CONFIG: AlertConfig = {
+  icon: AlertTriangle,
+  color: "text-gray-600",
+  bgColor: "bg-gray-100 dark:bg-gray-900/30",
+};
+
+const ALERT_CONFIG: Record<string, AlertConfig> = {
   STAGE_OVERDUE: {
     icon: Clock,
     color: "text-amber-600",
@@ -56,7 +62,6 @@ const ALERT_CONFIG: Record<
   },
 };
 
-// Priority badge colors
 const PRIORITY_COLORS: Record<string, string> = {
   URGENT: "bg-red-500 text-white",
   HIGH: "bg-orange text-white",
@@ -64,13 +69,16 @@ const PRIORITY_COLORS: Record<string, string> = {
   LOW: "bg-gray-400 text-white",
 };
 
-// Snooze options (hours)
 const SNOOZE_OPTIONS = [
   { label: "1 hour", hours: 1 },
   { label: "4 hours", hours: 4 },
   { label: "1 day", hours: 24 },
   { label: "1 week", hours: 168 },
-];
+] as const;
+
+function getAlertConfig(type: string): AlertConfig {
+  return ALERT_CONFIG[type] || DEFAULT_ALERT_CONFIG;
+}
 
 export function AlertsBlock() {
   const [isExpanded, setIsExpanded] = useState(true);
@@ -78,20 +86,15 @@ export function AlertsBlock() {
 
   const utils = api.useUtils();
 
-  // Fetch alerts
   const { data, isLoading, error } = api.alerts.list.useQuery(
     { pageSize: 5 },
-    { refetchInterval: 60000 } // Refresh every minute
+    { refetchInterval: 60000 }
   );
 
-  // Dismiss mutation
   const dismissMutation = api.alerts.dismiss.useMutation({
-    onSuccess: () => {
-      utils.alerts.list.invalidate();
-    },
+    onSuccess: () => utils.alerts.list.invalidate(),
   });
 
-  // Snooze mutation
   const snoozeMutation = api.alerts.snooze.useMutation({
     onSuccess: () => {
       utils.alerts.list.invalidate();
@@ -99,30 +102,15 @@ export function AlertsBlock() {
     },
   });
 
-  const handleDismiss = useCallback(
-    (alertId: string) => {
-      dismissMutation.mutate({ alertId });
-    },
-    [dismissMutation]
-  );
-
-  const handleSnooze = useCallback(
-    (alertId: string, hours: number) => {
-      snoozeMutation.mutate({ alertId, hours });
-    },
-    [snoozeMutation]
-  );
-
-  // Don't render if no alerts
   if (!isLoading && (!data || data.items.length === 0)) {
     return null;
   }
 
   const alertCount = data?.pagination.total || 0;
+  const ExpandIcon = isExpanded ? ChevronUp : ChevronDown;
 
   return (
     <div className="mb-6 bg-white dark:bg-deep-grey border border-amber-200 dark:border-amber-900/30 rounded-lg shadow-sm overflow-hidden">
-      {/* Collapsible Header */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         className="w-full flex items-center justify-between px-4 py-3 bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors"
@@ -140,14 +128,9 @@ export function AlertsBlock() {
             </span>
           )}
         </div>
-        {isExpanded ? (
-          <ChevronUp className="w-4 h-4 text-charcoal/50 dark:text-cultured-white/50" />
-        ) : (
-          <ChevronDown className="w-4 h-4 text-charcoal/50 dark:text-cultured-white/50" />
-        )}
+        <ExpandIcon className="w-4 h-4 text-charcoal/50 dark:text-cultured-white/50" />
       </button>
 
-      {/* Content */}
       {isExpanded && (
         <div className="divide-y divide-amber-100 dark:divide-amber-900/30">
           {isLoading && (
@@ -166,104 +149,85 @@ export function AlertsBlock() {
             </div>
           )}
 
-          {data &&
-            data.items.map((alert) => {
-              const config = ALERT_CONFIG[alert.type] || {
-                icon: AlertTriangle,
-                color: "text-gray-600",
-                bgColor: "bg-gray-100 dark:bg-gray-900/30",
-              };
-              const Icon = config.icon;
-              const isSnoozeOpen = snoozeOpenFor === alert.id;
+          {data?.items.map((alert) => {
+            const config = getAlertConfig(alert.type);
+            const Icon = config.icon;
+            const isSnoozeOpen = snoozeOpenFor === alert.id;
 
-              return (
-                <div
-                  key={alert.id}
-                  className="flex items-start gap-3 p-4 hover:bg-amber-50/50 dark:hover:bg-amber-900/10 transition-colors group"
-                >
-                  {/* Icon */}
-                  <div className={cn("p-2 rounded-lg shrink-0", config.bgColor)}>
-                    <Icon className={cn("w-4 h-4", config.color)} />
-                  </div>
-
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <span
-                            className={cn(
-                              "px-1.5 py-0.5 text-[10px] font-bold uppercase rounded",
-                              PRIORITY_COLORS[alert.priority]
-                            )}
-                          >
-                            {alert.priority}
-                          </span>
-                          <Link
-                            href={`/deals/${alert.dealId}`}
-                            className="text-sm font-medium text-charcoal dark:text-cultured-white hover:text-orange flex items-center gap-1"
-                          >
-                            {alert.dealName}
-                            <ExternalLink className="w-3 h-3" />
-                          </Link>
-                        </div>
-                        <p className="text-sm text-charcoal/70 dark:text-cultured-white/70">
-                          {alert.message}
-                        </p>
-                        <p className="text-xs text-charcoal/40 dark:text-cultured-white/40 mt-1">
-                          {formatDistanceToNow(new Date(alert.createdAt), {
-                            addSuffix: true,
-                          })}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                    {/* Snooze dropdown */}
-                    <div className="relative">
-                      <button
-                        onClick={() =>
-                          setSnoozeOpenFor(isSnoozeOpen ? null : alert.id)
-                        }
-                        disabled={snoozeMutation.isPending}
-                        className="p-1.5 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded text-blue-600 transition-colors"
-                        title="Snooze"
-                      >
-                        <Clock className="w-4 h-4" />
-                      </button>
-                      {isSnoozeOpen && (
-                        <div className="absolute right-0 top-full mt-1 z-50 bg-white dark:bg-deep-grey border border-gold/20 dark:border-white/10 rounded-lg shadow-lg py-1 min-w-[120px]">
-                          {SNOOZE_OPTIONS.map((option) => (
-                            <button
-                              key={option.hours}
-                              onClick={() => handleSnooze(alert.id, option.hours)}
-                              className="w-full px-3 py-1.5 text-left text-sm text-charcoal dark:text-cultured-white hover:bg-alabaster dark:hover:bg-charcoal/50"
-                            >
-                              {option.label}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Dismiss */}
-                    <button
-                      onClick={() => handleDismiss(alert.id)}
-                      disabled={dismissMutation.isPending}
-                      className="p-1.5 hover:bg-red-100 dark:hover:bg-red-900/30 rounded text-red-500 transition-colors"
-                      title="Dismiss"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
+            return (
+              <div
+                key={alert.id}
+                className="flex items-start gap-3 p-4 hover:bg-amber-50/50 dark:hover:bg-amber-900/10 transition-colors group"
+              >
+                <div className={cn("p-2 rounded-lg shrink-0", config.bgColor)}>
+                  <Icon className={cn("w-4 h-4", config.color)} />
                 </div>
-              );
-            })}
 
-          {/* View all link */}
-          {data && data.pagination.hasMore && (
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span
+                      className={cn(
+                        "px-1.5 py-0.5 text-[10px] font-bold uppercase rounded",
+                        PRIORITY_COLORS[alert.priority]
+                      )}
+                    >
+                      {alert.priority}
+                    </span>
+                    <Link
+                      href={`/deals/${alert.dealId}`}
+                      className="text-sm font-medium text-charcoal dark:text-cultured-white hover:text-orange flex items-center gap-1"
+                    >
+                      {alert.dealName}
+                      <ExternalLink className="w-3 h-3" />
+                    </Link>
+                  </div>
+                  <p className="text-sm text-charcoal/70 dark:text-cultured-white/70">
+                    {alert.message}
+                  </p>
+                  <p className="text-xs text-charcoal/40 dark:text-cultured-white/40 mt-1">
+                    {formatDistanceToNow(new Date(alert.createdAt), { addSuffix: true })}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="relative">
+                    <button
+                      onClick={() => setSnoozeOpenFor(isSnoozeOpen ? null : alert.id)}
+                      disabled={snoozeMutation.isPending}
+                      className="p-1.5 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded text-blue-600 transition-colors"
+                      title="Snooze"
+                    >
+                      <Clock className="w-4 h-4" />
+                    </button>
+                    {isSnoozeOpen && (
+                      <div className="absolute right-0 top-full mt-1 z-50 bg-white dark:bg-deep-grey border border-gold/20 dark:border-white/10 rounded-lg shadow-lg py-1 min-w-[120px]">
+                        {SNOOZE_OPTIONS.map((option) => (
+                          <button
+                            key={option.hours}
+                            onClick={() => snoozeMutation.mutate({ alertId: alert.id, hours: option.hours })}
+                            className="w-full px-3 py-1.5 text-left text-sm text-charcoal dark:text-cultured-white hover:bg-alabaster dark:hover:bg-charcoal/50"
+                          >
+                            {option.label}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <button
+                    onClick={() => dismissMutation.mutate({ alertId: alert.id })}
+                    disabled={dismissMutation.isPending}
+                    className="p-1.5 hover:bg-red-100 dark:hover:bg-red-900/30 rounded text-red-500 transition-colors"
+                    title="Dismiss"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+
+          {data?.pagination.hasMore && (
             <div className="px-4 py-3 bg-amber-50/50 dark:bg-amber-900/10 text-center">
               <span className="text-xs text-charcoal/50 dark:text-cultured-white/50">
                 +{data.pagination.total - data.items.length} more alerts

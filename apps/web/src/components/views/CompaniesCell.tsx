@@ -14,7 +14,6 @@ import { Building2, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { DealCompany } from "./mock-data";
 
-// Role badge colors - reused from DealHistoryBlock
 const ROLE_COLORS: Record<string, string> = {
   PLATFORM: "bg-charcoal text-white dark:bg-cultured-white dark:text-charcoal",
   ADD_ON: "bg-orange/20 text-orange dark:bg-orange/30 dark:text-faded-orange",
@@ -30,6 +29,10 @@ function formatRoleName(role: string): string {
     .join(" ");
 }
 
+function getRoleColorClass(role: string): string {
+  return ROLE_COLORS[role] || "bg-gray-100 text-gray-700";
+}
+
 interface CompaniesCellProps {
   companies: DealCompany[];
   variant?: "table" | "card";
@@ -38,10 +41,10 @@ interface CompaniesCellProps {
 export function CompaniesCell({ companies, variant = "table" }: CompaniesCellProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const hasMultipleCompanies = companies.length > 1;
 
-  // Close dropdown when clicking outside
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
+    function handleClickOutside(event: MouseEvent): void {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
@@ -60,49 +63,41 @@ export function CompaniesCell({ companies, variant = "table" }: CompaniesCellPro
   }
 
   const primaryCompany = companies[0];
-  const additionalCount = companies.length - 1;
+
+  function handleToggleDropdown(e: React.MouseEvent): void {
+    e.stopPropagation();
+    if (hasMultipleCompanies) {
+      setIsOpen(!isOpen);
+    }
+  }
 
   return (
     <div ref={containerRef} className="relative">
       <button
-        onClick={(e) => {
-          e.stopPropagation();
-          if (companies.length > 1) {
-            setIsOpen(!isOpen);
-          }
-        }}
+        onClick={handleToggleDropdown}
         className={cn(
           "flex items-center gap-2 text-left group/companies",
           variant === "card" && "w-full"
         )}
       >
-        {/* Primary company */}
         <div className="flex items-center gap-1.5 min-w-0">
-          <span
-            className={cn(
-              "font-medium truncate",
-              variant === "table"
-                ? "text-gold uppercase text-xs tracking-wider"
-                : "text-gold text-xs font-bold uppercase tracking-wider"
-            )}
-          >
+          <span className="font-medium truncate text-gold uppercase text-xs tracking-wider">
             {primaryCompany.name}
           </span>
           <span
             className={cn(
               "px-1.5 py-0.5 rounded text-[9px] font-semibold shrink-0",
-              ROLE_COLORS[primaryCompany.role] || "bg-gray-100 text-gray-700"
+              getRoleColorClass(primaryCompany.role)
             )}
           >
             {formatRoleName(primaryCompany.role)}
           </span>
         </div>
 
-        {/* +N indicator */}
-        {additionalCount > 0 && (
+        {hasMultipleCompanies && (
           <div className="flex items-center gap-0.5 shrink-0">
             <span className="text-xs font-medium text-charcoal/50 dark:text-cultured-white/50 bg-bone dark:bg-panel-dark px-1.5 py-0.5 rounded-full">
-              +{additionalCount}
+              +{companies.length - 1}
             </span>
             <ChevronDown
               className={cn(
@@ -114,8 +109,7 @@ export function CompaniesCell({ companies, variant = "table" }: CompaniesCellPro
         )}
       </button>
 
-      {/* Dropdown */}
-      {isOpen && companies.length > 1 && (
+      {isOpen && hasMultipleCompanies && (
         <div
           className={cn(
             "absolute z-50 mt-1 py-1 bg-white dark:bg-deep-grey border border-gold/20 dark:border-white/10 rounded-lg shadow-lg min-w-[200px]",
@@ -140,7 +134,7 @@ export function CompaniesCell({ companies, variant = "table" }: CompaniesCellPro
               <span
                 className={cn(
                   "px-1.5 py-0.5 rounded text-[9px] font-semibold shrink-0",
-                  ROLE_COLORS[company.role] || "bg-gray-100 text-gray-700"
+                  getRoleColorClass(company.role)
                 )}
               >
                 {formatRoleName(company.role)}

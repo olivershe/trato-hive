@@ -21,92 +21,83 @@ import {
   AlertPriority,
   AlertStatus,
   type AlertPriorityValue,
+  type AlertStatusValue,
   type DealAlert,
   type AlertListResult,
 } from '@trato-hive/shared';
 
-// Threshold for stale deals (days in same stage)
 const STALE_DEAL_THRESHOLD_DAYS = 14;
+const MS_PER_DAY = 1000 * 60 * 60 * 24;
+
+const ACTIVE_STAGES: DealStage[] = [
+  'SOURCING',
+  'INITIAL_REVIEW',
+  'PRELIMINARY_DUE_DILIGENCE',
+  'DEEP_DUE_DILIGENCE',
+  'NEGOTIATION',
+  'CLOSING',
+];
+
+const PRIORITY_ORDER: Record<AlertPriorityValue, number> = {
+  URGENT: 0,
+  HIGH: 1,
+  MEDIUM: 2,
+  LOW: 3,
+};
 
 // In-memory alert state (stub for future persistence)
 const dismissedAlerts = new Set<string>();
 const snoozedAlerts = new Map<string, Date>();
 
+function generateAlertId(dealId: string, type: string): string {
+  return `${type}:${dealId}`;
+}
+
+function formatStageName(stage: string): string {
+  return stage
+    .split('_')
+    .map((word) => word.charAt(0) + word.slice(1).toLowerCase())
+    .join(' ');
+}
+
+function calculateDaysInStage(updatedAt: Date, now: Date): number {
+  return Math.floor((now.getTime() - updatedAt.getTime()) / MS_PER_DAY);
+}
+
+function calculatePriority(daysInStage: number): AlertPriorityValue {
+  if (daysInStage >= 30) return AlertPriority.URGENT;
+  if (daysInStage >= 21) return AlertPriority.HIGH;
+  if (daysInStage >= 14) return AlertPriority.MEDIUM;
+  return AlertPriority.LOW;
+}
+
+function getAlertStatus(isDismissed: boolean, snoozeUntil: Date | null): AlertStatusValue {
+  if (isDismissed) return AlertStatus.DISMISSED;
+  if (snoozeUntil) return AlertStatus.SNOOZED;
+  return AlertStatus.ACTIVE;
+}
+
+function checkSnoozed(alertId: string): Date | null {
+  const snoozeUntil = snoozedAlerts.get(alertId);
+  if (!snoozeUntil) return null;
+
+  if (snoozeUntil <= new Date()) {
+    snoozedAlerts.delete(alertId);
+    return null;
+  }
+  return snoozeUntil;
+}
+
 export class AlertsService {
   constructor(private db: PrismaClient) {}
 
-  /**
-   * Generate alert ID from deal and type
-   */
-  private generateAlertId(dealId: string, type: string): string {
-    return `${type}:${dealId}`;
-  }
-
-  /**
-   * Check if alert is dismissed
-   */
-  private isDismissed(alertId: string): boolean {
-    return dismissedAlerts.has(alertId);
-  }
-
-  /**
-   * Check if alert is snoozed (and still within snooze period)
-   */
-  private isSnoozed(alertId: string): Date | null {
-    const snoozeUntil = snoozedAlerts.get(alertId);
-    if (!snoozeUntil) return null;
-    if (snoozeUntil <= new Date()) {
-      // Snooze expired, remove it
-      snoozedAlerts.delete(alertId);
-      return null;
-    }
-    return snoozeUntil;
-  }
-
-  /**
-   * Calculate alert priority based on days overdue
-   */
-  private calculatePriority(daysInStage: number): AlertPriorityValue {
-    if (daysInStage >= 30) return AlertPriority.URGENT;
-    if (daysInStage >= 21) return AlertPriority.HIGH;
-    if (daysInStage >= 14) return AlertPriority.MEDIUM;
-    return AlertPriority.LOW;
-  }
-
-  /**
-   * Format stage name for display
-   */
-  private formatStageName(stage: string): string {
-    return stage
-      .split('_')
-      .map((word) => word.charAt(0) + word.slice(1).toLowerCase())
-      .join(' ');
-  }
-
-  /**
-   * Get list of active alerts for organization
-   */
-  async getAlerts(
-    input: AlertListInput,
-    organizationId: string
-  ): Promise<AlertListResult> {
+  async getAlerts(input: AlertListInput, organizationId: string): Promise<AlertListResult> {
     const { page, pageSize, includeSnoozed, includeDismissed } = input;
-
-    // Query deals that may trigger alerts
-    // Focus on active deals (not closed)
-    const activeStages: DealStage[] = [
-      'SOURCING',
-      'INITIAL_REVIEW',
-      'PRELIMINARY_DUE_DILIGENCE',
-      'DEEP_DUE_DILIGENCE',
-      'NEGOTIATION',
-      'CLOSING',
-    ];
 
     const deals = await this.db.deal.findMany({
       where: {
         organizationId,
-        stage: { in: activeStages },
+        stage: { in: ACTIVE_STAGES },
       },
       select: {
         id: true,
@@ -114,71 +105,52 @@ export class AlertsService {
         stage: true,
         updatedAt: true,
       },
-      orderBy: { updatedAt: 'asc' }, // Oldest first (most stale)
+      orderBy: { updatedAt: 'asc' },
     });
 
     const now = new Date();
     const alerts: DealAlert[] = [];
 
-    // Generate alerts for stale deals
     for (const deal of deals) {
-      const daysInStage = Math.floor(
-        (now.getTime() - deal.updatedAt.getTime()) / (1000 * 60 * 60 * 24)
-      );
+      const daysInStage = calculateDaysInStage(deal.updatedAt, now);
 
-      if (daysInStage >= STALE_DEAL_THRESHOLD_DAYS) {
-        const alertId = this.generateAlertId(deal.id, AlertType.STAGE_OVERDUE);
-        const snoozeUntil = this.isSnoozed(alertId);
-        const isDismissed = this.isDismissed(alertId);
+      if (daysInStage < STALE_DEAL_THRESHOLD_DAYS) continue;
 
-        // Filter based on input flags
-        if (isDismissed && !includeDismissed) continue;
-        if (snoozeUntil && !includeSnoozed) continue;
+      const alertId = generateAlertId(deal.id, AlertType.STAGE_OVERDUE);
+      const snoozeUntil = checkSnoozed(alertId);
+      const isDismissed = dismissedAlerts.has(alertId);
 
-        const priority = this.calculatePriority(daysInStage);
+      if (isDismissed && !includeDismissed) continue;
+      if (snoozeUntil && !includeSnoozed) continue;
 
-        alerts.push({
-          id: alertId,
-          dealId: deal.id,
-          dealName: deal.name,
-          type: AlertType.STAGE_OVERDUE,
-          priority,
-          status: isDismissed
-            ? AlertStatus.DISMISSED
-            : snoozeUntil
-              ? AlertStatus.SNOOZED
-              : AlertStatus.ACTIVE,
-          message: `"${deal.name}" has been in ${this.formatStageName(deal.stage)} for ${daysInStage} days`,
-          metadata: {
-            daysInStage,
-            currentStage: deal.stage,
-          },
-          snoozeUntil,
-          createdAt: deal.updatedAt,
-        });
-      }
+      alerts.push({
+        id: alertId,
+        dealId: deal.id,
+        dealName: deal.name,
+        type: AlertType.STAGE_OVERDUE,
+        priority: calculatePriority(daysInStage),
+        status: getAlertStatus(isDismissed, snoozeUntil),
+        message: `"${deal.name}" has been in ${formatStageName(deal.stage)} for ${daysInStage} days`,
+        metadata: {
+          daysInStage,
+          currentStage: deal.stage,
+        },
+        snoozeUntil,
+        createdAt: deal.updatedAt,
+      });
     }
 
-    // Sort by priority (URGENT > HIGH > MEDIUM > LOW), then by days
-    const priorityOrder: Record<AlertPriorityValue, number> = {
-      URGENT: 0,
-      HIGH: 1,
-      MEDIUM: 2,
-      LOW: 3,
-    };
     alerts.sort((a, b) => {
-      const pDiff = priorityOrder[a.priority] - priorityOrder[b.priority];
-      if (pDiff !== 0) return pDiff;
+      const priorityDiff = PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority];
+      if (priorityDiff !== 0) return priorityDiff;
       return (b.metadata.daysInStage || 0) - (a.metadata.daysInStage || 0);
     });
 
-    // Paginate
     const total = alerts.length;
     const start = (page - 1) * pageSize;
-    const paginatedAlerts = alerts.slice(start, start + pageSize);
 
     return {
-      items: paginatedAlerts,
+      items: alerts.slice(start, start + pageSize),
       pagination: {
         page,
         pageSize,
@@ -188,20 +160,11 @@ export class AlertsService {
     };
   }
 
-  /**
-   * Dismiss an alert (stub - in-memory)
-   */
-  async dismissAlert(
-    input: DismissAlertInput,
-    _organizationId: string
-  ): Promise<{ success: boolean }> {
+  async dismissAlert(input: DismissAlertInput, _organizationId: string): Promise<{ success: boolean }> {
     dismissedAlerts.add(input.alertId);
     return { success: true };
   }
 
-  /**
-   * Snooze an alert for specified hours (stub - in-memory)
-   */
   async snoozeAlert(
     input: SnoozeAlertInput,
     _organizationId: string

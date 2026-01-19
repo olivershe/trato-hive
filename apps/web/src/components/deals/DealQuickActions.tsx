@@ -9,8 +9,6 @@
  * - Open (O) - Navigate to deal page
  * - Update Stage (S) - Sub-menu with stage selection
  * - Add Company (C) - Placeholder for future implementation
- *
- * Supports keyboard navigation and optimistic updates.
  */
 
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -20,10 +18,10 @@ import {
   ArrowRightCircle,
   Building2,
   ChevronRight,
+  type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-// Stage options for quick update
 const STAGES = [
   { id: "SOURCING", label: "Sourcing" },
   { id: "DILIGENCE", label: "Due Diligence" },
@@ -31,6 +29,58 @@ const STAGES = [
 ] as const;
 
 type StageId = (typeof STAGES)[number]["id"];
+
+interface ActionButtonProps {
+  icon: LucideIcon;
+  label: string;
+  shortcut: string;
+  onClick: () => void;
+  title: string;
+  active?: boolean;
+  disabled?: boolean;
+}
+
+function ActionButton({
+  icon: Icon,
+  label,
+  shortcut,
+  onClick,
+  title,
+  active = false,
+  disabled = false,
+}: ActionButtonProps) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={cn(
+        "flex flex-col items-center gap-1 p-3 rounded-lg transition-colors",
+        disabled && "opacity-50 cursor-not-allowed",
+        active ? "bg-orange/80 hover:bg-orange" : "bg-white/10 hover:bg-white/20"
+      )}
+      title={title}
+    >
+      <Icon className="w-5 h-5 text-white" />
+      <span className="text-[10px] text-white/70">{label}</span>
+      <kbd className="px-1.5 py-0.5 text-[9px] bg-white/20 rounded text-white/80">
+        {shortcut}
+      </kbd>
+    </button>
+  );
+}
+
+function getStageButtonClassName(
+  isCurrent: boolean,
+  isSelected: boolean
+): string {
+  if (isCurrent) {
+    return "text-charcoal/40 dark:text-cultured-white/40 cursor-not-allowed";
+  }
+  if (isSelected) {
+    return "bg-orange/10 text-orange";
+  }
+  return "text-charcoal dark:text-cultured-white hover:bg-alabaster dark:hover:bg-charcoal/50";
+}
 
 interface DealQuickActionsProps {
   dealId: string;
@@ -52,10 +102,12 @@ export function DealQuickActions({
   );
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Handle keyboard shortcuts
+  const navigateToDeal = useCallback(() => {
+    router.push(`/deals/${dealId}`);
+  }, [router, dealId]);
+
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      // Ignore if typing in input
       if (
         e.target instanceof HTMLInputElement ||
         e.target instanceof HTMLTextAreaElement
@@ -63,79 +115,73 @@ export function DealQuickActions({
         return;
       }
 
-      switch (e.key.toLowerCase()) {
-        case "o":
-          e.preventDefault();
-          router.push(`/deals/${dealId}`);
-          break;
-        case "s":
-          e.preventDefault();
-          setShowStageMenu(true);
-          break;
-        case "c":
-          e.preventDefault();
-          // TODO: Implement Add Company modal
-          break;
-        case "escape":
-          e.preventDefault();
-          if (showStageMenu) {
-            setShowStageMenu(false);
-          } else {
-            onClose?.();
-          }
-          break;
-        case "arrowup":
-          if (showStageMenu) {
-            e.preventDefault();
-            setSelectedStageIndex((prev) =>
-              prev > 0 ? prev - 1 : STAGES.length - 1
-            );
-          }
-          break;
-        case "arrowdown":
-          if (showStageMenu) {
-            e.preventDefault();
-            setSelectedStageIndex((prev) =>
-              prev < STAGES.length - 1 ? prev + 1 : 0
-            );
-          }
-          break;
-        case "enter":
-          if (showStageMenu) {
-            e.preventDefault();
-            const stage = STAGES[selectedStageIndex];
-            if (stage && stage.id !== currentStage) {
-              onStageChange(stage.id);
-            }
-            setShowStageMenu(false);
-          }
-          break;
+      const key = e.key.toLowerCase();
+
+      if (key === "o") {
+        e.preventDefault();
+        navigateToDeal();
+        return;
+      }
+
+      if (key === "s") {
+        e.preventDefault();
+        setShowStageMenu(true);
+        return;
+      }
+
+      if (key === "escape") {
+        e.preventDefault();
+        if (showStageMenu) {
+          setShowStageMenu(false);
+        } else {
+          onClose?.();
+        }
+        return;
+      }
+
+      if (!showStageMenu) return;
+
+      if (key === "arrowup") {
+        e.preventDefault();
+        setSelectedStageIndex((prev) => (prev > 0 ? prev - 1 : STAGES.length - 1));
+      } else if (key === "arrowdown") {
+        e.preventDefault();
+        setSelectedStageIndex((prev) => (prev < STAGES.length - 1 ? prev + 1 : 0));
+      } else if (key === "enter") {
+        e.preventDefault();
+        const stage = STAGES[selectedStageIndex];
+        if (stage && stage.id !== currentStage) {
+          onStageChange(stage.id);
+        }
+        setShowStageMenu(false);
       }
     },
-    [dealId, router, showStageMenu, selectedStageIndex, currentStage, onStageChange, onClose]
+    [navigateToDeal, showStageMenu, selectedStageIndex, currentStage, onStageChange, onClose]
   );
 
-  // Attach keyboard listener
   useEffect(() => {
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown]);
 
-  // Close stage menu on outside click
   useEffect(() => {
     if (!showStageMenu) return;
 
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target as Node)
-      ) {
+    function handleClickOutside(event: MouseEvent): void {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setShowStageMenu(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showStageMenu]);
+
+  function handleStageSelect(stageId: StageId): void {
+    if (stageId !== currentStage) {
+      onStageChange(stageId);
+    }
+    setShowStageMenu(false);
+  }
 
   return (
     <div
@@ -144,96 +190,70 @@ export function DealQuickActions({
       onClick={(e) => e.stopPropagation()}
     >
       <div className="flex gap-2">
-        {/* Open Deal */}
-        <button
-          onClick={() => router.push(`/deals/${dealId}`)}
-          className="flex flex-col items-center gap-1 p-3 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
+        <ActionButton
+          icon={ExternalLink}
+          label="Open"
+          shortcut="O"
+          onClick={navigateToDeal}
           title="Open deal (O)"
-        >
-          <ExternalLink className="w-5 h-5 text-white" />
-          <span className="text-[10px] text-white/70">Open</span>
-          <kbd className="px-1.5 py-0.5 text-[9px] bg-white/20 rounded text-white/80">
-            O
-          </kbd>
-        </button>
+        />
 
-        {/* Update Stage */}
         <div className="relative">
-          <button
+          <ActionButton
+            icon={ArrowRightCircle}
+            label="Stage"
+            shortcut="S"
             onClick={() => setShowStageMenu(!showStageMenu)}
-            className={cn(
-              "flex flex-col items-center gap-1 p-3 rounded-lg transition-colors",
-              showStageMenu
-                ? "bg-orange/80 hover:bg-orange"
-                : "bg-white/10 hover:bg-white/20"
-            )}
             title="Update stage (S)"
-          >
-            <ArrowRightCircle className="w-5 h-5 text-white" />
-            <span className="text-[10px] text-white/70">Stage</span>
-            <kbd className="px-1.5 py-0.5 text-[9px] bg-white/20 rounded text-white/80">
-              S
-            </kbd>
-          </button>
+            active={showStageMenu}
+          />
 
-          {/* Stage Sub-menu */}
           {showStageMenu && (
             <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-white dark:bg-deep-grey border border-gold/20 dark:border-white/10 rounded-lg shadow-xl py-1 min-w-[140px] z-20">
               <div className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-charcoal/50 dark:text-cultured-white/50 border-b border-gold/10">
                 Move to
               </div>
-              {STAGES.map((stage, index) => (
-                <button
-                  key={stage.id}
-                  onClick={() => {
-                    if (stage.id !== currentStage) {
-                      onStageChange(stage.id);
-                    }
-                    setShowStageMenu(false);
-                  }}
-                  className={cn(
-                    "w-full flex items-center justify-between px-3 py-2 text-sm transition-colors",
-                    stage.id === currentStage
-                      ? "text-charcoal/40 dark:text-cultured-white/40 cursor-not-allowed"
-                      : index === selectedStageIndex
-                        ? "bg-orange/10 text-orange"
-                        : "text-charcoal dark:text-cultured-white hover:bg-alabaster dark:hover:bg-charcoal/50"
-                  )}
-                  disabled={stage.id === currentStage}
-                >
-                  <span>{stage.label}</span>
-                  {stage.id === currentStage && (
-                    <span className="text-[10px] text-charcoal/40 dark:text-cultured-white/40">
-                      Current
-                    </span>
-                  )}
-                  {index === selectedStageIndex && stage.id !== currentStage && (
-                    <ChevronRight className="w-3.5 h-3.5 text-orange" />
-                  )}
-                </button>
-              ))}
+              {STAGES.map((stage, index) => {
+                const isCurrent = stage.id === currentStage;
+                const isSelected = index === selectedStageIndex;
+
+                return (
+                  <button
+                    key={stage.id}
+                    onClick={() => handleStageSelect(stage.id)}
+                    disabled={isCurrent}
+                    className={cn(
+                      "w-full flex items-center justify-between px-3 py-2 text-sm transition-colors",
+                      getStageButtonClassName(isCurrent, isSelected)
+                    )}
+                  >
+                    <span>{stage.label}</span>
+                    {isCurrent && (
+                      <span className="text-[10px] text-charcoal/40 dark:text-cultured-white/40">
+                        Current
+                      </span>
+                    )}
+                    {isSelected && !isCurrent && (
+                      <ChevronRight className="w-3.5 h-3.5 text-orange" />
+                    )}
+                  </button>
+                );
+              })}
               <div className="px-2 py-1 mt-1 border-t border-gold/10 text-[10px] text-charcoal/40 dark:text-cultured-white/40">
-                Use ↑↓ arrows, Enter to select
+                Use arrow keys, Enter to select
               </div>
             </div>
           )}
         </div>
 
-        {/* Add Company (placeholder) */}
-        <button
-          onClick={() => {
-            // TODO: Implement Add Company modal
-          }}
-          className="flex flex-col items-center gap-1 p-3 rounded-lg bg-white/10 hover:bg-white/20 transition-colors opacity-50 cursor-not-allowed"
+        <ActionButton
+          icon={Building2}
+          label="Company"
+          shortcut="C"
+          onClick={() => {}}
           title="Add company (C) - Coming soon"
           disabled
-        >
-          <Building2 className="w-5 h-5 text-white" />
-          <span className="text-[10px] text-white/70">Company</span>
-          <kbd className="px-1.5 py-0.5 text-[9px] bg-white/20 rounded text-white/80">
-            C
-          </kbd>
-        </button>
+        />
       </div>
     </div>
   );
