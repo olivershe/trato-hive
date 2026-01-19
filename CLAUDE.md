@@ -64,7 +64,8 @@ Data flows upward from infrastructure to experience. **See `/docs/architecture/`
 # 🎨 Design & UI (Pointer)
 - **System:** The Intelligent Hive (Brand Pack v2.0).
 - **Compliance:** BEFORE code, read `context/design-tokens.md` for Hex codes/Fonts.
-- **Check:** Run `/design:quick-check` after UI changes.
+- **Quick Check:** Run `/design-check` after minor UI changes.
+- **Full Review:** Run `/review-ui-chrome` for comprehensive UI review via Chrome extension.
 - **Colors:** Teal Blue (`#2F7E8A`) is for **CITATIONS ONLY**.
 
 # 🔧 Tools & Commands
@@ -90,7 +91,7 @@ Custom blocks go in `apps/web/src/components/editor/extensions/` and must be reg
 **Architecture & Agents:**
 - **7-Layer Architecture:** Data ownership rules critical for Modules 2-5 (see `/docs/architecture/`)
 - **@architecture-review:** Invoke for multi-layer changes, new packages, DB schema changes
-- **@design-review:** Invoke for significant UI/UX changes before PR merge
+- **`/review-ui-chrome`:** Run for UI/UX reviews via Chrome extension (replaces @design-review)
 - **@code-simplifier:** Invoke on PRs to refine code for clarity, consistency, and maintainability
 
 **Logging (When Required):**
