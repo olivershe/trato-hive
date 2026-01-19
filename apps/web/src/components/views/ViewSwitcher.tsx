@@ -37,7 +37,7 @@ export function ViewSwitcher() {
                             key={view.id}
                             onClick={() => setView(view.id)}
                             className={cn(
-                                "flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all",
+                                "flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-[color,background-color,box-shadow] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40",
                                 isActive
                                     ? "bg-white dark:bg-deep-grey text-gold shadow-sm"
                                     : "text-charcoal/60 dark:text-cultured-white/60 hover:text-charcoal hover:bg-gold/10"

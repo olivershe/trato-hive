@@ -314,8 +314,8 @@ function EditModal({ isOpen, originalAnswer, onSave, onCancel, isLoading }: Edit
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-white dark:bg-deep-grey rounded-lg shadow-xl w-full max-w-2xl mx-4 max-h-[80vh] flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 overscroll-contain">
+      <div className="bg-white dark:bg-deep-grey rounded-lg shadow-xl w-full max-w-2xl mx-4 max-h-[80vh] flex flex-col overscroll-contain">
         <div className="flex items-center justify-between px-4 py-3 border-b border-bone dark:border-charcoal/30">
           <h3 className="text-sm font-semibold text-charcoal dark:text-cultured-white">
             Edit Answer
@@ -332,7 +332,7 @@ function EditModal({ isOpen, originalAnswer, onSave, onCancel, isLoading }: Edit
             value={editedAnswer}
             onChange={(e) => setEditedAnswer(e.target.value)}
             className="w-full h-64 px-3 py-2 rounded-lg border border-bone dark:border-charcoal/30 bg-white dark:bg-charcoal/20 text-charcoal dark:text-cultured-white text-sm resize-none focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-500"
-            placeholder="Edit the AI answer..."
+            placeholder="Edit the AI answer…"
           />
         </div>
         <div className="flex justify-end gap-2 px-4 py-3 border-t border-bone dark:border-charcoal/30">
@@ -370,8 +370,8 @@ function RejectModal({ isOpen, onConfirm, onCancel, isLoading }: RejectModalProp
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-white dark:bg-deep-grey rounded-lg shadow-xl w-full max-w-md mx-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 overscroll-contain">
+      <div className="bg-white dark:bg-deep-grey rounded-lg shadow-xl w-full max-w-md mx-4 overscroll-contain">
         <div className="flex items-center justify-between px-4 py-3 border-b border-bone dark:border-charcoal/30">
           <h3 className="text-sm font-semibold text-charcoal dark:text-cultured-white">
             Reject Answer
@@ -391,7 +391,7 @@ function RejectModal({ isOpen, onConfirm, onCancel, isLoading }: RejectModalProp
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             className="w-full h-24 px-3 py-2 rounded-lg border border-bone dark:border-charcoal/30 bg-white dark:bg-charcoal/20 text-charcoal dark:text-cultured-white text-sm resize-none focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-red-500"
-            placeholder="Reason (optional)..."
+            placeholder="Reason (optional)…"
           />
         </div>
         <div className="flex justify-end gap-2 px-4 py-3 border-t border-bone dark:border-charcoal/30">
@@ -615,7 +615,7 @@ function QueryCard({ node, updateAttributes }: NodeViewProps) {
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Ask a question about this deal..."
+                placeholder="Ask a question about this deal…"
                 disabled={status === "loading"}
                 className="w-full px-4 py-2.5 pr-10 rounded-lg border border-bone dark:border-charcoal/30 bg-white dark:bg-charcoal/20 text-charcoal dark:text-cultured-white placeholder:text-charcoal/40 dark:placeholder:text-cultured-white/40 focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-500 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
               />

@@ -340,7 +340,7 @@ function DatabasePicker({ mode, onModeChange, onSelect, dealId }: DatabasePicker
         <div className="grid grid-cols-2 gap-2">
           <button
             onClick={() => onModeChange("create")}
-            className="flex items-center gap-2 p-2.5 rounded-md border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-deep-grey hover:border-gold/60 hover:bg-bone/50 dark:hover:bg-surface-dark hover:shadow-md transition-all duration-150 text-left group"
+            className="flex items-center gap-2 p-2.5 rounded-md border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-deep-grey hover:border-gold/60 hover:bg-bone/50 dark:hover:bg-surface-dark hover:shadow-md transition-[color,background-color,border-color,box-shadow] duration-150 text-left group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40"
           >
             <Plus className="w-4 h-4 text-gold group-hover:scale-110 transition-transform" />
             <div>
@@ -351,7 +351,7 @@ function DatabasePicker({ mode, onModeChange, onSelect, dealId }: DatabasePicker
 
           <button
             onClick={() => onModeChange("link")}
-            className="flex items-center gap-2 p-2.5 rounded-md border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-deep-grey hover:border-gold/60 hover:bg-bone/50 dark:hover:bg-surface-dark hover:shadow-md transition-all duration-150 text-left group"
+            className="flex items-center gap-2 p-2.5 rounded-md border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-deep-grey hover:border-gold/60 hover:bg-bone/50 dark:hover:bg-surface-dark hover:shadow-md transition-[color,background-color,border-color,box-shadow] duration-150 text-left group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40"
           >
             <Link2 className="w-4 h-4 text-gold group-hover:scale-110 transition-transform" />
             <div>
@@ -391,7 +391,7 @@ function DatabasePicker({ mode, onModeChange, onSelect, dealId }: DatabasePicker
               value={newDbName}
               onChange={(e) => setNewDbName(e.target.value)}
               placeholder="e.g., Due Diligence Checklist"
-              className="w-full px-2 py-1 text-xs rounded-md border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-deep-grey text-charcoal dark:text-cultured-white placeholder:text-charcoal/30 dark:placeholder:text-cultured-white/30 focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/20 transition-all"
+              className="w-full px-2 py-1 text-xs rounded-md border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-deep-grey text-charcoal dark:text-cultured-white placeholder:text-charcoal/30 dark:placeholder:text-cultured-white/30 focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/20 transition-colors"
             />
           </div>
 
@@ -404,7 +404,7 @@ function DatabasePicker({ mode, onModeChange, onSelect, dealId }: DatabasePicker
                 <button
                   key={template.id}
                   onClick={() => setSelectedTemplate(template.id)}
-                  className={`p-1.5 rounded-md border text-left transition-all duration-150 ${
+                  className={`p-1.5 rounded-md border text-left transition-[color,background-color,border-color,box-shadow] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 ${
                     selectedTemplate === template.id
                       ? "border-gold bg-gold/10 dark:bg-gold/20 shadow-sm"
                       : "border-bone dark:border-charcoal/60 bg-alabaster dark:bg-deep-grey hover:border-gold/40 hover:shadow-sm"
@@ -420,7 +420,7 @@ function DatabasePicker({ mode, onModeChange, onSelect, dealId }: DatabasePicker
           <button
             onClick={handleCreate}
             disabled={!newDbName.trim() || createMutation.isPending}
-            className="w-full px-2.5 py-1.5 text-xs rounded-md bg-gold text-white font-medium hover:bg-gold/90 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 transition-all duration-150"
+            className="w-full px-2.5 py-1.5 text-xs rounded-md bg-gold text-white font-medium hover:bg-gold/90 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 transition-[color,background-color,box-shadow] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40"
           >
             {createMutation.isPending && <Loader2 className="w-3 h-3 animate-spin" />}
             Create Database
@@ -467,7 +467,7 @@ function DatabasePicker({ mode, onModeChange, onSelect, dealId }: DatabasePicker
             <button
               key={db.id}
               onClick={() => onSelect(db.id)}
-              className="w-full p-1.5 rounded-md border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-deep-grey hover:border-gold/60 hover:bg-bone/50 dark:hover:bg-surface-dark hover:shadow-md transition-all duration-150 text-left group"
+              className="w-full p-1.5 rounded-md border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-deep-grey hover:border-gold/60 hover:bg-bone/50 dark:hover:bg-surface-dark hover:shadow-md transition-[color,background-color,border-color,box-shadow] duration-150 text-left group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40"
             >
               <div className="font-medium text-xs text-charcoal dark:text-cultured-white group-hover:text-gold transition-colors">{db.name}</div>
               {db.description && (
@@ -570,7 +570,7 @@ function DatabaseView({
           {/* Import button */}
           <button
             onClick={() => setImportDialogOpen(true)}
-            className="flex items-center gap-1 px-1.5 py-0.5 text-[11px] text-charcoal/50 dark:text-cultured-white/50 hover:text-charcoal dark:hover:text-cultured-white hover:bg-bone/60 dark:hover:bg-surface-dark rounded transition-all duration-150"
+            className="flex items-center gap-1 px-1.5 py-0.5 text-[11px] text-charcoal/50 dark:text-cultured-white/50 hover:text-charcoal dark:hover:text-cultured-white hover:bg-bone/60 dark:hover:bg-surface-dark rounded transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40"
             title="Import from CSV"
           >
             <Plus className="w-3 h-3" />
@@ -582,7 +582,7 @@ function DatabaseView({
           {/* View switcher */}
           <button
             onClick={() => onViewTypeChange("table")}
-            className={`p-1 rounded transition-all duration-150 ${
+            className={`p-1 rounded transition-[color,background-color,box-shadow] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 ${
               viewType === "table" ? "bg-gold/20 text-gold shadow-sm" : "text-charcoal/40 dark:text-cultured-white/40 hover:bg-bone/60 dark:hover:bg-surface-dark hover:text-charcoal dark:hover:text-cultured-white"
             }`}
             title="Table view"
@@ -591,7 +591,7 @@ function DatabaseView({
           </button>
           <button
             onClick={() => onViewTypeChange("kanban")}
-            className={`p-1 rounded transition-all duration-150 ${
+            className={`p-1 rounded transition-[color,background-color,box-shadow] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 ${
               viewType === "kanban" ? "bg-gold/20 text-gold shadow-sm" : "text-charcoal/40 dark:text-cultured-white/40 hover:bg-bone/60 dark:hover:bg-surface-dark hover:text-charcoal dark:hover:text-cultured-white"
             }`}
             title="Kanban view"
@@ -604,7 +604,7 @@ function DatabaseView({
           </button>
           <button
             onClick={() => onViewTypeChange("gallery")}
-            className={`p-1 rounded transition-all duration-150 ${
+            className={`p-1 rounded transition-[color,background-color,box-shadow] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 ${
               viewType === "gallery" ? "bg-gold/20 text-gold shadow-sm" : "text-charcoal/40 dark:text-cultured-white/40 hover:bg-bone/60 dark:hover:bg-surface-dark hover:text-charcoal dark:hover:text-cultured-white"
             }`}
             title="Gallery view"
@@ -960,7 +960,7 @@ function DatabaseTableView({ database, sortBy, hiddenColumns, onSortChange }: Da
                 ))}
               </SortableContext>
               {/* Add Column - Notion-style inline input + type picker */}
-              <th className={`relative ${showAddColumn ? "min-w-[200px]" : "w-8"} px-1 transition-all`} role="columnheader">
+              <th className={`relative ${showAddColumn ? "min-w-[200px]" : "w-8"} px-1 transition-[width,min-width]`} role="columnheader">
                 {!showAddColumn ? (
                   <button
                     onClick={() => setShowAddColumn(true)}
@@ -984,7 +984,7 @@ function DatabaseTableView({ database, sortBy, hiddenColumns, onSortChange }: Da
                             setNewColName("");
                           }
                         }}
-                        placeholder="Type property name..."
+                        placeholder="Type property name…"
                         autoFocus
                         className="flex-1 bg-transparent text-[11px] font-medium text-charcoal dark:text-cultured-white placeholder:text-charcoal/40 dark:placeholder:text-cultured-white/40 focus:outline-none"
                       />
@@ -1417,9 +1417,9 @@ function CellRenderer({ column, value, entryId, databaseId }: CellRendererProps)
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search entries..."
+              placeholder="Search entries…"
               autoFocus
-              className="w-full px-1.5 py-1 text-[11px] rounded-sm border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-surface-dark text-charcoal dark:text-cultured-white placeholder:text-charcoal/30 focus:border-gold focus:ring-1 focus:ring-gold/20 transition-all mb-1"
+              className="w-full px-1.5 py-1 text-[11px] rounded-sm border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-surface-dark text-charcoal dark:text-cultured-white placeholder:text-charcoal/30 focus:border-gold focus:ring-1 focus:ring-gold/20 transition-colors mb-1"
             />
             <div className="max-h-32 overflow-y-auto space-y-0.5">
               {searchResults?.filter((r) => !linkedIds.includes(r.id)).map((result) => (
@@ -1478,7 +1478,7 @@ function CellRenderer({ column, value, entryId, databaseId }: CellRendererProps)
         onBlur={handleSave}
         onKeyDown={handleKeyDown}
         autoFocus
-        className="w-full px-1 py-0.5 text-[11px] rounded-sm border border-gold/60 bg-alabaster dark:bg-deep-grey text-charcoal dark:text-cultured-white focus:outline-none focus:ring-1 focus:ring-gold/30 focus:border-gold transition-all"
+        className="w-full px-1 py-0.5 text-[11px] rounded-sm border border-gold/60 bg-alabaster dark:bg-deep-grey text-charcoal dark:text-cultured-white focus:outline-none focus:ring-1 focus:ring-gold/30 focus:border-gold transition-colors"
         aria-label={`Edit ${column.name}`}
       />
     );
@@ -1607,7 +1607,7 @@ function DatabaseKanbanView({ database, groupBy, onGroupByChange }: DatabaseKanb
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, x: -10 }}
                         transition={{ duration: 0.15 }}
-                        className="p-1.5 bg-alabaster dark:bg-deep-grey rounded-sm border border-bone/60 dark:border-charcoal/40 shadow-sm hover:shadow-md hover:border-gold/30 transition-all duration-150 cursor-pointer group"
+                        className="p-1.5 bg-alabaster dark:bg-deep-grey rounded-sm border border-bone/60 dark:border-charcoal/40 shadow-sm hover:shadow-md hover:border-gold/30 transition-[color,background-color,border-color,box-shadow] duration-150 cursor-pointer group"
                       >
                         <div className="font-medium text-[11px] text-charcoal dark:text-cultured-white group-hover:text-gold transition-colors">
                           {titleColumn
@@ -1658,7 +1658,7 @@ function DatabaseGalleryView({ database }: DatabaseGalleryViewProps) {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
             transition={{ duration: 0.15 }}
-            className="p-2 bg-bone/30 dark:bg-surface-dark/50 rounded-md border border-bone/60 dark:border-charcoal/40 hover:border-gold/40 hover:shadow-md hover:bg-bone/50 dark:hover:bg-surface-dark transition-all duration-150 cursor-pointer group"
+            className="p-2 bg-bone/30 dark:bg-surface-dark/50 rounded-md border border-bone/60 dark:border-charcoal/40 hover:border-gold/40 hover:shadow-md hover:bg-bone/50 dark:hover:bg-surface-dark transition-[color,background-color,border-color,box-shadow] duration-150 cursor-pointer group"
           >
             <div className="font-medium text-[11px] text-charcoal dark:text-cultured-white mb-1 group-hover:text-gold transition-colors truncate">
               {titleColumn
@@ -1814,14 +1814,14 @@ function EntryFormSheet({ database, entry, open, onOpenChange }: EntryFormSheetP
             <button
               type="button"
               onClick={() => onOpenChange(false)}
-              className="px-5 py-2.5 text-sm font-medium text-charcoal bg-white/20 hover:bg-white/40 backdrop-blur-sm border border-white/30 rounded-full transition-all dark:text-cultured-white dark:bg-white/10 dark:hover:bg-white/20 dark:border-white/15"
+              className="px-5 py-2.5 text-sm font-medium text-charcoal bg-white/20 hover:bg-white/40 backdrop-blur-sm border border-white/30 rounded-full transition-[color,background-color] dark:text-cultured-white dark:bg-white/10 dark:hover:bg-white/20 dark:border-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isLoading}
-              className="px-5 py-2.5 text-sm font-medium text-white bg-gold/90 hover:bg-gold backdrop-blur-sm rounded-full shadow-lg shadow-gold/20 transition-all disabled:opacity-50"
+              className="px-5 py-2.5 text-sm font-medium text-white bg-gold/90 hover:bg-gold backdrop-blur-sm rounded-full shadow-lg shadow-gold/20 transition-[color,background-color] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40"
             >
               {isLoading ? "Saving..." : entry ? "Update" : "Create"}
             </button>
@@ -1859,9 +1859,9 @@ function FormField({ column, value, onChange }: FormFieldProps) {
         <select
           value={String(value ?? "")}
           onChange={(e) => onChange(e.target.value || null)}
-          className="w-full px-4 py-2.5 rounded-xl border border-white/50 bg-white/30 backdrop-blur-sm text-charcoal shadow-sm focus:border-gold focus:ring-2 focus:ring-gold/30 focus:bg-white/50 transition-all dark:bg-white/10 dark:border-white/20 dark:text-cultured-white dark:focus:bg-white/15"
+          className="w-full px-4 py-2.5 rounded-xl border border-white/50 bg-white/30 backdrop-blur-sm text-charcoal shadow-sm focus:border-gold focus:ring-2 focus:ring-gold/30 focus:bg-white/50 transition-colors dark:bg-white/10 dark:border-white/20 dark:text-cultured-white dark:focus:bg-white/15"
         >
-          <option value="">Select...</option>
+          <option value="">Select…</option>
           {column.options?.map((opt) => (
             <option key={opt} value={opt}>
               {opt}
@@ -1900,7 +1900,7 @@ function FormField({ column, value, onChange }: FormFieldProps) {
           type="number"
           value={value != null ? String(value) : ""}
           onChange={(e) => onChange(e.target.value ? parseFloat(e.target.value) : null)}
-          className="w-full px-4 py-2.5 rounded-xl border border-white/50 bg-white/30 backdrop-blur-sm text-charcoal placeholder:text-charcoal/40 shadow-sm focus:border-gold focus:ring-2 focus:ring-gold/30 focus:bg-white/50 transition-all dark:bg-white/10 dark:border-white/20 dark:text-cultured-white dark:placeholder:text-cultured-white/40 dark:focus:bg-white/15"
+          className="w-full px-4 py-2.5 rounded-xl border border-white/50 bg-white/30 backdrop-blur-sm text-charcoal placeholder:text-charcoal/40 shadow-sm focus:border-gold focus:ring-2 focus:ring-gold/30 focus:bg-white/50 transition-colors dark:bg-white/10 dark:border-white/20 dark:text-cultured-white dark:placeholder:text-cultured-white/40 dark:focus:bg-white/15 tabular-nums"
         />
       );
 
@@ -1910,7 +1910,7 @@ function FormField({ column, value, onChange }: FormFieldProps) {
           type="date"
           value={String(value ?? "")}
           onChange={(e) => onChange(e.target.value || null)}
-          className="w-full px-4 py-2.5 rounded-xl border border-white/50 bg-white/30 backdrop-blur-sm text-charcoal placeholder:text-charcoal/40 shadow-sm focus:border-gold focus:ring-2 focus:ring-gold/30 focus:bg-white/50 transition-all dark:bg-white/10 dark:border-white/20 dark:text-cultured-white dark:placeholder:text-cultured-white/40 dark:focus:bg-white/15"
+          className="w-full px-4 py-2.5 rounded-xl border border-white/50 bg-white/30 backdrop-blur-sm text-charcoal placeholder:text-charcoal/40 shadow-sm focus:border-gold focus:ring-2 focus:ring-gold/30 focus:bg-white/50 transition-colors dark:bg-white/10 dark:border-white/20 dark:text-cultured-white dark:placeholder:text-cultured-white/40 dark:focus:bg-white/15"
         />
       );
 
@@ -1920,8 +1920,8 @@ function FormField({ column, value, onChange }: FormFieldProps) {
           type="url"
           value={String(value ?? "")}
           onChange={(e) => onChange(e.target.value || null)}
-          placeholder="https://..."
-          className="w-full px-4 py-2.5 rounded-xl border border-white/50 bg-white/30 backdrop-blur-sm text-charcoal placeholder:text-charcoal/40 shadow-sm focus:border-gold focus:ring-2 focus:ring-gold/30 focus:bg-white/50 transition-all dark:bg-white/10 dark:border-white/20 dark:text-cultured-white dark:placeholder:text-cultured-white/40 dark:focus:bg-white/15"
+          placeholder="https://…"
+          className="w-full px-4 py-2.5 rounded-xl border border-white/50 bg-white/30 backdrop-blur-sm text-charcoal placeholder:text-charcoal/40 shadow-sm focus:border-gold focus:ring-2 focus:ring-gold/30 focus:bg-white/50 transition-colors dark:bg-white/10 dark:border-white/20 dark:text-cultured-white dark:placeholder:text-cultured-white/40 dark:focus:bg-white/15"
         />
       );
 
@@ -1931,7 +1931,7 @@ function FormField({ column, value, onChange }: FormFieldProps) {
           type="text"
           value={String(value ?? "")}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full px-4 py-2.5 rounded-xl border border-white/50 bg-white/30 backdrop-blur-sm text-charcoal placeholder:text-charcoal/40 shadow-sm focus:border-gold focus:ring-2 focus:ring-gold/30 focus:bg-white/50 transition-all dark:bg-white/10 dark:border-white/20 dark:text-cultured-white dark:placeholder:text-cultured-white/40 dark:focus:bg-white/15"
+          className="w-full px-4 py-2.5 rounded-xl border border-white/50 bg-white/30 backdrop-blur-sm text-charcoal placeholder:text-charcoal/40 shadow-sm focus:border-gold focus:ring-2 focus:ring-gold/30 focus:bg-white/50 transition-colors dark:bg-white/10 dark:border-white/20 dark:text-cultured-white dark:placeholder:text-cultured-white/40 dark:focus:bg-white/15"
         />
       );
   }
@@ -2160,7 +2160,7 @@ function ColumnConfigPopover({ column, databaseId, onClose }: ColumnConfigPopove
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-full px-1.5 py-0.5 text-[11px] rounded-sm border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-surface-dark text-charcoal dark:text-cultured-white focus:border-gold focus:ring-1 focus:ring-gold/20 transition-all"
+          className="w-full px-1.5 py-0.5 text-[11px] rounded-sm border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-surface-dark text-charcoal dark:text-cultured-white focus:border-gold focus:ring-1 focus:ring-gold/20 transition-colors"
         />
       </div>
 
@@ -2170,7 +2170,7 @@ function ColumnConfigPopover({ column, databaseId, onClose }: ColumnConfigPopove
         <select
           value={type}
           onChange={(e) => setType(e.target.value)}
-          className="w-full px-1.5 py-0.5 text-[11px] rounded-sm border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-surface-dark text-charcoal dark:text-cultured-white focus:border-gold focus:ring-1 focus:ring-gold/20 transition-all"
+          className="w-full px-1.5 py-0.5 text-[11px] rounded-sm border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-surface-dark text-charcoal dark:text-cultured-white focus:border-gold focus:ring-1 focus:ring-gold/20 transition-colors"
         >
           {columnTypes.map((t) => (
             <option key={t.value} value={t.value}>{t.label}</option>
@@ -2198,8 +2198,8 @@ function ColumnConfigPopover({ column, databaseId, onClose }: ColumnConfigPopove
               value={newOption}
               onChange={(e) => setNewOption(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleAddOption()}
-              placeholder="Add option..."
-              className="flex-1 px-1 py-0.5 text-[10px] rounded-sm border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-surface-dark text-charcoal dark:text-cultured-white placeholder:text-charcoal/30 dark:placeholder:text-cultured-white/30 focus:border-gold transition-all"
+              placeholder="Add option…"
+              className="flex-1 px-1 py-0.5 text-[10px] rounded-sm border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-surface-dark text-charcoal dark:text-cultured-white placeholder:text-charcoal/30 dark:placeholder:text-cultured-white/30 focus:border-gold transition-colors"
             />
             <button
               onClick={handleAddOption}
@@ -2241,13 +2241,13 @@ function ColumnConfigPopover({ column, databaseId, onClose }: ColumnConfigPopove
               value={newStatusName}
               onChange={(e) => setNewStatusName(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleAddStatusOption()}
-              placeholder="Status name..."
-              className="flex-1 px-1 py-0.5 text-[10px] rounded-sm border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-surface-dark text-charcoal dark:text-cultured-white placeholder:text-charcoal/30 dark:placeholder:text-cultured-white/30 focus:border-gold transition-all"
+              placeholder="Status name…"
+              className="flex-1 px-1 py-0.5 text-[10px] rounded-sm border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-surface-dark text-charcoal dark:text-cultured-white placeholder:text-charcoal/30 dark:placeholder:text-cultured-white/30 focus:border-gold transition-colors"
             />
             <select
               value={newStatusColor}
               onChange={(e) => setNewStatusColor(e.target.value as StatusColor)}
-              className="px-1 py-0.5 text-[10px] rounded-sm border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-surface-dark text-charcoal dark:text-cultured-white focus:border-gold transition-all"
+              className="px-1 py-0.5 text-[10px] rounded-sm border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-surface-dark text-charcoal dark:text-cultured-white focus:border-gold transition-colors"
             >
               {statusColors.map((c) => (
                 <option key={c.value} value={c.value}>{c.label}</option>
@@ -2271,9 +2271,9 @@ function ColumnConfigPopover({ column, databaseId, onClose }: ColumnConfigPopove
             <select
               value={targetDatabaseId}
               onChange={(e) => setTargetDatabaseId(e.target.value)}
-              className="w-full px-1.5 py-0.5 text-[11px] rounded-sm border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-surface-dark text-charcoal dark:text-cultured-white focus:border-gold focus:ring-1 focus:ring-gold/20 transition-all"
+              className="w-full px-1.5 py-0.5 text-[11px] rounded-sm border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-surface-dark text-charcoal dark:text-cultured-white focus:border-gold focus:ring-1 focus:ring-gold/20 transition-colors"
             >
-              <option value="">Select database...</option>
+              <option value="">Select database…</option>
               {availableDatabases?.items
                 .filter((db) => db.id !== databaseId) // Exclude current database
                 .map((db) => (
@@ -2325,9 +2325,9 @@ function ColumnConfigPopover({ column, databaseId, onClose }: ColumnConfigPopove
                 setRollupSourceColumnId(e.target.value);
                 setRollupTargetColumnId(""); // Reset target when source changes
               }}
-              className="w-full px-1.5 py-0.5 text-[11px] rounded-sm border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-surface-dark text-charcoal dark:text-cultured-white focus:border-gold focus:ring-1 focus:ring-gold/20 transition-all"
+              className="w-full px-1.5 py-0.5 text-[11px] rounded-sm border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-surface-dark text-charcoal dark:text-cultured-white focus:border-gold focus:ring-1 focus:ring-gold/20 transition-colors"
             >
-              <option value="">Select relation column...</option>
+              <option value="">Select relation column…</option>
               {relationColumns.map((col) => (
                 <option key={col.id} value={col.id}>
                   {col.name}
@@ -2347,9 +2347,9 @@ function ColumnConfigPopover({ column, databaseId, onClose }: ColumnConfigPopove
                 <select
                   value={rollupTargetColumnId}
                   onChange={(e) => setRollupTargetColumnId(e.target.value)}
-                  className="w-full px-1.5 py-0.5 text-[11px] rounded-sm border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-surface-dark text-charcoal dark:text-cultured-white focus:border-gold focus:ring-1 focus:ring-gold/20 transition-all"
+                  className="w-full px-1.5 py-0.5 text-[11px] rounded-sm border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-surface-dark text-charcoal dark:text-cultured-white focus:border-gold focus:ring-1 focus:ring-gold/20 transition-colors"
                 >
-                  <option value="">Select column to aggregate...</option>
+                  <option value="">Select column to aggregate…</option>
                   {targetDatabase.schema.columns.map((col) => (
                     <option key={col.id} value={col.id}>
                       {col.name} ({col.type})
@@ -2362,7 +2362,7 @@ function ColumnConfigPopover({ column, databaseId, onClose }: ColumnConfigPopove
                 <select
                   value={rollupAggregation}
                   onChange={(e) => setRollupAggregation(e.target.value)}
-                  className="w-full px-1.5 py-0.5 text-[11px] rounded-sm border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-surface-dark text-charcoal dark:text-cultured-white focus:border-gold focus:ring-1 focus:ring-gold/20 transition-all"
+                  className="w-full px-1.5 py-0.5 text-[11px] rounded-sm border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-surface-dark text-charcoal dark:text-cultured-white focus:border-gold focus:ring-1 focus:ring-gold/20 transition-colors"
                 >
                   <option value="count">Count all</option>
                   <option value="count_values">Count values</option>
@@ -2390,7 +2390,7 @@ function ColumnConfigPopover({ column, databaseId, onClose }: ColumnConfigPopove
               onChange={(e) => setFormulaExpression(e.target.value)}
               placeholder='prop("Price") * prop("Quantity")'
               rows={2}
-              className="w-full px-1.5 py-1 text-[11px] rounded-sm border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-surface-dark text-charcoal dark:text-cultured-white placeholder:text-charcoal/30 focus:border-gold focus:ring-1 focus:ring-gold/20 transition-all font-mono resize-none"
+              className="w-full px-1.5 py-1 text-[11px] rounded-sm border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-surface-dark text-charcoal dark:text-cultured-white placeholder:text-charcoal/30 focus:border-gold focus:ring-1 focus:ring-gold/20 transition-colors font-mono resize-none"
             />
             <p className="mt-0.5 text-[9px] text-charcoal/40 dark:text-cultured-white/40">
               Use prop("Column Name") to reference columns
@@ -2401,7 +2401,7 @@ function ColumnConfigPopover({ column, databaseId, onClose }: ColumnConfigPopove
             <select
               value={formulaResultType}
               onChange={(e) => setFormulaResultType(e.target.value as "text" | "number" | "date" | "boolean")}
-              className="w-full px-1.5 py-0.5 text-[11px] rounded-sm border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-surface-dark text-charcoal dark:text-cultured-white focus:border-gold focus:ring-1 focus:ring-gold/20 transition-all"
+              className="w-full px-1.5 py-0.5 text-[11px] rounded-sm border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-surface-dark text-charcoal dark:text-cultured-white focus:border-gold focus:ring-1 focus:ring-gold/20 transition-colors"
             >
               <option value="text">Text</option>
               <option value="number">Number</option>
@@ -2511,7 +2511,7 @@ function RowActionsMenu({ entry, database, onEdit }: RowActionsMenuProps) {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="p-0.5 rounded hover:bg-bone/60 dark:hover:bg-surface-dark/60 opacity-0 group-hover:opacity-100 transition-all duration-150 focus:opacity-100">
+      <DropdownMenuTrigger className="p-0.5 rounded hover:bg-bone/60 dark:hover:bg-surface-dark/60 opacity-0 group-hover:opacity-100 transition-[color,background-color,opacity] duration-150 focus:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40">
         <GripVertical className="w-3 h-3 text-charcoal/30 dark:text-cultured-white/30" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="min-w-[120px]">

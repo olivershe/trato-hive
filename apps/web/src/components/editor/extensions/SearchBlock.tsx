@@ -247,7 +247,7 @@ function SearchCard({ node, updateAttributes }: NodeViewProps) {
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Search companies by name, industry, or location..."
+                placeholder="Search companies by name, industry, or location…"
                 className="w-full px-4 py-2.5 pr-10 rounded-lg border border-bone dark:border-charcoal/30 bg-white dark:bg-charcoal/20 text-charcoal dark:text-cultured-white placeholder:text-charcoal/40 dark:placeholder:text-cultured-white/40 focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold text-sm"
               />
               <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-charcoal/30 dark:text-cultured-white/30" />

@@ -32,8 +32,33 @@
   body {
     @apply bg-bone text-charcoal font-sans antialiased;
   }
-  
+
   .dark body {
     @apply bg-deep-grey text-cultured-white;
+  }
+}
+
+/* Accessibility: Honor prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Utilities */
+@layer utilities {
+  /* Tabular numbers for data alignment */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Standard focus-visible ring for interactive elements */
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 focus-visible:ring-offset-2 focus-visible:ring-offset-alabaster dark:focus-visible:ring-offset-deep-grey;
   }
 }

@@ -74,7 +74,7 @@ const WikiLinkList = forwardRef<
   }));
 
   return (
-    <div className="z-50 h-auto max-h-[280px] w-64 overflow-y-auto rounded-xl border border-gold/20 bg-alabaster/95 p-2 shadow-xl backdrop-blur-md transition-all dark:bg-charcoal/95 dark:border-white/10">
+    <div className="z-50 h-auto max-h-[280px] w-64 overflow-y-auto rounded-xl border border-gold/20 bg-alabaster/95 p-2 shadow-xl backdrop-blur-md transition-[opacity,transform] dark:bg-charcoal/95 dark:border-white/10 overscroll-contain">
       {/* Header */}
       <div className="px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-charcoal/50 dark:text-cultured-white/50">
         Link to page
@@ -85,7 +85,7 @@ const WikiLinkList = forwardRef<
           <button
             key={item.pageId}
             onClick={() => selectItem(index)}
-            className={`flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm transition-all duration-150 ${
+            className={`flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold/40 ${
               index === selectedIndex
                 ? "bg-white text-orange shadow-sm dark:bg-white/10 dark:text-gold"
                 : "text-charcoal hover:bg-gold/5 dark:text-cultured-white dark:hover:bg-white/5"

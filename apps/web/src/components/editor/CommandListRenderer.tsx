@@ -59,13 +59,13 @@ export const CommandListRenderer = forwardRef((props: CommandListProps, ref) => 
     }));
 
     return (
-        <div className="z-50 h-auto max-h-[330px] w-72 overflow-y-auto rounded-xl border border-gold/20 bg-alabaster/90 p-2 shadow-xl backdrop-blur-md transition-all dark:bg-charcoal/90 dark:border-white/10 scrollbar-thin scrollbar-thumb-gold/20 scrollbar-track-transparent">
+        <div className="z-50 h-auto max-h-[330px] w-72 overflow-y-auto rounded-xl border border-gold/20 bg-alabaster/90 p-2 shadow-xl backdrop-blur-md transition-[opacity,transform] dark:bg-charcoal/90 dark:border-white/10 scrollbar-thin scrollbar-thumb-gold/20 scrollbar-track-transparent overscroll-contain">
             {props.items.length > 0 ? (
                 props.items.map((item, index) => (
                     <button
                         key={index}
                         onClick={() => selectItem(index)}
-                        className={`flex w-full items-center space-x-3 rounded-lg px-2 py-2 text-left text-sm transition-all duration-200 ${index === selectedIndex
+                        className={`flex w-full items-center space-x-3 rounded-lg px-2 py-2 text-left text-sm transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold/40 ${index === selectedIndex
                                 ? "bg-white text-orange shadow-sm dark:bg-white/10 dark:text-gold"
                                 : "text-charcoal hover:bg-gold/5 dark:text-cultured-white dark:hover:bg-white/5"
                             }`}

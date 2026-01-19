@@ -100,7 +100,7 @@ export function EditorBubbleMenu({ editor }: EditorBubbleMenuProps) {
                         </div>
                         <input
                             autoFocus
-                            placeholder="Ask AI to edit..."
+                            placeholder="Ask AI to edit…"
                             className="h-6 min-w-[200px] bg-transparent text-sm text-charcoal placeholder:text-charcoal/40 focus:outline-none dark:text-cultured-white dark:placeholder:text-white/40"
                             onKeyDown={(e) => {
                                 if (e.key === "Enter") {

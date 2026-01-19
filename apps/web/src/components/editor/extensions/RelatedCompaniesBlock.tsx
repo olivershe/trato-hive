@@ -187,7 +187,7 @@ function RelatedCompaniesCard({ node }: { node: any }) {
               <Link
                 key={company.id}
                 href={`/companies/${company.id}`}
-                className="group bg-bone dark:bg-panel-dark rounded-lg p-4 border border-gold/5 dark:border-white/5 hover:border-orange/30 hover:shadow-md transition-all"
+                className="group bg-bone dark:bg-panel-dark rounded-lg p-4 border border-gold/5 dark:border-white/5 hover:border-orange/30 hover:shadow-md transition-[color,background-color,border-color,box-shadow] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40"
               >
                 {/* Company Name & Score */}
                 <div className="flex items-start justify-between mb-3">

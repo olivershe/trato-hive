@@ -127,7 +127,7 @@ export function QuickSearch({ dealId, isOpen, onClose }: QuickSearchProps) {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Search pages..."
+              placeholder="Search pages…"
               className="flex-1 text-base outline-none placeholder:text-charcoal/40"
             />
             <button

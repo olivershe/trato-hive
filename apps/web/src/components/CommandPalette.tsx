@@ -385,7 +385,7 @@ export function CommandPalette({
             )}
             <button
               onClick={onClose}
-              className="p-1 rounded hover:bg-charcoal/5 dark:hover:bg-cultured/5 text-charcoal/40 dark:text-cultured/40 hover:text-charcoal dark:hover:text-cultured transition-colors"
+              className="p-1 rounded hover:bg-charcoal/5 dark:hover:bg-cultured/5 text-charcoal/40 dark:text-cultured/40 hover:text-charcoal dark:hover:text-cultured transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40"
               aria-label="Close command palette"
             >
               <X className="w-4 h-4" />
@@ -396,12 +396,12 @@ export function CommandPalette({
           <div
             ref={resultsRef}
             id="command-results"
-            className="max-h-80 overflow-y-auto"
+            className="max-h-80 overflow-y-auto overscroll-contain"
             role="listbox"
           >
             {groups.length === 0 ? (
               <div className="px-4 py-8 text-center text-charcoal/40 dark:text-cultured/40 text-sm">
-                {query ? 'No results found' : 'Type to search...'}
+                {query ? 'No results found' : 'Type to search…'}
               </div>
             ) : (
               groups.map((group, groupIndex) => (
@@ -423,7 +423,7 @@ export function CommandPalette({
                         onClick={() => handleSelect(result)}
                         onMouseEnter={() => setSelectedIndex(globalIndex)}
                         className={`
-                          w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors
+                          w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold/40
                           ${
                             isSelected
                               ? 'bg-orange/10 dark:bg-orange/20'

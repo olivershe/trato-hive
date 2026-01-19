@@ -77,28 +77,24 @@ EBITDA: $12.5M [linked to source document, page 23]
 
 **Principle:** The system must feel fast and responsive, even during heavy AI operations.
 
-**Implementation:**
-- Optimistic UI updates (show change immediately, sync in background)
-- Skeleton loaders for list views
-- Progress indicators for operations >2s
-- Pagination and virtualization for large data sets
-- Cached data with TTL to reduce backend calls
+> **See Also:** "Appendix: High-Performance Web Standards" for detailed performance guidelines.
 
-**Targets:**
+**Trato Hive Targets:**
 - Page load: <2s
 - API calls: <500ms (p95)
 - AI operations: <5s or async
+- Citation modal: <200ms (critical)
 
-### 5. Accessibility as Standard (Inclusive Design)
+### 6. Accessibility as Standard (Inclusive Design)
 
 **Principle:** All users, regardless of ability, must have equal access to features.
 
-**Implementation:**
+> **See Also:** "Appendix: High-Performance Web Standards" for detailed accessibility patterns (focus rings, ARIA, semantics).
+
+**Trato Hive Requirements:**
 - WCAG 2.1 AA compliance minimum
-- Keyboard navigation for all interactive elements
-- Screen reader support (semantic HTML, ARIA labels)
 - Color contrast: 4.5:1 for normal text, 3:1 for large text
-- No reliance on color alone for information conveyance
+- Teal Blue (#2F7E8A) for citations ONLY—ensures visual distinction
 
 ### 6. Consistency & Predictability (Design System)
 
@@ -278,11 +274,11 @@ Hexagons evoke the "hive" concept (connected intelligence) but are geometrically
 
 ## Anti-Patterns to Avoid
 
-1. **Information Overload:** Don't show everything at once; use progressive disclosure
-2. **AI Over-Confidence:** Never present AI outputs as absolute truth without citations
-3. **Inconsistent Styling:** Don't deviate from design tokens for "creative" reasons
-4. **Hidden Actions:** Don't hide critical actions in nested menus or obscure UI
-5. **Jargon Overload:** Don't use technical terms without context (e.g., "TIC query" → "Search with AI")
+> **See Also:** "Agent Instructions" in the Vercel Appendix for machine-enforceable rules.
+
+1. **AI Over-Confidence:** Never present AI outputs as absolute truth without citations.
+2. **Inconsistent Styling:** Don't deviate from design tokens for "creative" reasons.
+3. **Jargon Overload:** Use user-friendly terms (e.g., "Search with AI" not "TIC query").
 
 ## Decision Framework
 
@@ -315,3 +311,109 @@ If the answer to any is "no," reconsider the design.
 - **Style Guide:** `/context/style-guide.md`
 - **Component Library:** `packages/ui/`
 - **Root CLAUDE.md:** Design Governance section
+
+---
+
+## Appendix: High-Performance Web Standards (Vercel Guidelines)
+
+> **Source:** [Vercel Web Interface Guidelines](https://vercel.com/design/guidelines)
+> These supplement The Intelligent Hive with low-level interaction and performance standards. All agents MUST apply these rules during UI generation and review.
+
+### Interactions
+
+| Guideline | Implementation |
+|-----------|----------------|
+| **Keyboard works everywhere** | All flows are keyboard-operable & follow [WAI-ARIA Authoring Patterns](https://www.w3.org/WAI/ARIA/apg/patterns/). |
+| **Clear focus** | Every focusable element shows a visible focus ring. Use `:focus-visible` over `:focus`. |
+| **Match visual & hit targets** | If visual target < 24px, expand hit target to ≥ 24px. On mobile, minimum is 44px. |
+| **Loading buttons** | Show a spinner **and** keep the original label (e.g., "Saving…"). |
+| **Minimum loading-state duration** | Add a short show-delay (~150–300ms) and minimum visible time (~300–500ms) to avoid flicker. |
+| **URL as state** | Persist filters, tabs, pagination in the URL so share, refresh, and back/forward work. Consider `nuqs`. |
+| **Optimistic updates** | Update UI immediately when success is likely; reconcile on response. On failure, roll back or provide Undo. |
+| **Ellipsis convention** | Actions opening a follow-up (e.g., "Rename…") and loading states (e.g., "Saving…") end with an ellipsis. |
+| **Confirm destructive actions** | Require confirmation or provide Undo with a safe window. |
+| **No dead zones** | If part of a control looks interactive, it should be interactive. |
+| **Deep-link everything** | Filters, tabs, expanded panels—anytime `useState` is used, sync the state to the URL. |
+| **Overscroll behavior** | Set `overscroll-behavior: contain` in modals and drawers. |
+
+### Animations
+
+| Guideline | Implementation |
+|-----------|----------------|
+| **Honor `prefers-reduced-motion`** | Always provide a reduced-motion variant. |
+| **Implementation preference** | CSS > Web Animations API > JavaScript libraries (e.g., `motion`). |
+| **Compositor-friendly** | Prioritize `transform`, `opacity`. Avoid `width`, `height`, `top`, `left` for animations. |
+| **Never `transition: all`** | Explicitly list only the properties you intend to animate (e.g., `opacity, transform`). |
+| **Interruptible** | User input cancels animations. |
+| **Correct transform origin** | Anchor motion to where it "physically" starts. |
+
+### Layout
+
+| Guideline | Implementation |
+|-----------|----------------|
+| **Optical alignment** | Adjust ±1px when perception beats geometry. |
+| **Deliberate alignment** | Every element aligns with something intentionally (grid, baseline, edge). |
+| **Responsive coverage** | Verify on mobile, laptop, and ultra-wide (zoom to 50% to simulate). |
+| **No excessive scrollbars** | Fix overflow issues. On macOS, set "Show scroll bars" to "Always" to see Windows behavior. |
+| **Let the browser size things** | Prefer flex/grid/intrinsic layout over JS measurement. |
+
+### Content
+
+| Guideline | Implementation |
+|-----------|----------------|
+| **Stable skeletons** | Skeletons mirror final content exactly to avoid layout shift. |
+| **Accurate page titles** | `<title>` reflects the current context (e.g., "TechCorp Deal · Trato Hive"). |
+| **All states designed** | Empty, sparse, dense, and error states must be designed. |
+| **Tabular numbers** | Use `font-variant-numeric: tabular-nums` for columns in data tables. |
+| **Redundant status cues** | Don't rely on color alone; include text labels. |
+| **Icons have labels** | Convey the same meaning with text for non-sighted users (`aria-label`). |
+| **Semantics before ARIA** | Prefer native elements (`button`, `a`, `label`, `table`) before `aria-*`. |
+
+### Forms
+
+| Guideline | Implementation |
+|-----------|----------------|
+| **Enter submits** | In single-input forms, Enter submits. In multi-line inputs (Tiptap), `⌘/⌃+Enter` submits, Enter inserts a new line. |
+| **Labels everywhere** | Every control has a `<label>` or is associated with one for assistive tech. |
+| **Don't pre-disable submit** | Allow submitting incomplete forms to surface validation feedback. |
+| **No dead zones on controls** | Checkboxes & radios have generous hit targets covering the label. |
+| **Error placement** | Show errors next to their fields; on submit, focus the first error. |
+| **Placeholders signal emptiness** | Placeholders should end with an ellipsis (e.g., "Search…"). |
+| **Unsaved changes warning** | Warn before navigation when data could be lost. |
+
+### Performance
+
+| Guideline | Implementation |
+|-----------|----------------|
+| **Network latency budgets** | `POST/PATCH/DELETE` complete in <500ms. |
+| **Keystroke cost** | Make controlled input loops cheap or prefer uncontrolled inputs. |
+| **Large lists** | Virtualize large lists using `virtua` or `content-visibility: auto`. |
+| **No image-caused CLS** | Set explicit image dimensions and reserve space using `<Image>` component. |
+| **Preload critical fonts** | Use `<link rel="preload">` for critical text to avoid flash & layout shift. |
+
+### Design (Visual Polish)
+
+| Guideline | Implementation |
+|-----------|----------------|
+| **Layered shadows** | Mimic ambient + direct light with at least two shadow layers. |
+| **Crisp borders** | Combine borders and shadows; semi-transparent borders improve edge clarity. |
+| **Nested radii** | Child radius ≤ parent radius so curves align concentrically. |
+| **Hue consistency** | On non-neutral backgrounds, tint borders/shadows/text toward the same hue. |
+| **Minimum contrast** | Prefer APCA over WCAG 2 for more accurate perceptual contrast. |
+| **Interactions increase contrast** | `:hover`, `:active`, `:focus` have more contrast than rest state. |
+| **Browser UI matches background** | Set `<meta name="theme-color">` to align browser chrome with page background. |
+| **Set `color-scheme`** | In dark mode, set `color-scheme: dark` on `<html>` so scrollbars have proper contrast. |
+
+---
+
+### Agent Instructions (AI Code Generation)
+
+When generating or reviewing UI code for this project, agents MUST:
+
+1.  **Read this document first** (specifically the "High-Performance Web Standards" appendix).
+2.  **Apply all relevant guidelines** during code generation (e.g., add `tabular-nums` to data tables, add ellipsis to loading text).
+3.  **Flag violations** during code review (e.g., "This button does not have a visible focus style").
+4.  **Prefer native semantics** over ARIA roles (e.g., use `<button>` not `<div role="button">`).
+5.  **Never disable paste** in any input field.
+6.  **Never use `transition: all`** in CSS.
+

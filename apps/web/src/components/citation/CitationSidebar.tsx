@@ -48,7 +48,7 @@ export function CitationSidebar() {
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
             className="fixed right-0 top-0 h-full w-[500px] bg-alabaster dark:bg-panel-dark
-                       shadow-2xl z-50 flex flex-col"
+                       shadow-2xl z-50 flex flex-col overscroll-contain"
           >
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-bone dark:border-deep-grey">
