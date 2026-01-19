@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { api } from '@/trpc/react';
-import { Deal } from './mock-data';
+import { Deal, DealCompany } from './mock-data';
 
 export type ViewType = 'kanban' | 'table' | 'timeline' | 'calendar' | 'analytics';
 
@@ -106,22 +106,40 @@ export function ViewProvider({
     });
 
     // Transform API data to view model
-    // Note: API returns Deal with company relation included
+    // Note: API returns Deal with company and dealCompanies relations included
     const deals: Deal[] =
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        dealsData?.items.map((deal: any) => ({
-            id: deal.id,
-            title: deal.name,
-            value: formatValue(deal.value ? Number(deal.value) : null),
-            intValue: deal.value ? Number(deal.value) : 0,
-            company: deal.company?.name || "No Company",
-            stage: mapStageToView(deal.stage),
-            date: formatDate(deal.expectedCloseDate),
-            closingDate: deal.expectedCloseDate
-                ? new Date(deal.expectedCloseDate)
-                : new Date(),
-            probability: deal.probability ?? 50,
-        })) ?? [];
+        dealsData?.items.map((deal: any) => {
+            // Transform dealCompanies: sort PLATFORM first, then by createdAt
+            const companies: DealCompany[] = (deal.dealCompanies || [])
+                .sort((a: { role: string }, b: { role: string }) => {
+                    if (a.role === 'PLATFORM') return -1;
+                    if (b.role === 'PLATFORM') return 1;
+                    return 0;
+                })
+                .map((dc: { id: string; company: { id: string; name: string; industry: string | null }; role: string }) => ({
+                    id: dc.id,
+                    companyId: dc.company.id,
+                    name: dc.company.name,
+                    industry: dc.company.industry,
+                    role: dc.role as DealCompany['role'],
+                }));
+
+            return {
+                id: deal.id,
+                title: deal.name,
+                value: formatValue(deal.value ? Number(deal.value) : null),
+                intValue: deal.value ? Number(deal.value) : 0,
+                company: deal.company?.name || companies[0]?.name || "No Company",
+                companies,
+                stage: mapStageToView(deal.stage),
+                date: formatDate(deal.expectedCloseDate),
+                closingDate: deal.expectedCloseDate
+                    ? new Date(deal.expectedCloseDate)
+                    : new Date(),
+                probability: deal.probability ?? 50,
+            };
+        }) ?? [];
 
     const setFilter = (key: string, value: unknown) => {
         setFilters(prev => ({ ...prev, [key]: value }));

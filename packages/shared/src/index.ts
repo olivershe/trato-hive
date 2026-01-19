@@ -18,3 +18,13 @@ export type {
   SidebarItemMetadata,
   SidebarSection,
 } from './types/sidebar'
+
+// Alert type re-exports [TASK-120]
+export { AlertType, AlertPriority, AlertStatus } from './types/alert'
+export type {
+  AlertTypeValue,
+  AlertPriorityValue,
+  AlertStatusValue,
+  DealAlert,
+  AlertListResult,
+} from './types/alert'
