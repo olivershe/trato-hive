@@ -23,7 +23,6 @@ import {
   Loader2,
 } from "lucide-react";
 import Link from "next/link";
-import { formatDistanceToNow } from "date-fns";
 
 // Stage colors
 const STAGE_COLORS: Record<string, string> = {
@@ -61,6 +60,27 @@ function formatValue(value: number | null): string {
   if (value === null || value === 0) return currencyFormatter.format(0);
   if (value >= 1000) return compactCurrencyFormatter.format(value);
   return currencyFormatter.format(value);
+}
+
+const relativeTimeFormatter = new Intl.RelativeTimeFormat("en", {
+  numeric: "auto",
+});
+
+function formatRelativeTime(date: Date): string {
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  if (diffInSeconds < 60) return relativeTimeFormatter.format(-diffInSeconds, "second");
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  if (diffInMinutes < 60) return relativeTimeFormatter.format(-diffInMinutes, "minute");
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) return relativeTimeFormatter.format(-diffInHours, "hour");
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays < 30) return relativeTimeFormatter.format(-diffInDays, "day");
+  const diffInMonths = Math.floor(diffInDays / 30);
+  if (diffInMonths < 12) return relativeTimeFormatter.format(-diffInMonths, "month");
+  const diffInYears = Math.floor(diffInDays / 365);
+  return relativeTimeFormatter.format(-diffInYears, "year");
 }
 
 // Stat card component
@@ -133,7 +153,7 @@ function ActivityItem({
             <span className="text-xs text-orange font-medium">{dealName}</span>
           )}
           <span className="text-xs text-charcoal/40">
-            {formatDistanceToNow(new Date(time), { addSuffix: true })}
+            {formatRelativeTime(new Date(time))}
           </span>
         </div>
       </div>
@@ -219,7 +239,7 @@ export default function CommandCenterPage() {
             <h2 className="text-lg font-semibold text-charcoal">Pipeline by Stage</h2>
             <Link
               href="/deals"
-              className="text-sm text-orange hover:text-orange/80 flex items-center gap-1"
+              className="text-sm text-orange hover:text-orange/80 flex items-center gap-1 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange focus-visible:ring-offset-2"
             >
               View all deals
               <ArrowRight className="w-4 h-4" aria-hidden="true" />
@@ -228,7 +248,7 @@ export default function CommandCenterPage() {
 
           {pipelineLoading ? (
             <div className="h-64 flex items-center justify-center">
-              <Loader2 className="w-8 h-8 animate-spin text-orange" aria-hidden="true" />
+              <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none text-orange" aria-hidden="true" />
             </div>
           ) : chartData.length === 0 ? (
             <div className="h-64 flex flex-col items-center justify-center text-charcoal/50">
@@ -236,7 +256,7 @@ export default function CommandCenterPage() {
               <p>No deals in pipeline</p>
               <Link
                 href="/deals"
-                className="mt-2 text-orange hover:underline text-sm"
+                className="mt-2 text-orange hover:underline text-sm rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange focus-visible:ring-offset-2"
               >
                 Create your first deal
               </Link>
@@ -254,7 +274,9 @@ export default function CommandCenterPage() {
                 />
                 <Tooltip
                   formatter={(value, name) => [
-                    name === "deals" ? `${value} deals` : `$${Number(value).toFixed(1)}M`,
+                    name === "deals"
+                      ? `${value} deals`
+                      : compactCurrencyFormatter.format(Number(value) * 1000000),
                     name === "deals" ? "Count" : "Value",
                   ]}
                 />
@@ -277,7 +299,7 @@ export default function CommandCenterPage() {
 
           {activitiesLoading ? (
             <div className="h-64 flex items-center justify-center">
-              <Loader2 className="w-6 h-6 animate-spin text-orange" aria-hidden="true" />
+              <Loader2 className="w-6 h-6 animate-spin motion-reduce:animate-none text-orange" aria-hidden="true" />
             </div>
           ) : !activitiesData?.items.length ? (
             <div className="h-64 flex flex-col items-center justify-center text-charcoal/50">
@@ -304,7 +326,7 @@ export default function CommandCenterPage() {
       <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
         <Link
           href="/deals"
-          className="flex items-center gap-3 p-4 bg-alabaster rounded-xl border border-gold/10 hover:border-orange/30 transition-[border-color]"
+          className="flex items-center gap-3 p-4 bg-alabaster rounded-xl border border-gold/10 hover:border-orange/30 transition-[border-color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange focus-visible:ring-offset-2"
         >
           <div className="w-10 h-10 rounded-lg bg-orange/10 flex items-center justify-center">
             <Briefcase className="w-5 h-5 text-orange" aria-hidden="true" />
@@ -317,7 +339,7 @@ export default function CommandCenterPage() {
 
         <Link
           href="/discovery"
-          className="flex items-center gap-3 p-4 bg-alabaster rounded-xl border border-gold/10 hover:border-orange/30 transition-[border-color]"
+          className="flex items-center gap-3 p-4 bg-alabaster rounded-xl border border-gold/10 hover:border-orange/30 transition-[border-color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange focus-visible:ring-offset-2"
         >
           <div className="w-10 h-10 rounded-lg bg-orange/10 flex items-center justify-center">
             <TrendingUp className="w-5 h-5 text-orange" aria-hidden="true" />
