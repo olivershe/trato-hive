@@ -48,7 +48,7 @@ test.describe('Link Popover in Bubble Menu', () => {
         // Verify URL input appears
         const urlInput = bubbleMenu.locator('input[type="url"]');
         await expect(urlInput).toBeVisible({ timeout: 3000 });
-        await expect(urlInput).toHaveAttribute('placeholder', 'Paste a link...');
+        await expect(urlInput).toHaveAttribute('placeholder', 'Paste a link…');
         // Focus may be delayed due to animation, just verify input is interactive
         await urlInput.click();
         await expect(urlInput).toBeFocused();
@@ -155,7 +155,7 @@ test.describe('Link Popover in Bubble Menu', () => {
         await linkButtons.nth(5).click();
 
         // Look for remove button (X icon) - it appears when there's an existing link
-        const removeButton = bubbleMenu.locator('button[title="Remove link"]');
+        const removeButton = bubbleMenu.locator('button[aria-label="Remove link"]');
         await expect(removeButton).toBeVisible({ timeout: 3000 });
 
         // Click remove

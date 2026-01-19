@@ -134,14 +134,15 @@ const LinkMain: React.FC<LinkMainProps> = ({
           <InputGroup>
             <Input
               type="url"
-              placeholder="Paste a link..."
+              placeholder="Paste a link…"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               onKeyDown={handleKeyDown}
-              autoFocus
+              autoFocus={!isMobile}
               autoComplete="off"
               autoCorrect="off"
               autoCapitalize="off"
+              aria-label="URL"
             />
           </InputGroup>
 
@@ -149,11 +150,11 @@ const LinkMain: React.FC<LinkMainProps> = ({
             <Button
               type="button"
               onClick={setLink}
-              title="Apply link"
+              aria-label="Apply link"
               disabled={!url && !isActive}
               data-style="ghost"
             >
-              <CornerDownLeftIcon className="tiptap-button-icon" />
+              <CornerDownLeftIcon className="tiptap-button-icon" aria-hidden="true" />
             </Button>
           </ButtonGroup>
 
@@ -163,21 +164,21 @@ const LinkMain: React.FC<LinkMainProps> = ({
             <Button
               type="button"
               onClick={openLink}
-              title="Open in new window"
+              aria-label="Open in new window"
               disabled={!url && !isActive}
               data-style="ghost"
             >
-              <ExternalLinkIcon className="tiptap-button-icon" />
+              <ExternalLinkIcon className="tiptap-button-icon" aria-hidden="true" />
             </Button>
 
             <Button
               type="button"
               onClick={removeLink}
-              title="Remove link"
+              aria-label="Remove link"
               disabled={!url && !isActive}
               data-style="ghost"
             >
-              <TrashIcon className="tiptap-button-icon" />
+              <TrashIcon className="tiptap-button-icon" aria-hidden="true" />
             </Button>
           </ButtonGroup>
         </CardItemGroup>

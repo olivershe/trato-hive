@@ -72,9 +72,10 @@ export function EditorBubbleMenu({ editor }: EditorBubbleMenuProps) {
                         {/* Ask AI Button */}
                         <button
                             onClick={() => setIsAIActive(true)}
-                            className="flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold text-charcoal hover:bg-gold/10 hover:text-charcoal active:bg-gold/20 dark:text-cultured-white dark:hover:bg-white/10 transition-colors"
+                            aria-label="Ask AI"
+                            className="flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold text-charcoal hover:bg-gold/10 hover:text-charcoal active:bg-gold/20 dark:text-cultured-white dark:hover:bg-white/10 transition-colors focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2"
                         >
-                            <Sparkles className="h-3 w-3 text-gold" />
+                            <Sparkles className="h-3 w-3 text-gold" aria-hidden="true" />
                             Ask AI
                         </button>
 
@@ -83,32 +84,37 @@ export function EditorBubbleMenu({ editor }: EditorBubbleMenuProps) {
                         <BubbleButton
                             onClick={() => (editor.chain().focus() as any).toggleBold().run()}
                             isActive={editor.isActive("bold")}
+                            aria-label="Bold"
                         >
-                            <Bold className="w-4 h-4" />
+                            <Bold className="w-4 h-4" aria-hidden="true" />
                         </BubbleButton>
                         <BubbleButton
                             onClick={() => (editor.chain().focus() as any).toggleItalic().run()}
                             isActive={editor.isActive("italic")}
+                            aria-label="Italic"
                         >
-                            <Italic className="w-4 h-4" />
+                            <Italic className="w-4 h-4" aria-hidden="true" />
                         </BubbleButton>
                         <BubbleButton
                             onClick={() => (editor.chain().focus() as any).toggleStrike().run()}
                             isActive={editor.isActive("strike")}
+                            aria-label="Strikethrough"
                         >
-                            <Strikethrough className="w-4 h-4" />
+                            <Strikethrough className="w-4 h-4" aria-hidden="true" />
                         </BubbleButton>
                         <BubbleButton
                             onClick={() => (editor.chain().focus() as any).toggleCode().run()}
                             isActive={editor.isActive("code")}
+                            aria-label="Code"
                         >
-                            <Code className="w-4 h-4" />
+                            <Code className="w-4 h-4" aria-hidden="true" />
                         </BubbleButton>
                         <BubbleButton
                             onClick={() => setIsLinkActive(true)}
                             isActive={hasLink}
+                            aria-label="Link"
                         >
-                            <Link2 className="w-4 h-4" />
+                            <Link2 className="w-4 h-4" aria-hidden="true" />
                         </BubbleButton>
                     </motion.div>
                 ) : isLinkActive ? (
@@ -119,14 +125,15 @@ export function EditorBubbleMenu({ editor }: EditorBubbleMenuProps) {
                         exit={{ opacity: 0, width: 0 }}
                         className="flex items-center gap-2 px-2"
                     >
-                        <Link2 className="h-4 w-4 text-charcoal/60 dark:text-white/60" />
+                        <Link2 className="h-4 w-4 text-charcoal/60 dark:text-white/60" aria-hidden="true" />
                         <input
                             ref={linkInputRef}
                             type="url"
                             value={url}
                             onChange={(e) => setUrl(e.target.value)}
-                            placeholder="Paste a link..."
-                            className="h-6 min-w-[200px] bg-transparent text-sm text-charcoal placeholder:text-charcoal/40 focus:outline-none dark:text-cultured-white dark:placeholder:text-white/40"
+                            placeholder="Paste a link…"
+                            aria-label="URL"
+                            className="h-6 min-w-[200px] bg-transparent text-sm text-charcoal placeholder:text-charcoal/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold dark:text-cultured-white dark:placeholder:text-white/40"
                             onKeyDown={(e) => {
                                 if (e.key === "Enter") {
                                     e.preventDefault();
@@ -145,10 +152,10 @@ export function EditorBubbleMenu({ editor }: EditorBubbleMenuProps) {
                                     removeLink();
                                     setIsLinkActive(false);
                                 }}
-                                className="rounded-full p-1 text-red-500 hover:bg-red-500/10 transition-colors"
-                                title="Remove link"
+                                aria-label="Remove link"
+                                className="rounded-full p-1 text-red-500 hover:bg-red-500/10 transition-colors focus-visible:ring-2 focus-visible:ring-red-500"
                             >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                 </svg>
                             </button>
@@ -162,13 +169,14 @@ export function EditorBubbleMenu({ editor }: EditorBubbleMenuProps) {
                         exit={{ opacity: 0, width: 0 }}
                         className="flex items-center gap-2 px-2"
                     >
-                        <div className="flex items-center justify-center w-5 h-5">
+                        <div className="flex items-center justify-center w-5 h-5" aria-hidden="true">
                             <HexagonSpinner size={20} />
                         </div>
                         <input
                             autoFocus
                             placeholder="Ask AI to edit…"
-                            className="h-6 min-w-[200px] bg-transparent text-sm text-charcoal placeholder:text-charcoal/40 focus:outline-none dark:text-cultured-white dark:placeholder:text-white/40"
+                            aria-label="AI prompt"
+                            className="h-6 min-w-[200px] bg-transparent text-sm text-charcoal placeholder:text-charcoal/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold dark:text-cultured-white dark:placeholder:text-white/40"
                             onKeyDown={(e) => {
                                 if (e.key === "Enter") {
                                     // Stub for AI action
@@ -192,15 +200,19 @@ function BubbleButton({
     isActive,
     onClick,
     children,
+    "aria-label": ariaLabel,
 }: {
     isActive: boolean;
     onClick: () => void;
     children: React.ReactNode;
+    "aria-label": string;
 }) {
     return (
         <button
             onClick={onClick}
-            className={`rounded-full p-2 transition-colors ${isActive
+            aria-label={ariaLabel}
+            aria-pressed={isActive}
+            className={`rounded-full p-2 transition-colors focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 ${isActive
                 ? "bg-charcoal text-white dark:bg-white dark:text-charcoal"
                 : "text-charcoal hover:bg-gold/10 dark:text-cultured-white dark:hover:bg-white/10"
                 }`}
