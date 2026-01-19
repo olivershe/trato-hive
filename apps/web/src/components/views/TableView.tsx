@@ -37,12 +37,12 @@ const columnHelper = createColumnHelper<Deal>();
 
 function getSortIcon(sortDirection: false | "asc" | "desc") {
     if (sortDirection === "asc") {
-        return <ArrowUp className="w-3 h-3" />;
+        return <ArrowUp className="w-3 h-3" aria-hidden="true" />;
     }
     if (sortDirection === "desc") {
-        return <ArrowDown className="w-3 h-3" />;
+        return <ArrowDown className="w-3 h-3" aria-hidden="true" />;
     }
-    return <ArrowUpDown className="w-3 h-3 opacity-20" />;
+    return <ArrowUpDown className="w-3 h-3 opacity-20" aria-hidden="true" />;
 }
 
 interface ActionsCellProps {
@@ -92,18 +92,25 @@ function ActionsCell({ deal, onStageChange }: ActionsCellProps) {
         <div ref={containerRef} className="relative">
             <button
                 onClick={handleToggleMenu}
-                className="p-1.5 rounded hover:bg-gold/10 transition-colors"
+                className="p-1.5 rounded hover:bg-gold/10 transition-[background-color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange focus-visible:ring-offset-2"
+                aria-label="Deal actions"
+                aria-expanded={isOpen}
+                aria-haspopup="menu"
             >
-                <MoreHorizontal className="w-4 h-4 text-charcoal/50 dark:text-cultured-white/50" />
+                <MoreHorizontal className="w-4 h-4 text-charcoal/50 dark:text-cultured-white/50" aria-hidden="true" />
             </button>
 
             {isOpen && (
-                <div className="absolute right-0 top-full mt-1 z-50 bg-white dark:bg-deep-grey border border-gold/20 dark:border-white/10 rounded-lg shadow-xl py-1 min-w-[160px]">
+                <div
+                    className="absolute right-0 top-full mt-1 z-50 bg-white dark:bg-deep-grey border border-gold/20 dark:border-white/10 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.08),0_8px_24px_rgba(0,0,0,0.06)] py-1 min-w-[160px]"
+                    role="menu"
+                >
                     <button
                         onClick={handleOpenDeal}
                         className="w-full flex items-center gap-2 px-3 py-2 text-sm text-charcoal dark:text-cultured-white hover:bg-alabaster dark:hover:bg-charcoal/50"
+                        role="menuitem"
                     >
-                        <ExternalLink className="w-4 h-4" />
+                        <ExternalLink className="w-4 h-4" aria-hidden="true" />
                         <span>Open</span>
                         <kbd className="ml-auto px-1.5 py-0.5 text-[9px] bg-bone dark:bg-panel-dark rounded text-charcoal/50 dark:text-cultured-white/50">
                             O
@@ -114,15 +121,29 @@ function ActionsCell({ deal, onStageChange }: ActionsCellProps) {
                         className="relative"
                         onMouseEnter={() => setShowStages(true)}
                         onMouseLeave={() => setShowStages(false)}
+                        onFocus={() => setShowStages(true)}
+                        onBlur={(e) => {
+                            if (!e.currentTarget.contains(e.relatedTarget)) {
+                                setShowStages(false);
+                            }
+                        }}
                     >
-                        <button className="w-full flex items-center gap-2 px-3 py-2 text-sm text-charcoal dark:text-cultured-white hover:bg-alabaster dark:hover:bg-charcoal/50">
-                            <ArrowRightCircle className="w-4 h-4" />
+                        <button
+                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-charcoal dark:text-cultured-white hover:bg-alabaster dark:hover:bg-charcoal/50"
+                            role="menuitem"
+                            aria-haspopup="menu"
+                            aria-expanded={showStages}
+                        >
+                            <ArrowRightCircle className="w-4 h-4" aria-hidden="true" />
                             <span>Update Stage</span>
-                            <ChevronRight className="w-3.5 h-3.5 ml-auto" />
+                            <ChevronRight className="w-3.5 h-3.5 ml-auto" aria-hidden="true" />
                         </button>
 
                         {showStages && (
-                            <div className="absolute left-full top-0 ml-1 bg-white dark:bg-deep-grey border border-gold/20 dark:border-white/10 rounded-lg shadow-xl py-1 min-w-[140px]">
+                            <div
+                                className="absolute left-full top-0 ml-1 bg-white dark:bg-deep-grey border border-gold/20 dark:border-white/10 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.08),0_8px_24px_rgba(0,0,0,0.06)] py-1 min-w-[140px]"
+                                role="menu"
+                            >
                                 {STAGES.map((stage) => {
                                     const isCurrent = stage.id === deal.stage;
                                     return (
@@ -130,6 +151,7 @@ function ActionsCell({ deal, onStageChange }: ActionsCellProps) {
                                             key={stage.id}
                                             onClick={() => handleStageSelect(stage.id)}
                                             disabled={isCurrent}
+                                            role="menuitem"
                                             className={cn(
                                                 "w-full flex items-center justify-between px-3 py-2 text-sm",
                                                 isCurrent
@@ -187,7 +209,7 @@ export function TableView() {
         columnHelper.accessor("value", {
             header: "Value",
             cell: (info) => (
-                <span className="font-mono text-charcoal/80 dark:text-cultured-white/80">
+                <span className="font-mono tabular-nums text-charcoal/80 dark:text-cultured-white/80">
                     {info.getValue()}
                 </span>
             ),
@@ -201,7 +223,7 @@ export function TableView() {
                         <div className="w-16 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                             <div className="h-full bg-emerald-500" style={{ width: `${value}%` }} />
                         </div>
-                        <span className="text-xs text-charcoal/60 dark:text-cultured-white/60">
+                        <span className="text-xs tabular-nums text-charcoal/60 dark:text-cultured-white/60">
                             {value}%
                         </span>
                     </div>
@@ -238,21 +260,39 @@ export function TableView() {
     });
 
     return (
-        <div className="rounded-lg border border-gold/20 overflow-hidden bg-white dark:bg-deep-grey">
+        <div className="rounded-lg border border-gold/20 overflow-hidden bg-white dark:bg-deep-grey shadow-[0_1px_3px_rgba(0,0,0,0.04),0_4px_12px_rgba(0,0,0,0.03)]">
             <table className="w-full text-left border-collapse">
                 <thead className="bg-alabaster dark:bg-charcoal border-b border-gold/20">
                     {table.getHeaderGroups().map((headerGroup) => (
                         <tr key={headerGroup.id}>
                             {headerGroup.headers.map((header) => {
                                 const isActionsColumn = header.id === "actions";
+                                const sortHandler = header.column.getToggleSortingHandler();
                                 return (
                                     <th
                                         key={header.id}
                                         className={cn(
                                             "p-4 text-xs font-bold uppercase tracking-wider text-charcoal/50 dark:text-cultured-white/50 select-none",
-                                            !isActionsColumn && "cursor-pointer hover:text-gold transition-colors"
+                                            !isActionsColumn && "cursor-pointer hover:text-gold transition-[color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-orange"
                                         )}
-                                        onClick={isActionsColumn ? undefined : header.column.getToggleSortingHandler()}
+                                        onClick={isActionsColumn ? undefined : sortHandler}
+                                        onKeyDown={isActionsColumn ? undefined : (e) => {
+                                            if (e.key === 'Enter' || e.key === ' ') {
+                                                e.preventDefault();
+                                                sortHandler?.(e);
+                                            }
+                                        }}
+                                        tabIndex={isActionsColumn ? undefined : 0}
+                                        role={isActionsColumn ? undefined : "button"}
+                                        aria-sort={
+                                            isActionsColumn
+                                                ? undefined
+                                                : header.column.getIsSorted() === "asc"
+                                                    ? "ascending"
+                                                    : header.column.getIsSorted() === "desc"
+                                                        ? "descending"
+                                                        : "none"
+                                        }
                                     >
                                         <div className="flex items-center gap-2">
                                             {flexRender(header.column.columnDef.header, header.getContext())}
@@ -268,7 +308,7 @@ export function TableView() {
                     {table.getRowModel().rows.map((row) => (
                         <tr
                             key={row.id}
-                            className="border-b border-gold/10 last:border-0 hover:bg-gold/5 transition-colors"
+                            className="border-b border-gold/10 last:border-0 hover:bg-gold/5 transition-[background-color]"
                         >
                             {row.getVisibleCells().map((cell) => (
                                 <td key={cell.id} className="p-4 pb-5">
