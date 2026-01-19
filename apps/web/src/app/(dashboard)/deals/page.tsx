@@ -41,12 +41,13 @@ function DealsToolbar() {
         className="
           flex items-center gap-2 px-4 py-2
           bg-orange text-white rounded-lg
-          hover:bg-orange/90 transition-colors
+          hover:bg-orange/90 transition-[background-color]
+          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange focus-visible:ring-offset-2
           disabled:opacity-50 disabled:cursor-not-allowed
         "
       >
-        <Plus className="w-4 h-4" />
-        {isCreating ? "Creating..." : "New Deal"}
+        <Plus className="w-4 h-4" aria-hidden="true" />
+        {isCreating ? "Creating…" : "New Deal"}
       </button>
     </div>
   );
@@ -58,7 +59,7 @@ function DealsPipelineContent() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <Loader2 className="w-8 h-8 animate-spin text-orange" />
+        <Loader2 className="w-8 h-8 animate-spin text-orange" aria-hidden="true" />
       </div>
     );
   }
@@ -66,7 +67,7 @@ function DealsPipelineContent() {
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center h-96 bg-alabaster rounded-xl border border-gold/10">
-        <AlertCircle className="w-12 h-12 text-red-500 mb-4" />
+        <AlertCircle className="w-12 h-12 text-red-500 mb-4" aria-hidden="true" />
         <p className="text-charcoal/60">Failed to load deals</p>
         <p className="text-sm text-charcoal/40 mt-1">{error.message}</p>
       </div>

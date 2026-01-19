@@ -44,11 +44,23 @@ function formatStageName(stage: string): string {
     .join(" ");
 }
 
+const currencyFormatter = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  maximumFractionDigits: 0,
+});
+
+const compactCurrencyFormatter = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  notation: "compact",
+  maximumFractionDigits: 1,
+});
+
 function formatValue(value: number | null): string {
-  if (value === null || value === 0) return "$0";
-  if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
-  if (value >= 1000) return `$${(value / 1000).toFixed(0)}K`;
-  return `$${value.toFixed(0)}`;
+  if (value === null || value === 0) return currencyFormatter.format(0);
+  if (value >= 1000) return compactCurrencyFormatter.format(value);
+  return currencyFormatter.format(value);
 }
 
 // Stat card component
@@ -71,13 +83,13 @@ function StatCard({
           <p className="text-2xl font-bold text-charcoal mt-1">{value}</p>
           {trend && (
             <p className="text-xs text-emerald-600 mt-1 flex items-center gap-1">
-              <TrendingUp className="w-3 h-3" />
+              <TrendingUp className="w-3 h-3" aria-hidden="true" />
               {trend}
             </p>
           )}
         </div>
         <div className="w-10 h-10 rounded-lg bg-orange/10 flex items-center justify-center">
-          <Icon className="w-5 h-5 text-orange" />
+          <Icon className="w-5 h-5 text-orange" aria-hidden="true" />
         </div>
       </div>
     </div>
@@ -110,7 +122,7 @@ function ActivityItem({
 }) {
   return (
     <div className="flex gap-3 py-3 border-b border-gold/10 last:border-0">
-      <div className="w-2 h-2 rounded-full bg-orange mt-2 flex-shrink-0" />
+      <div className="w-2 h-2 rounded-full bg-orange mt-2 flex-shrink-0" aria-hidden="true" />
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-charcoal">{getActivityLabel(type)}</p>
         {description && (
@@ -210,17 +222,17 @@ export default function CommandCenterPage() {
               className="text-sm text-orange hover:text-orange/80 flex items-center gap-1"
             >
               View all deals
-              <ArrowRight className="w-4 h-4" />
+              <ArrowRight className="w-4 h-4" aria-hidden="true" />
             </Link>
           </div>
 
           {pipelineLoading ? (
             <div className="h-64 flex items-center justify-center">
-              <Loader2 className="w-8 h-8 animate-spin text-orange" />
+              <Loader2 className="w-8 h-8 animate-spin text-orange" aria-hidden="true" />
             </div>
           ) : chartData.length === 0 ? (
             <div className="h-64 flex flex-col items-center justify-center text-charcoal/50">
-              <AlertCircle className="w-12 h-12 mb-2" />
+              <AlertCircle className="w-12 h-12 mb-2" aria-hidden="true" />
               <p>No deals in pipeline</p>
               <Link
                 href="/deals"
@@ -260,16 +272,16 @@ export default function CommandCenterPage() {
         <div className="bg-alabaster rounded-xl p-5 border border-gold/10">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-charcoal">Recent Activity</h2>
-            <Clock className="w-5 h-5 text-charcoal/40" />
+            <Clock className="w-5 h-5 text-charcoal/40" aria-hidden="true" />
           </div>
 
           {activitiesLoading ? (
             <div className="h-64 flex items-center justify-center">
-              <Loader2 className="w-6 h-6 animate-spin text-orange" />
+              <Loader2 className="w-6 h-6 animate-spin text-orange" aria-hidden="true" />
             </div>
           ) : !activitiesData?.items.length ? (
             <div className="h-64 flex flex-col items-center justify-center text-charcoal/50">
-              <AlertCircle className="w-8 h-8 mb-2" />
+              <AlertCircle className="w-8 h-8 mb-2" aria-hidden="true" />
               <p className="text-sm">No recent activity</p>
             </div>
           ) : (
@@ -292,10 +304,10 @@ export default function CommandCenterPage() {
       <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
         <Link
           href="/deals"
-          className="flex items-center gap-3 p-4 bg-alabaster rounded-xl border border-gold/10 hover:border-orange/30 transition-colors"
+          className="flex items-center gap-3 p-4 bg-alabaster rounded-xl border border-gold/10 hover:border-orange/30 transition-[border-color]"
         >
           <div className="w-10 h-10 rounded-lg bg-orange/10 flex items-center justify-center">
-            <Briefcase className="w-5 h-5 text-orange" />
+            <Briefcase className="w-5 h-5 text-orange" aria-hidden="true" />
           </div>
           <div>
             <p className="font-medium text-charcoal">View Pipeline</p>
@@ -305,10 +317,10 @@ export default function CommandCenterPage() {
 
         <Link
           href="/discovery"
-          className="flex items-center gap-3 p-4 bg-alabaster rounded-xl border border-gold/10 hover:border-orange/30 transition-colors"
+          className="flex items-center gap-3 p-4 bg-alabaster rounded-xl border border-gold/10 hover:border-orange/30 transition-[border-color]"
         >
           <div className="w-10 h-10 rounded-lg bg-orange/10 flex items-center justify-center">
-            <TrendingUp className="w-5 h-5 text-orange" />
+            <TrendingUp className="w-5 h-5 text-orange" aria-hidden="true" />
           </div>
           <div>
             <p className="font-medium text-charcoal">Discovery</p>
@@ -318,7 +330,7 @@ export default function CommandCenterPage() {
 
         <div className="flex items-center gap-3 p-4 bg-alabaster rounded-xl border border-gold/10">
           <div className="w-10 h-10 rounded-lg bg-orange/10 flex items-center justify-center">
-            <FileText className="w-5 h-5 text-orange" />
+            <FileText className="w-5 h-5 text-orange" aria-hidden="true" />
           </div>
           <div>
             <p className="font-medium text-charcoal">Data Room</p>
