@@ -157,4 +157,50 @@ export const companyRouter = router({
         input.limit
       );
     }),
+
+  /**
+   * company.getForEmbed - Get company data for embed display
+   * Auth: organizationProtectedProcedure
+   * Used by: CompanyEmbedBlock for inline company cards in editor
+   * Returns combined company data with optional deal history and related companies
+   */
+  getForEmbed: organizationProtectedProcedure
+    .input(z.object({
+      id: z.string().min(1),
+      includeDealHistory: z.boolean().optional().default(false),
+      includeRelatedCompanies: z.boolean().optional().default(false),
+    }))
+    .query(async ({ ctx, input }) => {
+      const companyService = new CompanyService(ctx.db);
+      return companyService.getForEmbed(
+        input.id,
+        ctx.organizationId,
+        {
+          includeDealHistory: input.includeDealHistory,
+          includeRelatedCompanies: input.includeRelatedCompanies,
+        }
+      );
+    }),
+
+  /**
+   * company.searchForEmbed - Search companies for embed picker
+   * Auth: organizationProtectedProcedure
+   * Used by: CompanyEmbedBlock picker modal
+   * Returns linked companies (when dealId provided) + search results
+   */
+  searchForEmbed: organizationProtectedProcedure
+    .input(z.object({
+      query: z.string().max(100),
+      dealId: z.string().optional(),
+      limit: z.number().min(1).max(20).optional().default(10),
+    }))
+    .query(async ({ ctx, input }) => {
+      const companyService = new CompanyService(ctx.db);
+      return companyService.searchForEmbed(
+        input.query,
+        ctx.organizationId,
+        input.dealId,
+        input.limit
+      );
+    }),
 });

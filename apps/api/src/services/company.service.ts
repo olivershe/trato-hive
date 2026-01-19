@@ -69,6 +69,38 @@ export interface RelatedCompanyResult {
   relationshipTypes: string[];
 }
 
+/**
+ * Combined company data for embed display in editor blocks
+ * Used by CompanyEmbedBlock to show company cards within deal pages
+ */
+export interface CompanyEmbedData {
+  id: string;
+  name: string;
+  industry: string | null;
+  sector: string | null;
+  status: CompanyStatus;
+  revenue: number | null;
+  employees: number | null;
+  location: string | null;
+  website: string | null;
+  description: string | null;
+  /** Optional deal history (when includeDealHistory is true) */
+  dealHistory?: DealHistoryEntry[];
+  /** Optional related companies (when includeRelatedCompanies is true) */
+  relatedCompanies?: RelatedCompanyResult[];
+}
+
+/**
+ * Search result for company embed picker
+ * Separates linked companies from search results
+ */
+export interface CompanyEmbedSearchResult {
+  /** Companies already linked to the current deal */
+  linkedCompanies: CompanySearchResult[];
+  /** Search results matching the query */
+  searchResults: CompanySearchResult[];
+}
+
 export class CompanyService {
   constructor(private db: PrismaClient) {}
 
@@ -639,5 +671,150 @@ export class CompanyService {
       .filter((c) => c.similarityScore > 0)
       .sort((a, b) => b.similarityScore - a.similarityScore)
       .slice(0, limit);
+  }
+
+  /**
+   * Get company data formatted for embed display
+   * [CompanyEmbedBlock] Combined data for inline company cards
+   *
+   * Optionally includes:
+   * - Deal history (last 5 deals when includeDealHistory is true)
+   * - Related companies (up to 4 when includeRelatedCompanies is true)
+   */
+  async getForEmbed(
+    companyId: string,
+    organizationId: string,
+    options: { includeDealHistory?: boolean; includeRelatedCompanies?: boolean } = {}
+  ): Promise<CompanyEmbedData> {
+    const { includeDealHistory = false, includeRelatedCompanies = false } = options;
+
+    // Get base company data
+    const company = await this.getById(companyId, organizationId);
+
+    // Build result
+    const result: CompanyEmbedData = {
+      id: company.id,
+      name: company.name,
+      industry: company.industry,
+      sector: company.sector,
+      status: company.status,
+      revenue: company.revenue ? Number(company.revenue) : null,
+      employees: company.employees,
+      location: company.location,
+      website: company.website,
+      description: company.description,
+    };
+
+    // Optionally include deal history (limit to 5 for embed view)
+    if (includeDealHistory) {
+      const companyWithDeals = await this.getWithDeals(companyId, organizationId);
+      result.dealHistory = companyWithDeals.dealHistory.slice(0, 5);
+    }
+
+    // Optionally include related companies (limit to 4 for embed view)
+    if (includeRelatedCompanies) {
+      result.relatedCompanies = await this.getRelatedCompanies(companyId, organizationId, 4);
+    }
+
+    return result;
+  }
+
+  /**
+   * Search companies with deal-linked suggestions for embed picker
+   * [CompanyEmbedBlock] Returns linked companies first, then search results
+   *
+   * When dealId is provided:
+   * - linkedCompanies: Companies already associated with the deal
+   * - searchResults: Other companies matching the query (excluding linked)
+   *
+   * When dealId is not provided:
+   * - linkedCompanies: Empty array
+   * - searchResults: All companies matching the query
+   */
+  async searchForEmbed(
+    query: string,
+    organizationId: string,
+    dealId?: string,
+    limit: number = 10
+  ): Promise<CompanyEmbedSearchResult> {
+    // If dealId provided, get companies already linked to the deal
+    let linkedCompanyIds: string[] = [];
+    let linkedCompanies: CompanySearchResult[] = [];
+
+    if (dealId) {
+      const dealCompanies = await this.db.dealCompany.findMany({
+        where: { dealId },
+        include: {
+          company: {
+            select: {
+              id: true,
+              name: true,
+              industry: true,
+              location: true,
+              employees: true,
+              organizationId: true,
+            },
+          },
+        },
+      });
+
+      // Filter to only companies in this organization
+      linkedCompanies = dealCompanies
+        .filter((dc) => dc.company.organizationId === organizationId)
+        .map((dc) => ({
+          id: dc.company.id,
+          name: dc.company.name,
+          industry: dc.company.industry,
+          location: dc.company.location,
+          employees: dc.company.employees,
+        }));
+
+      linkedCompanyIds = linkedCompanies.map((c) => c.id);
+
+      // Filter linked companies by query if provided
+      if (query.trim()) {
+        const queryLower = query.toLowerCase();
+        linkedCompanies = linkedCompanies.filter(
+          (c) =>
+            c.name.toLowerCase().includes(queryLower) ||
+            c.industry?.toLowerCase().includes(queryLower) ||
+            c.location?.toLowerCase().includes(queryLower)
+        );
+      }
+    }
+
+    // Search for companies (excluding already linked ones)
+    const whereClause: Prisma.CompanyWhereInput = {
+      organizationId,
+      ...(linkedCompanyIds.length > 0 && { id: { notIn: linkedCompanyIds } }),
+    };
+
+    // Add search conditions if query is provided
+    if (query.trim()) {
+      whereClause.OR = [
+        { name: { contains: query, mode: 'insensitive' } },
+        { industry: { contains: query, mode: 'insensitive' } },
+        { sector: { contains: query, mode: 'insensitive' } },
+        { location: { contains: query, mode: 'insensitive' } },
+      ];
+    }
+
+    const searchResults = await this.db.company.findMany({
+      where: whereClause,
+      select: {
+        id: true,
+        name: true,
+        industry: true,
+        location: true,
+        employees: true,
+      },
+      take: limit,
+      orderBy: { name: 'asc' },
+    });
+
+    return {
+      linkedCompanies,
+      searchResults,
+    };
   }
 }

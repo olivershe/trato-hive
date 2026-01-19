@@ -29,6 +29,7 @@ import { DealHistoryBlock } from "./extensions/DealHistoryBlock";
 import { RelatedCompaniesBlock } from "./extensions/RelatedCompaniesBlock";
 import { DocumentViewerBlock } from "./extensions/DocumentViewerBlock";
 import { ExtractedFactsBlock } from "./extensions/ExtractedFactsBlock";
+import { CompanyEmbedBlock } from "./extensions/CompanyEmbedBlock";
 import GlobalDragHandle from "tiptap-extension-global-drag-handle";
 import AutoJoiner from "tiptap-extension-auto-joiner";
 import Focus from "@tiptap/extension-focus";
@@ -172,6 +173,7 @@ export const defaultExtensions: any[] = [
     RelatedCompaniesBlock,
     DocumentViewerBlock,
     ExtractedFactsBlock,
+    CompanyEmbedBlock,
     GlobalDragHandle.configure({
         dragHandleWidth: 24,
         scrollTreshold: 100,

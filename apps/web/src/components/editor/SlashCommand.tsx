@@ -22,6 +22,7 @@ import {
     MessageSquare,
     FolderOpen,
     Search,
+    Building2,
 } from "lucide-react";
 import { CommandListRenderer } from "./CommandListRenderer";
 
@@ -149,6 +150,15 @@ export const suggestionItems = [
         icon: <Search size={18} className="text-gold" />,
         command: ({ editor, range }: any) => {
             editor.chain().focus().deleteRange(range).setSearchBlock({}).run();
+        },
+    },
+    {
+        title: "Company",
+        description: "Embed a company profile card",
+        searchTerms: ["company", "embed", "profile", "organization", "business"],
+        icon: <Building2 size={18} className="text-orange" />,
+        command: ({ editor, range }: any) => {
+            editor.chain().focus().deleteRange(range).setCompanyEmbedBlock({}).run();
         },
     },
     {
