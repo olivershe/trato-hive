@@ -96,11 +96,11 @@ function StatCard({
   trend?: string;
 }) {
   return (
-    <div className="bg-alabaster rounded-xl p-5 border border-gold/10">
+    <div className="bg-alabaster rounded-xl p-5 border border-gold/10 shadow-[0_1px_3px_rgba(0,0,0,0.04),0_4px_12px_rgba(0,0,0,0.03)]">
       <div className="flex items-start justify-between">
         <div>
           <p className="text-sm text-charcoal/60">{title}</p>
-          <p className="text-2xl font-bold text-charcoal mt-1">{value}</p>
+          <p className="text-2xl font-bold text-charcoal mt-1 tabular-nums">{value}</p>
           {trend && (
             <p className="text-xs text-emerald-600 mt-1 flex items-center gap-1">
               <TrendingUp className="w-3 h-3" aria-hidden="true" />
@@ -152,7 +152,7 @@ function ActivityItem({
           {dealName && (
             <span className="text-xs text-orange font-medium">{dealName}</span>
           )}
-          <span className="text-xs text-charcoal/40">
+          <span className="text-xs text-charcoal/40" suppressHydrationWarning>
             {formatRelativeTime(new Date(time))}
           </span>
         </div>
@@ -234,9 +234,9 @@ export default function CommandCenterPage() {
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Pipeline Chart */}
-        <div className="lg:col-span-2 bg-alabaster rounded-xl p-5 border border-gold/10">
+        <div className="lg:col-span-2 bg-alabaster rounded-xl p-5 border border-gold/10 shadow-[0_1px_3px_rgba(0,0,0,0.04),0_4px_12px_rgba(0,0,0,0.03)]">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-charcoal">Pipeline by Stage</h2>
+            <h2 className="text-lg font-semibold text-charcoal text-balance">Pipeline by Stage</h2>
             <Link
               href="/deals"
               className="text-sm text-orange hover:text-orange/80 flex items-center gap-1 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange focus-visible:ring-offset-2"
@@ -291,9 +291,9 @@ export default function CommandCenterPage() {
         </div>
 
         {/* Recent Activity */}
-        <div className="bg-alabaster rounded-xl p-5 border border-gold/10">
+        <div className="bg-alabaster rounded-xl p-5 border border-gold/10 shadow-[0_1px_3px_rgba(0,0,0,0.04),0_4px_12px_rgba(0,0,0,0.03)]">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-charcoal">Recent Activity</h2>
+            <h2 className="text-lg font-semibold text-charcoal text-balance">Recent Activity</h2>
             <Clock className="w-5 h-5 text-charcoal/40" aria-hidden="true" />
           </div>
 
@@ -326,7 +326,7 @@ export default function CommandCenterPage() {
       <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
         <Link
           href="/deals"
-          className="flex items-center gap-3 p-4 bg-alabaster rounded-xl border border-gold/10 hover:border-orange/30 transition-[border-color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange focus-visible:ring-offset-2"
+          className="flex items-center gap-3 p-4 bg-alabaster rounded-xl border border-gold/10 shadow-[0_1px_3px_rgba(0,0,0,0.04),0_4px_12px_rgba(0,0,0,0.03)] hover:border-orange/30 transition-[border-color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange focus-visible:ring-offset-2"
         >
           <div className="w-10 h-10 rounded-lg bg-orange/10 flex items-center justify-center">
             <Briefcase className="w-5 h-5 text-orange" aria-hidden="true" />
@@ -339,7 +339,7 @@ export default function CommandCenterPage() {
 
         <Link
           href="/discovery"
-          className="flex items-center gap-3 p-4 bg-alabaster rounded-xl border border-gold/10 hover:border-orange/30 transition-[border-color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange focus-visible:ring-offset-2"
+          className="flex items-center gap-3 p-4 bg-alabaster rounded-xl border border-gold/10 shadow-[0_1px_3px_rgba(0,0,0,0.04),0_4px_12px_rgba(0,0,0,0.03)] hover:border-orange/30 transition-[border-color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange focus-visible:ring-offset-2"
         >
           <div className="w-10 h-10 rounded-lg bg-orange/10 flex items-center justify-center">
             <TrendingUp className="w-5 h-5 text-orange" aria-hidden="true" />
@@ -350,7 +350,7 @@ export default function CommandCenterPage() {
           </div>
         </Link>
 
-        <div className="flex items-center gap-3 p-4 bg-alabaster rounded-xl border border-gold/10">
+        <div className="flex items-center gap-3 p-4 bg-alabaster rounded-xl border border-gold/10 shadow-[0_1px_3px_rgba(0,0,0,0.04),0_4px_12px_rgba(0,0,0,0.03)]">
           <div className="w-10 h-10 rounded-lg bg-orange/10 flex items-center justify-center">
             <FileText className="w-5 h-5 text-orange" aria-hidden="true" />
           </div>
