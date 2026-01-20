@@ -136,19 +136,21 @@ function DealSidePanelWrapper() {
 export default function DealsPage() {
   return (
     <ViewProvider defaultView="table">
-      <PageHeader
-        title="Deals Pipeline"
-        subtitle="Track and manage your M&A opportunities"
-      />
-      {/* [TASK-120] AI Alerts at top of pipeline */}
-      <AlertsBlock />
-      <ViewSwitcher />
-      {/* [TASK-131] Filter bar with URL persistence */}
-      <DealsFilterBarWrapper />
-      <DealsToolbar />
-      <DealsPipelineContent />
-      {/* [TASK-128] Notion-style side panel for deal details */}
-      <DealSidePanelWrapper />
+      <div className="p-6">
+        <PageHeader
+          title="Deals Pipeline"
+          subtitle="Track and manage your M&A opportunities"
+        />
+        {/* [TASK-120] AI Alerts at top of pipeline */}
+        <AlertsBlock />
+        <ViewSwitcher />
+        {/* [TASK-131] Filter bar with URL persistence */}
+        <DealsFilterBarWrapper />
+        <DealsToolbar />
+        <DealsPipelineContent />
+        {/* [TASK-128] Notion-style side panel for deal details */}
+        <DealSidePanelWrapper />
+      </div>
     </ViewProvider>
   );
 }
