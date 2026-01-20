@@ -109,17 +109,35 @@ export interface EntryFormSheetProps<T extends Record<string, unknown> = Record<
 // =============================================================================
 
 export const STATUS_COLOR_CLASSES: Record<StatusColor, string> = {
-  gray: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200',
-  blue: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200',
-  green: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200',
-  yellow: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-200',
-  red: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200',
-  purple: 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-200',
-  violet: 'bg-violet-100 text-violet-700 dark:bg-violet-900 dark:text-violet-200',
-  pink: 'bg-pink-100 text-pink-700 dark:bg-pink-900 dark:text-pink-200',
-  orange: 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-200',
-  amber: 'bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-200',
-  emerald: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-200',
+  gray: 'bg-gray-50 text-gray-600 dark:bg-gray-700 dark:text-gray-200',
+  blue: 'bg-blue-50 text-blue-600 dark:bg-blue-900 dark:text-blue-200',
+  green: 'bg-green-50 text-green-600 dark:bg-green-900 dark:text-green-200',
+  yellow: 'bg-yellow-50 text-yellow-600 dark:bg-yellow-900 dark:text-yellow-200',
+  red: 'bg-red-50 text-red-600 dark:bg-red-900 dark:text-red-200',
+  purple: 'bg-purple-50 text-purple-600 dark:bg-purple-900 dark:text-purple-200',
+  violet: 'bg-violet-50 text-violet-600 dark:bg-violet-900 dark:text-violet-200',
+  pink: 'bg-pink-50 text-pink-600 dark:bg-pink-900 dark:text-pink-200',
+  orange: 'bg-orange-50 text-orange-600 dark:bg-orange-900 dark:text-orange-200',
+  amber: 'bg-amber-50 text-amber-600 dark:bg-amber-900 dark:text-amber-200',
+  emerald: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900 dark:text-emerald-200',
+};
+
+// =============================================================================
+// Select Color Mapping (for SELECT columns)
+// =============================================================================
+
+export const SELECT_COLOR_CLASSES: Record<StatusColor, string> = {
+  gray: 'bg-gray-50 text-gray-600 dark:bg-gray-700 dark:text-gray-200',
+  blue: 'bg-blue-50 text-blue-600 dark:bg-blue-900 dark:text-blue-200',
+  green: 'bg-green-50 text-green-600 dark:bg-green-900 dark:text-green-200',
+  yellow: 'bg-yellow-50 text-yellow-600 dark:bg-yellow-900 dark:text-yellow-200',
+  red: 'bg-red-50 text-red-600 dark:bg-red-900 dark:text-red-200',
+  purple: 'bg-purple-50 text-purple-600 dark:bg-purple-900 dark:text-purple-200',
+  violet: 'bg-violet-50 text-violet-600 dark:bg-violet-900 dark:text-violet-200',
+  pink: 'bg-pink-50 text-pink-600 dark:bg-pink-900 dark:text-pink-200',
+  orange: 'bg-orange-50 text-orange-600 dark:bg-orange-900 dark:text-orange-200',
+  amber: 'bg-amber-50 text-amber-600 dark:bg-amber-900 dark:text-amber-200',
+  emerald: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900 dark:text-emerald-200',
 };
 
 // =============================================================================

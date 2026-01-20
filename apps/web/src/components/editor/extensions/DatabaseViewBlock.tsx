@@ -558,9 +558,9 @@ function DatabaseView({
   }
 
   return (
-    <div className="rounded-lg border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-deep-grey overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200">
+    <div className="rounded-lg border border-gray-200 dark:border-charcoal/60 bg-white dark:bg-deep-grey overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200">
       {/* Header */}
-      <div className="flex items-center justify-between px-2.5 py-1.5 border-b border-bone dark:border-charcoal/60 bg-alabaster dark:bg-surface-dark">
+      <div className="flex items-center justify-between px-2.5 py-1.5 border-b border-gray-200 dark:border-charcoal/60 bg-gray-50 dark:bg-surface-dark">
         <div className="flex items-center gap-1.5">
           <Database className="w-3.5 h-3.5 text-gold" />
           <span className="font-medium text-xs text-charcoal dark:text-cultured-white">{database.name}</span>
@@ -692,8 +692,8 @@ function SortableColumnHeader({
       style={style}
       role="columnheader"
       aria-sort={sortBy?.columnId === column.id ? (sortBy.direction === "asc" ? "ascending" : "descending") : undefined}
-      className={`relative px-1.5 py-1 text-left text-[11px] font-medium text-charcoal/60 dark:text-cultured-white/60 select-none group ${
-        isDragging ? 'bg-gold/10 z-10' : 'hover:bg-bone/40 dark:hover:bg-surface-dark/50'
+      className={`relative px-1.5 py-1 text-left text-[11px] font-medium text-gray-500 dark:text-cultured-white/60 select-none group ${
+        isDragging ? 'bg-orange/10 z-10' : 'hover:bg-gray-100 dark:hover:bg-surface-dark/50'
       }`}
     >
       <div
@@ -702,9 +702,9 @@ function SortableColumnHeader({
         {...listeners}
       >
         {/* Drag handle indicator */}
-        <GripVertical className="w-2.5 h-2.5 text-charcoal/20 dark:text-cultured-white/20 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+        <GripVertical className="w-2.5 h-2.5 text-gray-300 dark:text-cultured-white/20 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
         <span
-          className="flex-1 truncate uppercase tracking-wide cursor-pointer"
+          className="flex-1 truncate cursor-pointer"
           onClick={(e) => onHeaderClick(e, column)}
           onContextMenu={(e) => onHeaderClick(e, column)}
         >
@@ -725,8 +725,8 @@ function SortableColumnHeader({
       </div>
       {/* Column resize handle */}
       <div
-        className={`absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-gold/40 transition-colors ${
-          resizingColumn === column.id ? 'bg-gold/60' : ''
+        className={`absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-orange/40 transition-colors ${
+          resizingColumn === column.id ? 'bg-orange/60' : ''
         }`}
         onMouseDown={(e) => onResizeStart(e, column.id)}
         onClick={(e) => e.stopPropagation()}
@@ -944,7 +944,7 @@ function DatabaseTableView({ database, sortBy, hiddenColumns, onSortChange }: Da
       >
         <table className="w-full border-collapse" role="grid">
           <thead>
-            <tr className="border-b border-bone dark:border-charcoal/60 bg-bone/30 dark:bg-surface-dark/30">
+            <tr className="border-b border-gray-200 dark:border-charcoal/60 bg-gray-50 dark:bg-surface-dark/30">
               {/* Row actions column */}
               <th className="w-7 px-0.5" role="columnheader" />
               <SortableContext items={columnOrder} strategy={horizontalListSortingStrategy}>
@@ -1051,7 +1051,7 @@ function DatabaseTableView({ database, sortBy, hiddenColumns, onSortChange }: Da
                   animate="animate"
                   exit="exit"
                   transition={{ duration: 0.2, ease: "easeOut" }}
-                  className="border-b border-bone/40 dark:border-charcoal/40 hover:bg-bone/20 dark:hover:bg-surface-dark/40 group relative transition-colors duration-100"
+                  className="border-b border-gray-100 dark:border-charcoal/40 hover:bg-gray-50 dark:hover:bg-surface-dark/40 group relative transition-colors duration-100"
                 >
                   {/* Row actions */}
                   <td className="px-0.5 relative" role="gridcell">
@@ -1088,7 +1088,7 @@ function DatabaseTableView({ database, sortBy, hiddenColumns, onSortChange }: Da
         {/* Drag overlay for column being dragged */}
         <DragOverlay>
           {activeColumn ? (
-            <div className="px-1.5 py-1 text-[11px] font-medium text-charcoal dark:text-cultured-white bg-alabaster dark:bg-surface-dark border border-gold/60 rounded shadow-lg uppercase tracking-wide opacity-90">
+            <div className="px-1.5 py-1 text-[11px] font-medium text-charcoal dark:text-cultured-white bg-white dark:bg-surface-dark border border-orange/60 rounded shadow-lg opacity-90">
               {activeColumn.name}
             </div>
           ) : null}
@@ -1098,9 +1098,9 @@ function DatabaseTableView({ database, sortBy, hiddenColumns, onSortChange }: Da
       {/* Add row button */}
       <motion.button
         onClick={handleOpenNewForm}
-        whileHover={{ backgroundColor: 'rgba(226, 217, 203, 0.3)' }}
+        whileHover={{ backgroundColor: 'rgba(243, 244, 246, 1)' }}
         whileTap={{ scale: 0.99 }}
-        className="w-full px-2 py-1 text-left text-[11px] text-charcoal/40 dark:text-cultured-white/40 hover:text-charcoal dark:hover:text-cultured-white flex items-center gap-1 transition-colors"
+        className="w-full px-2 py-1 text-left text-[11px] text-gray-400 dark:text-cultured-white/40 hover:text-gray-600 dark:hover:text-cultured-white flex items-center gap-1 transition-colors"
         aria-label="Add new entry"
       >
         <Plus className="w-3 h-3" />
@@ -1201,7 +1201,7 @@ function CellRenderer({ column, value, entryId, databaseId }: CellRendererProps)
               value: e.target.checked,
             });
           }}
-          className="w-3.5 h-3.5 rounded border-bone dark:border-charcoal/60 text-gold focus:ring-gold/30 focus:ring-1 focus:ring-offset-0 cursor-pointer transition-colors"
+          className="w-3.5 h-3.5 rounded border-gray-300 dark:border-charcoal/60 text-orange focus:ring-orange/30 focus:ring-1 focus:ring-offset-0 cursor-pointer transition-colors"
           aria-label={column.name}
         />
       </div>
@@ -1221,7 +1221,7 @@ function CellRenderer({ column, value, entryId, databaseId }: CellRendererProps)
             value: e.target.value || null,
           });
         }}
-        className={`w-full px-1.5 py-0.5 text-[11px] rounded-sm border-0 bg-transparent text-charcoal dark:text-cultured-white focus:ring-1 focus:ring-gold/30 cursor-pointer hover:bg-bone/30 dark:hover:bg-surface-dark/50 transition-colors ${
+        className={`w-full px-1.5 py-0.5 text-[11px] rounded-sm border-0 bg-transparent text-charcoal dark:text-cultured-white focus:ring-1 focus:ring-orange/30 cursor-pointer hover:bg-gray-50 dark:hover:bg-surface-dark/50 transition-colors ${
           currentValue ? 'font-medium' : 'text-charcoal/30 dark:text-cultured-white/30'
         }`}
         aria-label={column.name}
@@ -1247,14 +1247,14 @@ function CellRenderer({ column, value, entryId, databaseId }: CellRendererProps)
     const currentValue = String(value ?? "");
     const selectedOption = statusOptions.find((opt: StatusOption) => opt.id === currentValue);
 
-    // Color mapping for status badges
+    // Color mapping for status badges (Notion-style soft pastels)
     const colorClasses: Record<string, string> = {
-      gray: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200',
-      blue: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200',
-      green: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200',
-      yellow: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-200',
-      red: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200',
-      purple: 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-200',
+      gray: 'bg-gray-50 text-gray-600 dark:bg-gray-700 dark:text-gray-200',
+      blue: 'bg-blue-50 text-blue-600 dark:bg-blue-900 dark:text-blue-200',
+      green: 'bg-green-50 text-green-600 dark:bg-green-900 dark:text-green-200',
+      yellow: 'bg-yellow-50 text-yellow-600 dark:bg-yellow-900 dark:text-yellow-200',
+      red: 'bg-red-50 text-red-600 dark:bg-red-900 dark:text-red-200',
+      purple: 'bg-purple-50 text-purple-600 dark:bg-purple-900 dark:text-purple-200',
     };
 
     return (
@@ -1278,7 +1278,7 @@ function CellRenderer({ column, value, entryId, databaseId }: CellRendererProps)
             </option>
           ))}
         </select>
-        <div className={`px-2 py-0.5 text-[10px] font-medium rounded-full inline-flex items-center cursor-pointer ${
+        <div className={`px-2 py-0.5 text-[10px] font-medium rounded-md inline-flex items-center cursor-pointer ${
           selectedOption ? colorClasses[selectedOption.color] || colorClasses.gray : 'text-charcoal/30 dark:text-cultured-white/30'
         }`}>
           {selectedOption ? selectedOption.name : '-'}

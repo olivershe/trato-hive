@@ -67,7 +67,7 @@ export function DealCellRenderer({
         value={rawValue}
         onSave={onSave ? handleSave : undefined}
         disabled={disabled}
-        className="font-mono tabular-nums"
+        className="font-mono tabular-nums text-emerald-600 dark:text-emerald-400"
       />
     );
   }
@@ -85,7 +85,7 @@ export function DealCellRenderer({
               style={{ width: `${probValue ?? 0}%` }}
             />
           </div>
-          <span className="text-xs tabular-nums text-charcoal/60 dark:text-cultured-white/60">
+          <span className="text-xs tabular-nums text-gray-500 dark:text-cultured-white/60">
             {probValue ?? 0}%
           </span>
         </div>

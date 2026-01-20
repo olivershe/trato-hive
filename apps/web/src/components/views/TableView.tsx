@@ -30,6 +30,15 @@ import {
     Plus,
     Settings,
     Smile,
+    FileText,
+    Type,
+    Hash,
+    Calendar,
+    Circle,
+    List,
+    User,
+    CheckSquare,
+    Link,
 } from "lucide-react";
 import { CompaniesCell } from "./CompaniesCell";
 import { DealCellRenderer } from "./DealCellRenderer";
@@ -53,6 +62,31 @@ function getSortIcon(sortDirection: false | "asc" | "desc") {
         return <ArrowDown className="w-3 h-3" aria-hidden="true" />;
     }
     return <ArrowUpDown className="w-3 h-3 opacity-20" aria-hidden="true" />;
+}
+
+// Get icon for column type (Notion-style)
+function getColumnTypeIcon(type: string) {
+    switch (type) {
+        case 'TEXT':
+            return <Type className="w-3.5 h-3.5 text-gray-400" />;
+        case 'NUMBER':
+            return <Hash className="w-3.5 h-3.5 text-gray-400" />;
+        case 'DATE':
+            return <Calendar className="w-3.5 h-3.5 text-gray-400" />;
+        case 'STATUS':
+            return <Circle className="w-3.5 h-3.5 text-gray-400" />;
+        case 'SELECT':
+        case 'MULTI_SELECT':
+            return <List className="w-3.5 h-3.5 text-gray-400" />;
+        case 'PERSON':
+            return <User className="w-3.5 h-3.5 text-gray-400" />;
+        case 'CHECKBOX':
+            return <CheckSquare className="w-3.5 h-3.5 text-gray-400" />;
+        case 'URL':
+            return <Link className="w-3.5 h-3.5 text-gray-400" />;
+        default:
+            return <Type className="w-3.5 h-3.5 text-gray-400" />;
+    }
 }
 
 interface ActionsCellProps {
@@ -367,9 +401,9 @@ export function TableView() {
     });
 
     return (
-        <div className="rounded-lg border border-gold/20 overflow-hidden bg-white dark:bg-deep-grey shadow-[0_1px_3px_rgba(0,0,0,0.04),0_4px_12px_rgba(0,0,0,0.03)]">
+        <div className="rounded-lg border border-gray-200 dark:border-charcoal/60 overflow-hidden bg-white dark:bg-deep-grey shadow-[0_1px_3px_rgba(0,0,0,0.04),0_4px_12px_rgba(0,0,0,0.03)]">
             <table className="w-full text-left border-collapse">
-                <thead className="bg-alabaster dark:bg-charcoal border-b border-gold/20">
+                <thead className="bg-gray-50 dark:bg-charcoal border-b border-gray-200 dark:border-charcoal/60">
                     {table.getHeaderGroups().map((headerGroup) => (
                         <tr key={headerGroup.id}>
                             {headerGroup.headers.map((header) => {
@@ -379,8 +413,8 @@ export function TableView() {
                                     <th
                                         key={header.id}
                                         className={cn(
-                                            "p-4 text-xs font-bold uppercase tracking-wider text-charcoal/50 dark:text-cultured-white/50 select-none",
-                                            !isActionsColumn && "cursor-pointer hover:text-gold transition-[color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-orange"
+                                            "p-4 text-xs font-medium text-gray-500 dark:text-cultured-white/50 select-none",
+                                            !isActionsColumn && "cursor-pointer hover:text-gray-700 dark:hover:text-cultured-white transition-[color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-orange"
                                         )}
                                         onClick={isActionsColumn ? undefined : sortHandler}
                                         onKeyDown={isActionsColumn ? undefined : (e) => {
@@ -402,6 +436,9 @@ export function TableView() {
                                         }
                                     >
                                         <div className="flex items-center gap-2">
+                                            {!isActionsColumn && cellColumns.find(c => c.id === header.id) && (
+                                                getColumnTypeIcon(cellColumns.find(c => c.id === header.id)?.type || 'TEXT')
+                                            )}
                                             {flexRender(header.column.columnDef.header, header.getContext())}
                                             {!isActionsColumn && getSortIcon(header.column.getIsSorted())}
                                         </div>
@@ -417,14 +454,14 @@ export function TableView() {
                                     <div className="flex items-center gap-1">
                                         <button
                                             onClick={() => setShowAddColumn(true)}
-                                            className="w-6 h-6 flex items-center justify-center text-charcoal/40 dark:text-cultured-white/40 hover:text-gold hover:bg-gold/10 rounded transition-colors"
+                                            className="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-charcoal/50 rounded transition-colors"
                                             title="Add column"
                                         >
                                             <Plus className="w-3.5 h-3.5" />
                                         </button>
                                         <button
                                             onClick={() => setManageFieldsOpen(true)}
-                                            className="w-6 h-6 flex items-center justify-center text-charcoal/40 dark:text-cultured-white/40 hover:text-gold hover:bg-gold/10 rounded transition-colors"
+                                            className="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-charcoal/50 rounded transition-colors"
                                             title="Manage columns"
                                         >
                                             <Settings className="w-3.5 h-3.5" />
@@ -472,7 +509,7 @@ export function TableView() {
                         <tr
                             key={row.id}
                             onClick={() => handleRowClick(row.original.id)}
-                            className="border-b border-gold/10 last:border-0 hover:bg-gold/5 transition-[background-color] cursor-pointer"
+                            className="border-b border-gray-100 dark:border-charcoal/40 last:border-0 hover:bg-gray-50 dark:hover:bg-charcoal/30 transition-[background-color] cursor-pointer"
                             role="button"
                             tabIndex={0}
                             onKeyDown={(e) => {
@@ -482,7 +519,7 @@ export function TableView() {
                                 }
                             }}
                         >
-                            {row.getVisibleCells().map((cell) => (
+                            {row.getVisibleCells().map((cell, cellIndex) => (
                                 <td
                                     key={cell.id}
                                     className="p-4 pb-5"
@@ -494,7 +531,12 @@ export function TableView() {
                                         }
                                     }}
                                 >
-                                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                    <div className="flex items-center gap-2">
+                                        {cellIndex === 0 && (
+                                            <FileText className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                                        )}
+                                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                    </div>
                                 </td>
                             ))}
                             {/* Empty cell to match add column header */}

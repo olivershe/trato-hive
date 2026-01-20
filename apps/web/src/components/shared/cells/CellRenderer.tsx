@@ -75,7 +75,7 @@ export function CellRenderer({
           checked={Boolean(value)}
           onChange={(e) => handleDirectSave(e.target.checked)}
           disabled={disabled}
-          className="w-3.5 h-3.5 rounded border-bone dark:border-charcoal/60 text-gold focus:ring-gold/30 focus:ring-1 focus:ring-offset-0 cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-3.5 h-3.5 rounded border-gray-300 dark:border-charcoal/60 text-orange focus:ring-orange/30 focus:ring-1 focus:ring-offset-0 cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           aria-label={column.name}
         />
       </div>
@@ -91,7 +91,7 @@ export function CellRenderer({
         onChange={(e) => handleDirectSave(e.target.value || null)}
         disabled={disabled}
         className={cn(
-          "w-full px-1.5 py-0.5 text-[11px] rounded-sm border-0 bg-transparent text-charcoal dark:text-cultured-white focus:ring-1 focus:ring-gold/30 cursor-pointer hover:bg-bone/30 dark:hover:bg-surface-dark/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
+          "w-full px-1.5 py-0.5 text-[11px] rounded-sm border-0 bg-transparent text-charcoal dark:text-cultured-white focus:ring-1 focus:ring-orange/30 cursor-pointer hover:bg-gray-50 dark:hover:bg-surface-dark/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
           currentValue
             ? "font-medium"
             : "text-charcoal/30 dark:text-cultured-white/30",
@@ -117,7 +117,7 @@ export function CellRenderer({
         {selectedValues.map((v) => (
           <span
             key={v}
-            className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] bg-gold/10 text-gold rounded-full border border-gold/20"
+            className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] bg-blue-50 text-blue-600 dark:bg-blue-900 dark:text-blue-200 rounded-md border border-blue-100 dark:border-blue-800"
           >
             <span className="truncate max-w-[80px]">{v}</span>
             {!disabled && (
@@ -153,7 +153,7 @@ export function CellRenderer({
         {/* Badge display (underneath) */}
         <div
           className={cn(
-            "px-2 py-0.5 text-[10px] font-medium rounded-full inline-flex items-center pointer-events-none",
+            "px-2 py-0.5 text-[10px] font-medium rounded-md inline-flex items-center pointer-events-none",
             selectedOption
               ? STATUS_COLOR_CLASSES[selectedOption.color] || STATUS_COLOR_CLASSES.gray
               : "text-charcoal/30 dark:text-cultured-white/30"
@@ -206,7 +206,7 @@ export function CellRenderer({
         target="_blank"
         rel="noopener noreferrer"
         className={cn(
-          "text-[11px] text-gold hover:text-gold/80 hover:underline truncate block px-0.5 py-0.5 transition-colors",
+          "text-[11px] text-orange hover:text-orange/80 hover:underline truncate block px-0.5 py-0.5 transition-colors",
           className
         )}
       >
@@ -251,7 +251,7 @@ export function CellRenderer({
           onKeyDown={handleKeyDown}
           autoFocus
           className={cn(
-            "w-full px-1 py-0.5 text-[11px] rounded-sm border border-gold/60 bg-alabaster dark:bg-deep-grey text-charcoal dark:text-cultured-white focus:outline-none focus:ring-1 focus:ring-gold/30 focus:border-gold transition-colors",
+            "w-full px-1 py-0.5 text-[11px] rounded-sm border border-orange/60 bg-white dark:bg-deep-grey text-charcoal dark:text-cultured-white focus:outline-none focus:ring-1 focus:ring-orange/30 focus:border-orange transition-colors",
             className
           )}
           aria-label={`Edit ${column.name}`}
@@ -277,7 +277,7 @@ export function CellRenderer({
           }
         }}
         className={cn(
-          "min-h-[22px] px-0.5 py-0.5 text-[11px] text-charcoal dark:text-cultured-white cursor-text hover:bg-bone/30 dark:hover:bg-surface-dark/50 rounded-sm transition-colors flex items-center",
+          "min-h-[22px] px-0.5 py-0.5 text-[11px] text-charcoal dark:text-cultured-white cursor-text hover:bg-gray-50 dark:hover:bg-surface-dark/50 rounded-sm transition-colors flex items-center",
           disabled && "cursor-default hover:bg-transparent",
           className
         )}
@@ -311,7 +311,7 @@ export function CellRenderer({
         onKeyDown={handleKeyDown}
         autoFocus
         className={cn(
-          "w-full px-1 py-0.5 text-[11px] rounded-sm border border-gold/60 bg-alabaster dark:bg-deep-grey text-charcoal dark:text-cultured-white focus:outline-none focus:ring-1 focus:ring-gold/30 focus:border-gold transition-colors",
+          "w-full px-1 py-0.5 text-[11px] rounded-sm border border-orange/60 bg-white dark:bg-deep-grey text-charcoal dark:text-cultured-white focus:outline-none focus:ring-1 focus:ring-orange/30 focus:border-orange transition-colors",
           column.type === "NUMBER" && "tabular-nums font-mono",
           className
         )}
@@ -330,7 +330,7 @@ export function CellRenderer({
         }
       }}
       className={cn(
-        "min-h-[22px] px-0.5 py-0.5 text-[11px] text-charcoal dark:text-cultured-white cursor-text hover:bg-bone/30 dark:hover:bg-surface-dark/50 rounded-sm transition-colors flex items-center",
+        "min-h-[22px] px-0.5 py-0.5 text-[11px] text-charcoal dark:text-cultured-white cursor-text hover:bg-gray-50 dark:hover:bg-surface-dark/50 rounded-sm transition-colors flex items-center",
         disabled && "cursor-default hover:bg-transparent",
         column.type === "NUMBER" && "tabular-nums font-mono",
         className
