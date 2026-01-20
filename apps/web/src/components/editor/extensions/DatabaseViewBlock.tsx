@@ -10,8 +10,7 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useParams } from "next/navigation";
 import {
-  Database, Table2, LayoutGrid, Plus, Link2, Loader2, Trash2, Copy, Edit, Settings, X, GripVertical,
-  Type, Hash, Calendar, CheckSquare, Link, User, ListChecks, Circle, ArrowUpRight, Search, Sigma, Smile
+  Database, Table2, LayoutGrid, Plus, Link2, Loader2, Trash2, Copy, Edit, Settings, X, GripVertical, Smile
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -32,6 +31,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { api } from "@/trpc/react";
+import { PropertyTypeSelector, PROPERTY_TYPES } from "@/components/shared/PropertyTypeSelector";
 import {
   Sheet,
   SheetContent,
@@ -799,9 +799,19 @@ function DatabaseTableView({ database, sortBy, hiddenColumns, onSortChange }: Da
   useEffect(() => {
     if (showAddColumn && addColumnContainerRef.current) {
       const rect = addColumnContainerRef.current.getBoundingClientRect();
+      const dropdownWidth = 288; // w-72 = 18rem = 288px
+      const padding = 16;
+      // Position dropdown to the left of the button, but keep it on screen
+      let left = rect.left - dropdownWidth + rect.width;
+      // Ensure it doesn't go off the right edge
+      if (left + dropdownWidth > window.innerWidth - padding) {
+        left = window.innerWidth - dropdownWidth - padding;
+      }
+      // Ensure it doesn't go off the left edge
+      left = Math.max(padding, left);
       setAddColumnDropdownPos({
         top: rect.bottom + 4,
-        left: Math.max(8, rect.left - 72), // Position left, but don't go off-screen
+        left,
       });
     }
   }, [showAddColumn]);
@@ -989,67 +999,27 @@ function DatabaseTableView({ database, sortBy, hiddenColumns, onSortChange }: Da
                         className="flex-1 bg-transparent text-[11px] font-medium text-charcoal dark:text-cultured-white placeholder:text-charcoal/40 dark:placeholder:text-cultured-white/40 focus:outline-none"
                       />
                     </div>
-                    {/* Type picker dropdown - rendered via portal to escape overflow */}
-                    {addColumnDropdownPos && createPortal(
-                      <div
-                        className="fixed z-[9999] w-72 bg-alabaster dark:bg-deep-grey rounded-lg border border-bone dark:border-charcoal/60 shadow-xl"
-                        style={{ top: addColumnDropdownPos.top, left: addColumnDropdownPos.left }}
-                      >
-                        {/* Header */}
-                        <div className="px-3 py-2 border-b border-bone/50 dark:border-charcoal/50 flex items-center gap-2">
-                          <span className="text-[11px] font-medium text-charcoal/60 dark:text-cultured-white/60">Select type</span>
-                          <Search className="w-3 h-3 text-charcoal/40 dark:text-cultured-white/40" />
-                        </div>
-                        {/* Type grid - 2 columns */}
-                        <div className="p-1.5 grid grid-cols-2 gap-0.5">
-                          {[
-                            { type: "TEXT", label: "Text", icon: Type },
-                            { type: "NUMBER", label: "Number", icon: Hash },
-                            { type: "SELECT", label: "Select", icon: Circle },
-                            { type: "MULTI_SELECT", label: "Multi-select", icon: ListChecks },
-                            { type: "STATUS", label: "Status", icon: Circle },
-                            { type: "DATE", label: "Date", icon: Calendar },
-                            { type: "PERSON", label: "Person", icon: User },
-                            { type: "CHECKBOX", label: "Checkbox", icon: CheckSquare },
-                            { type: "URL", label: "URL", icon: Link },
-                            { type: "RELATION", label: "Relation", icon: ArrowUpRight },
-                            { type: "ROLLUP", label: "Rollup", icon: Search },
-                            { type: "FORMULA", label: "Formula", icon: Sigma },
-                          ].map(({ type, label, icon: Icon }) => (
-                            <button
-                              key={type}
-                              onClick={() => {
-                                // Use entered name or default to type label
-                                const columnName = newColName.trim() || label;
-                                addColumnMutation.mutate({
-                                  databaseId: database.id,
-                                  column: {
-                                    name: columnName,
-                                    type: type,
-                                  },
-                                });
-                              }}
-                              className="flex items-center gap-2 px-2.5 py-1.5 rounded text-left transition-colors hover:bg-bone/50 dark:hover:bg-surface-dark text-charcoal dark:text-cultured-white"
-                            >
-                              <Icon className="w-3.5 h-3.5 opacity-60" />
-                              <span className="text-[11px]">{label}</span>
-                            </button>
-                          ))}
-                        </div>
-                        {/* Footer with cancel button */}
-                        <div className="px-3 py-2 border-t border-bone/50 dark:border-charcoal/50 flex justify-end">
-                          <button
-                            onClick={() => {
-                              setShowAddColumn(false);
-                              setNewColName("");
-                            }}
-                            className="px-2 py-1 text-[10px] text-charcoal/60 dark:text-cultured-white/60 hover:text-charcoal dark:hover:text-cultured-white transition-colors"
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      </div>,
-                      document.body
+                    {/* Type picker dropdown - uses shared PropertyTypeSelector */}
+                    {addColumnDropdownPos && (
+                      <PropertyTypeSelector
+                        position={addColumnDropdownPos}
+                        onSelect={(type) => {
+                          // Use entered name or default to type label
+                          const typeDef = PROPERTY_TYPES.find(t => t.type === type);
+                          const columnName = newColName.trim() || typeDef?.label || type;
+                          addColumnMutation.mutate({
+                            databaseId: database.id,
+                            column: {
+                              name: columnName,
+                              type: type,
+                            },
+                          });
+                        }}
+                        onCancel={() => {
+                          setShowAddColumn(false);
+                          setNewColName("");
+                        }}
+                      />
                     )}
                   </div>
                 )}

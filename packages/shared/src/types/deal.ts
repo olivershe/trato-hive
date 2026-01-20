@@ -99,6 +99,10 @@ export const FieldType = {
   PERSON: 'PERSON',
   CHECKBOX: 'CHECKBOX',
   URL: 'URL',
+  STATUS: 'STATUS',
+  RELATION: 'RELATION',
+  ROLLUP: 'ROLLUP',
+  FORMULA: 'FORMULA',
 } as const
 
 export type FieldTypeValue = (typeof FieldType)[keyof typeof FieldType]
@@ -142,14 +146,27 @@ export interface DealWithLeadPartner extends Deal {
 }
 
 /**
+ * StatusOption - Status badge configuration for STATUS fields
+ */
+export interface StatusOption {
+  id: string
+  name: string
+  color: string
+}
+
+/**
  * DealFieldSchema - Custom field definition for organization
+ * options can be:
+ * - string[] for SELECT/MULTI_SELECT
+ * - StatusOption[] for STATUS
+ * - null for other types
  */
 export interface DealFieldSchema {
   id: string
   organizationId: string
   name: string
   type: FieldTypeValue
-  options: string[] | null
+  options: string[] | StatusOption[] | null
   required: boolean
   order: number
   createdAt: Date

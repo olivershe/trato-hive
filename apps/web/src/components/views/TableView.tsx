@@ -1,15 +1,20 @@
 "use client";
 
-import { useState, useRef, useEffect, useMemo } from "react";
+/**
+ * TableView - Deals Pipeline Table with Notion-style inline editing
+ *
+ * Uses shared CellRenderer components for consistent editing experience
+ * across DatabaseViewBlock and this view.
+ */
+
+import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
     useReactTable,
     getCoreRowModel,
     getSortedRowModel,
     flexRender,
-    createColumnHelper,
     type SortingState,
-    type CellContext,
     type ColumnDef,
 } from "@tanstack/react-table";
 import { useView } from "./ViewContext";
@@ -24,22 +29,21 @@ import {
     ChevronRight,
     Plus,
     Settings,
+    Smile,
 } from "lucide-react";
 import { CompaniesCell } from "./CompaniesCell";
+import { DealCellRenderer } from "./DealCellRenderer";
 import { cn } from "@/lib/utils";
 import { api } from "@/trpc/react";
-import { AddFieldDialog } from "@/components/deals/AddFieldDialog";
 import { CustomFieldsManager } from "@/components/deals/CustomFieldsManager";
-
-const STAGES = [
-    { id: "SOURCING", label: "Sourcing" },
-    { id: "DILIGENCE", label: "Due Diligence" },
-    { id: "CLOSING", label: "Closing" },
-] as const;
-
-type StageId = (typeof STAGES)[number]["id"];
-
-const columnHelper = createColumnHelper<Deal>();
+import { PropertyTypeSelector, PROPERTY_TYPES, type PropertyType } from "@/components/shared/PropertyTypeSelector";
+import {
+    buildDealColumns,
+    type DealFieldSchema,
+    type DealData,
+    DEAL_STAGE_OPTIONS,
+} from "./utils/dealColumnMapping";
+import type { CellColumn } from "@/components/shared/cells";
 
 function getSortIcon(sortDirection: false | "asc" | "desc") {
     if (sortDirection === "asc") {
@@ -53,27 +57,13 @@ function getSortIcon(sortDirection: false | "asc" | "desc") {
 
 interface ActionsCellProps {
     deal: Deal;
-    onStageChange: (stage: StageId) => void;
+    onStageChange: (stage: string) => void;
 }
 
 function ActionsCell({ deal, onStageChange }: ActionsCellProps) {
     const router = useRouter();
     const [isOpen, setIsOpen] = useState(false);
     const [showStages, setShowStages] = useState(false);
-    const containerRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        if (!isOpen) return;
-
-        function handleClickOutside(event: MouseEvent): void {
-            if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-                setIsOpen(false);
-                setShowStages(false);
-            }
-        }
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, [isOpen]);
 
     function handleToggleMenu(e: React.MouseEvent): void {
         e.stopPropagation();
@@ -86,16 +76,14 @@ function ActionsCell({ deal, onStageChange }: ActionsCellProps) {
         setIsOpen(false);
     }
 
-    function handleStageSelect(stageId: StageId): void {
-        if (stageId !== deal.stage) {
-            onStageChange(stageId);
-        }
+    function handleStageSelect(stageId: string): void {
+        onStageChange(stageId);
         setIsOpen(false);
         setShowStages(false);
     }
 
     return (
-        <div ref={containerRef} className="relative">
+        <div className="relative">
             <button
                 onClick={handleToggleMenu}
                 className="p-1.5 rounded hover:bg-gold/10 transition-[background-color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange focus-visible:ring-offset-2"
@@ -127,12 +115,6 @@ function ActionsCell({ deal, onStageChange }: ActionsCellProps) {
                         className="relative"
                         onMouseEnter={() => setShowStages(true)}
                         onMouseLeave={() => setShowStages(false)}
-                        onFocus={() => setShowStages(true)}
-                        onBlur={(e) => {
-                            if (!e.currentTarget.contains(e.relatedTarget)) {
-                                setShowStages(false);
-                            }
-                        }}
                     >
                         <button
                             className="w-full flex items-center gap-2 px-3 py-2 text-sm text-charcoal dark:text-cultured-white hover:bg-alabaster dark:hover:bg-charcoal/50"
@@ -147,11 +129,15 @@ function ActionsCell({ deal, onStageChange }: ActionsCellProps) {
 
                         {showStages && (
                             <div
-                                className="absolute left-full top-0 ml-1 bg-white dark:bg-deep-grey border border-gold/20 dark:border-white/10 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.08),0_8px_24px_rgba(0,0,0,0.06)] py-1 min-w-[140px]"
+                                className="absolute left-full top-0 ml-1 bg-white dark:bg-deep-grey border border-gold/20 dark:border-white/10 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.08),0_8px_24px_rgba(0,0,0,0.06)] py-1 min-w-[160px]"
                                 role="menu"
                             >
-                                {STAGES.map((stage) => {
-                                    const isCurrent = stage.id === deal.stage;
+                                {DEAL_STAGE_OPTIONS.map((stage) => {
+                                    // Map view stage to db stage for comparison
+                                    const isCurrent = stage.id === deal.stage ||
+                                        (deal.stage === "SOURCING" && (stage.id === "SOURCING" || stage.id === "INITIAL_REVIEW")) ||
+                                        (deal.stage === "DILIGENCE" && (stage.id === "PRELIMINARY_DUE_DILIGENCE" || stage.id === "DEEP_DUE_DILIGENCE")) ||
+                                        (deal.stage === "CLOSING" && (stage.id === "NEGOTIATION" || stage.id === "CLOSING" || stage.id === "CLOSED_WON" || stage.id === "CLOSED_LOST"));
                                     return (
                                         <button
                                             key={stage.id}
@@ -165,7 +151,7 @@ function ActionsCell({ deal, onStageChange }: ActionsCellProps) {
                                                     : "text-charcoal dark:text-cultured-white hover:bg-alabaster dark:hover:bg-charcoal/50"
                                             )}
                                         >
-                                            <span>{stage.label}</span>
+                                            <span>{stage.name}</span>
                                             {isCurrent && (
                                                 <span className="text-[10px] text-charcoal/40 dark:text-cultured-white/40">
                                                     Current
@@ -184,16 +170,102 @@ function ActionsCell({ deal, onStageChange }: ActionsCellProps) {
 }
 
 export function TableView() {
-    const { deals, updateDeal, setSelectedDealId } = useView();
+    const { deals, setSelectedDealId, refetch } = useView();
     const [sorting, setSorting] = useState<SortingState>([]);
-    const [addFieldOpen, setAddFieldOpen] = useState(false);
     const [manageFieldsOpen, setManageFieldsOpen] = useState(false);
+
+    // Inline add column state (matches DatabaseViewBlock pattern)
+    const [showAddColumn, setShowAddColumn] = useState(false);
+    const [newColName, setNewColName] = useState("");
+    const [addColumnDropdownPos, setAddColumnDropdownPos] = useState<{ top: number; left: number } | null>(null);
+    const addColumnContainerRef = useRef<HTMLDivElement>(null);
+
+    // Calculate dropdown position when showAddColumn changes
+    useEffect(() => {
+        if (showAddColumn && addColumnContainerRef.current) {
+            const rect = addColumnContainerRef.current.getBoundingClientRect();
+            const dropdownWidth = 288; // w-72 = 18rem = 288px
+            const padding = 16;
+            // Position dropdown to the left of the button, but keep it on screen
+            let left = rect.left - dropdownWidth + rect.width;
+            // Ensure it doesn't go off the right edge
+            if (left + dropdownWidth > window.innerWidth - padding) {
+                left = window.innerWidth - dropdownWidth - padding;
+            }
+            // Ensure it doesn't go off the left edge
+            left = Math.max(padding, left);
+            setAddColumnDropdownPos({
+                top: rect.bottom + 4,
+                left,
+            });
+        } else {
+            setAddColumnDropdownPos(null);
+        }
+    }, [showAddColumn]);
 
     // Fetch custom fields
     const { data: customFields } = api.dealField.list.useQuery();
 
-    function handleStageChange(dealId: string, stage: StageId): void {
-        updateDeal(dealId, { stage });
+    // Deal update mutation for inline cell editing
+    const utils = api.useUtils();
+    const updateMutation = api.deal.update.useMutation({
+        onSuccess: () => {
+            utils.deal.list.invalidate();
+            refetch();
+        },
+    });
+
+    // Create field mutation for adding new columns
+    const createFieldMutation = api.dealField.create.useMutation({
+        onSuccess: () => {
+            utils.dealField.list.invalidate();
+            setShowAddColumn(false);
+            setNewColName("");
+        },
+    });
+
+    // Handle type selection from inline dropdown
+    const handleTypeSelect = useCallback((type: PropertyType) => {
+        const typeOption = PROPERTY_TYPES.find((t) => t.type === type);
+        const columnName = newColName.trim() || typeOption?.label || type;
+        createFieldMutation.mutate({
+            name: columnName,
+            type,
+        });
+    }, [newColName, createFieldMutation]);
+
+    // Handle inline cell save
+    const handleCellSave = useCallback(
+        (dealId: string, updates: Record<string, unknown>) => {
+            // Check if it's a custom field update
+            if (updates.customFields) {
+                const customFieldUpdates = updates.customFields as Record<string, unknown>;
+                // Merge with existing custom fields
+                const deal = deals.find((d) => d.id === dealId);
+                const existingCustomFields = (deal as unknown as DealData)?.customFields || {};
+                updateMutation.mutate({
+                    id: dealId,
+                    customFields: {
+                        ...existingCustomFields,
+                        ...customFieldUpdates,
+                    },
+                });
+            } else {
+                updateMutation.mutate({
+                    id: dealId,
+                    ...updates,
+                });
+            }
+        },
+        [deals, updateMutation]
+    );
+
+    // Handle stage change from actions menu
+    function handleStageChange(dealId: string, stage: string): void {
+        updateMutation.mutate({
+            id: dealId,
+            stage,
+        });
     }
 
     // Handle row click to open side panel
@@ -201,114 +273,89 @@ export function TableView() {
         setSelectedDealId(dealId);
     }
 
-    // Build columns including custom fields
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const columns = useMemo(() => {
-        const baseColumns: ColumnDef<Deal, any>[] = [
-        columnHelper.accessor("title", {
-            header: "Deal Name",
-            cell: (info) => (
-                <span className="font-bold text-charcoal dark:text-cultured-white">
-                    {info.getValue()}
-                </span>
-            ),
-        }),
-        columnHelper.accessor("companies", {
-            header: "Companies",
-            cell: (info) => <CompaniesCell companies={info.getValue()} variant="table" />,
-        }),
-        columnHelper.accessor("stage", {
-            header: "Stage",
-            cell: (info) => (
-                <span className="px-2 py-1 rounded bg-gold/10 text-gold text-xs font-bold uppercase tracking-widest">
-                    {info.getValue()}
-                </span>
-            ),
-        }),
-        columnHelper.accessor("value", {
-            header: "Value",
-            cell: (info) => (
-                <span className="font-mono tabular-nums text-charcoal/80 dark:text-cultured-white/80">
-                    {info.getValue()}
-                </span>
-            ),
-        }),
-        columnHelper.accessor("probability", {
-            header: "Prob.",
-            cell: (info) => {
-                const value = info.getValue();
-                return (
-                    <div className="flex items-center gap-2">
-                        <div className="w-16 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                            <div className="h-full bg-emerald-500" style={{ width: `${value}%` }} />
-                        </div>
-                        <span className="text-xs tabular-nums text-charcoal/60 dark:text-cultured-white/60">
-                            {value}%
-                        </span>
-                    </div>
-                );
-            },
-        }),
-        columnHelper.accessor("date", {
-            header: "Date",
-            cell: (info) => (
-                <span className="text-sm text-charcoal/60 dark:text-cultured-white/60">
-                    {info.getValue()}
-                </span>
-            ),
-        }),
-        ];
-
-        // Add custom field columns
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const customFieldColumns: ColumnDef<Deal, any>[] = (customFields ?? []).map((field) => ({
-            id: `custom_${field.id}`,
-            header: field.name,
-            accessorFn: (row: Deal) => {
-                const customFieldsData = row.customFields as Record<string, unknown> | null;
-                return customFieldsData?.[field.id] ?? null;
-            },
-            cell: ({ getValue }: CellContext<Deal, unknown>) => {
-                const value = getValue();
-                if (value == null) {
-                    return <span className="text-charcoal/30 dark:text-cultured-white/30 italic">—</span>;
-                }
-                if (field.type === "CHECKBOX") {
-                    return value ? "✓" : "—";
-                }
-                if (field.type === "DATE" && value) {
-                    return new Date(String(value)).toLocaleDateString();
-                }
-                if (Array.isArray(value)) {
-                    return (
-                        <div className="flex flex-wrap gap-1">
-                            {value.map((v, i) => (
-                                <span key={i} className="px-1.5 py-0.5 text-xs bg-gold/10 text-gold rounded">
-                                    {String(v)}
-                                </span>
-                            ))}
-                        </div>
-                    );
-                }
-                return <span className="text-charcoal/80 dark:text-cultured-white/80">{String(value)}</span>;
-            },
+    // Build columns from core + custom fields
+    const cellColumns = useMemo(() => {
+        const fieldSchemas: DealFieldSchema[] = (customFields ?? []).map((field) => ({
+            id: field.id,
+            name: field.name,
+            type: field.type as DealFieldSchema['type'],
+            options: Array.isArray(field.options) ? (field.options as string[]) : undefined,
+            required: field.required ?? false,
+            order: field.order ?? 0,
         }));
+        return buildDealColumns(fieldSchemas);
+    }, [customFields]);
+
+    // Build TanStack table columns
+    const columns = useMemo(() => {
+        const tableColumns: ColumnDef<Deal>[] = [];
+
+        // Companies column (special handling)
+        tableColumns.push({
+            id: "companies",
+            header: "Companies",
+            cell: ({ row }) => <CompaniesCell companies={row.original.companies} variant="table" />,
+        });
+
+        // Add cell columns (excluding companies which is handled above)
+        cellColumns
+            .filter((col) => col.id !== "companies")
+            .forEach((col: CellColumn) => {
+                tableColumns.push({
+                    id: col.id,
+                    header: col.name,
+                    accessorFn: (row: Deal) => {
+                        // Special handling for custom fields
+                        if (!['title', 'stage', 'priority', 'value', 'probability', 'source', 'expectedCloseDate', 'leadPartner'].includes(col.id)) {
+                            const customFieldsData = row.customFields as Record<string, unknown> | undefined;
+                            return customFieldsData?.[col.id] ?? null;
+                        }
+
+                        // Core fields
+                        switch (col.id) {
+                            case 'title':
+                                return row.title;
+                            case 'stage':
+                                // Use actual database stage (dbStage) instead of mapped view stage
+                                return (row as unknown as DealData).dbStage || row.stage;
+                            case 'priority':
+                                return (row as unknown as DealData).priority || 'NONE';
+                            case 'value':
+                                return row.intValue;
+                            case 'probability':
+                                return row.probability;
+                            case 'source':
+                                return (row as unknown as DealData).source || null;
+                            case 'expectedCloseDate':
+                                return row.closingDate;
+                            default:
+                                return null;
+                        }
+                    },
+                    cell: ({ row }) => (
+                        <DealCellRenderer
+                            column={col}
+                            deal={row.original}
+                            onSave={handleCellSave}
+                        />
+                    ),
+                });
+            });
 
         // Actions column (always last)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const actionsColumn: ColumnDef<Deal, any> = {
+        tableColumns.push({
             id: "actions",
             header: () => <span className="sr-only">Actions</span>,
-            cell: (info: CellContext<Deal, unknown>) => (
+            cell: ({ row }) => (
                 <ActionsCell
-                    deal={info.row.original}
-                    onStageChange={(stage) => handleStageChange(info.row.original.id, stage)}
+                    deal={row.original}
+                    onStageChange={(stage) => handleStageChange(row.original.id, stage)}
                 />
             ),
-        };
+        });
 
-        return [...baseColumns, ...customFieldColumns, actionsColumn];
-    }, [customFields]);
+        return tableColumns;
+    }, [cellColumns, handleCellSave]);
 
     const table = useReactTable({
         data: deals,
@@ -361,26 +408,61 @@ export function TableView() {
                                     </th>
                                 );
                             })}
-                            {/* Add column button */}
-                            <th className="p-2 w-10">
-                                <div className="flex items-center gap-1">
-                                    <button
-                                        onClick={() => setAddFieldOpen(true)}
-                                        className="p-1.5 rounded hover:bg-gold/10 text-charcoal/40 hover:text-gold transition-colors"
-                                        aria-label="Add custom field"
-                                        title="Add column"
-                                    >
-                                        <Plus className="w-4 h-4" />
-                                    </button>
-                                    <button
-                                        onClick={() => setManageFieldsOpen(true)}
-                                        className="p-1.5 rounded hover:bg-gold/10 text-charcoal/40 hover:text-gold transition-colors"
-                                        aria-label="Manage custom fields"
-                                        title="Manage columns"
-                                    >
-                                        <Settings className="w-4 h-4" />
-                                    </button>
-                                </div>
+                            {/* Add column - Notion-style inline input + type picker */}
+                            <th className={cn(
+                                "relative px-1 transition-[width,min-width]",
+                                showAddColumn ? "min-w-[200px]" : "w-16"
+                            )}>
+                                {!showAddColumn ? (
+                                    <div className="flex items-center gap-1">
+                                        <button
+                                            onClick={() => setShowAddColumn(true)}
+                                            className="w-6 h-6 flex items-center justify-center text-charcoal/40 dark:text-cultured-white/40 hover:text-gold hover:bg-gold/10 rounded transition-colors"
+                                            title="Add column"
+                                        >
+                                            <Plus className="w-3.5 h-3.5" />
+                                        </button>
+                                        <button
+                                            onClick={() => setManageFieldsOpen(true)}
+                                            className="w-6 h-6 flex items-center justify-center text-charcoal/40 dark:text-cultured-white/40 hover:text-gold hover:bg-gold/10 rounded transition-colors"
+                                            title="Manage columns"
+                                        >
+                                            <Settings className="w-3.5 h-3.5" />
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div ref={addColumnContainerRef}>
+                                        {/* Inline name input styled like column header */}
+                                        <div className="flex items-center gap-1.5 px-2 py-1.5">
+                                            <Smile className="w-3.5 h-3.5 text-charcoal/40 dark:text-cultured-white/40" />
+                                            <input
+                                                type="text"
+                                                value={newColName}
+                                                onChange={(e) => setNewColName(e.target.value)}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === "Escape") {
+                                                        setShowAddColumn(false);
+                                                        setNewColName("");
+                                                    }
+                                                }}
+                                                placeholder="Type property name…"
+                                                autoFocus
+                                                className="flex-1 bg-transparent text-[11px] font-medium text-charcoal dark:text-cultured-white placeholder:text-charcoal/40 dark:placeholder:text-cultured-white/40 focus:outline-none"
+                                            />
+                                        </div>
+                                        {/* Type picker dropdown - rendered via portal */}
+                                        {addColumnDropdownPos && (
+                                            <PropertyTypeSelector
+                                                position={addColumnDropdownPos}
+                                                onSelect={handleTypeSelect}
+                                                onCancel={() => {
+                                                    setShowAddColumn(false);
+                                                    setNewColName("");
+                                                }}
+                                            />
+                                        )}
+                                    </div>
+                                )}
                             </th>
                         </tr>
                     ))}
@@ -401,7 +483,17 @@ export function TableView() {
                             }}
                         >
                             {row.getVisibleCells().map((cell) => (
-                                <td key={cell.id} className="p-4 pb-5">
+                                <td
+                                    key={cell.id}
+                                    className="p-4 pb-5"
+                                    onClick={(e) => {
+                                        // Prevent row click when interacting with editable cells
+                                        const target = e.target as HTMLElement;
+                                        if (target.tagName === 'INPUT' || target.tagName === 'SELECT' || target.closest('input') || target.closest('select')) {
+                                            e.stopPropagation();
+                                        }
+                                    }}
+                                >
                                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                 </td>
                             ))}
@@ -417,11 +509,7 @@ export function TableView() {
                 </div>
             )}
 
-            {/* Custom Fields Dialogs */}
-            <AddFieldDialog
-                open={addFieldOpen}
-                onOpenChange={setAddFieldOpen}
-            />
+            {/* Custom Fields Manager */}
             <CustomFieldsManager
                 open={manageFieldsOpen}
                 onOpenChange={setManageFieldsOpen}

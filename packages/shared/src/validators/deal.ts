@@ -120,12 +120,28 @@ export type UpdateViewConfigInput = z.infer<typeof updateViewConfigSchema>
 // =============================================================================
 
 /**
+ * Status option schema for STATUS field type
+ */
+const statusOptionSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  color: z.string(),
+})
+
+/**
  * Create Field Schema - For adding custom fields
+ * options can be:
+ * - string[] for SELECT/MULTI_SELECT
+ * - StatusOption[] for STATUS
+ * - null for other types
  */
 export const createFieldSchemaSchema = z.object({
   name: z.string().min(1, 'Field name is required').max(50),
   type: z.enum(fieldTypeValues, { errorMap: () => ({ message: 'Invalid field type' }) }),
-  options: z.array(z.string()).nullable().optional(),
+  options: z.union([
+    z.array(z.string()),
+    z.array(statusOptionSchema),
+  ]).nullable().optional(),
   required: z.boolean().default(false),
   order: z.number().int().default(0),
 })

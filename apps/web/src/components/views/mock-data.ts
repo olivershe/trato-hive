@@ -20,6 +20,12 @@ export interface Deal {
     date: string; // Display string
     closingDate: Date; // For sorting/calendar
     probability: number;
+    // Additional fields from API
+    customFields?: Record<string, unknown>;
+    priority?: string;
+    source?: string;
+    leadPartner?: string;
+    leadPartnerId?: string;
 }
 
 export const MOCK_DEALS: Deal[] = [

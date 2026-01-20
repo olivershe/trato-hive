@@ -232,6 +232,10 @@ enum FieldType {
   PERSON
   CHECKBOX
   URL
+  STATUS
+  RELATION
+  ROLLUP
+  FORMULA
 }
 
 enum DealCompanyRole {
