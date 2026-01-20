@@ -201,7 +201,7 @@ export default function CommandCenterPage() {
       .reduce((sum, s) => sum + s.dealCount, 0) ?? 0;
 
   return (
-    <div className="p-6">
+    <div className="px-12 py-8">
       <PageHeader
         title="Command Center"
         subtitle="Overview of your M&A pipeline and recent activity"

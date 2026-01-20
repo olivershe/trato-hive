@@ -136,7 +136,7 @@ function DealSidePanelWrapper() {
 export default function DealsPage() {
   return (
     <ViewProvider defaultView="table">
-      <div className="p-6">
+      <div className="px-12 py-8">
         <PageHeader
           title="Deals Pipeline"
           subtitle="Track and manage your M&A opportunities"
