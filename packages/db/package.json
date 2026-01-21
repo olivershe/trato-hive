@@ -30,7 +30,8 @@
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
     "db:seed:demo": "tsx prisma/seed-demo.ts",
-    "migrate:deals": "tsx scripts/migrate-deals-to-entries.ts"
+    "migrate:deals": "tsx scripts/migrate-deals-to-entries.ts",
+    "migrate:properties-block": "tsx scripts/add-properties-block-to-existing-deals.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.2.0"

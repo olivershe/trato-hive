@@ -75,6 +75,9 @@ interface DatabaseViewBlockAttributes {
   sortBy: DatabaseSort | null;
   groupBy: string | null;
   hiddenColumns: string[];
+  // Single entry mode for deal properties
+  filterEntryId: string | null;    // Show only this entry
+  singleEntryMode: boolean;        // Hide add/delete buttons
 }
 
 // Status option type for STATUS columns
@@ -162,6 +165,8 @@ const DEFAULT_ATTRIBUTES: DatabaseViewBlockAttributes = {
   sortBy: null,
   groupBy: null,
   hiddenColumns: [],
+  filterEntryId: null,
+  singleEntryMode: false,
 };
 
 // =============================================================================
@@ -181,6 +186,8 @@ export const DatabaseViewBlock = Node.create({
       sortBy: { default: DEFAULT_ATTRIBUTES.sortBy },
       groupBy: { default: DEFAULT_ATTRIBUTES.groupBy },
       hiddenColumns: { default: DEFAULT_ATTRIBUTES.hiddenColumns },
+      filterEntryId: { default: DEFAULT_ATTRIBUTES.filterEntryId },
+      singleEntryMode: { default: DEFAULT_ATTRIBUTES.singleEntryMode },
     };
   },
 
@@ -224,7 +231,7 @@ export const DatabaseViewBlock = Node.create({
 
 function DatabaseViewCard({ node, updateAttributes }: NodeViewProps) {
   const attrs = node.attrs as DatabaseViewBlockAttributes;
-  const { databaseId, viewType, filters, sortBy, groupBy, hiddenColumns } = attrs;
+  const { databaseId, viewType, filters, sortBy, groupBy, hiddenColumns, filterEntryId, singleEntryMode } = attrs;
 
   // Get dealId from URL params
   const params = useParams();
@@ -264,6 +271,8 @@ function DatabaseViewCard({ node, updateAttributes }: NodeViewProps) {
         sortBy={sortBy}
         groupBy={groupBy}
         hiddenColumns={hiddenColumns}
+        filterEntryId={filterEntryId}
+        singleEntryMode={singleEntryMode}
         dealId={dealId}
         onViewTypeChange={(vt) => updateBlockAttrs({ viewType: vt })}
         onFiltersChange={(f) => updateBlockAttrs({ filters: f })}
@@ -496,6 +505,8 @@ interface DatabaseViewProps {
   sortBy: DatabaseSort | null;
   groupBy: string | null;
   hiddenColumns: string[];
+  filterEntryId: string | null;
+  singleEntryMode: boolean;
   dealId?: string;
   onViewTypeChange: (viewType: DatabaseViewTypeValue) => void;
   onFiltersChange: (filters: DatabaseFilter[]) => void;
@@ -512,6 +523,8 @@ function DatabaseView({
   sortBy,
   groupBy,
   hiddenColumns,
+  filterEntryId,
+  singleEntryMode,
   dealId,
   onViewTypeChange,
   onFiltersChange: _onFiltersChange, // Reserved for future filter UI
@@ -569,83 +582,91 @@ function DatabaseView({
           <span className="font-medium text-xs text-charcoal dark:text-cultured-white">{database.name}</span>
         </div>
 
-        <div className="relative flex items-center gap-1">
-          {/* Import button */}
-          <button
-            onClick={() => setImportDialogOpen(true)}
-            className="flex items-center gap-1 px-1.5 py-0.5 text-[11px] text-charcoal/50 dark:text-cultured-white/50 hover:text-charcoal dark:hover:text-cultured-white hover:bg-bone/60 dark:hover:bg-surface-dark rounded transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40"
-            title="Import from CSV"
-          >
-            <Plus className="w-3 h-3" />
-            Import
-          </button>
+        {/* Hide controls in single entry mode */}
+        {!singleEntryMode && (
+          <div className="relative flex items-center gap-1">
+            {/* Import button */}
+            <button
+              onClick={() => setImportDialogOpen(true)}
+              className="flex items-center gap-1 px-1.5 py-0.5 text-[11px] text-charcoal/50 dark:text-cultured-white/50 hover:text-charcoal dark:hover:text-cultured-white hover:bg-bone/60 dark:hover:bg-surface-dark rounded transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40"
+              title="Import from CSV"
+            >
+              <Plus className="w-3 h-3" />
+              Import
+            </button>
 
-          <div className="w-px h-3 bg-bone dark:bg-charcoal/60" />
+            <div className="w-px h-3 bg-bone dark:bg-charcoal/60" />
 
-          {/* View switcher */}
-          <button
-            onClick={() => onViewTypeChange("table")}
-            className={`p-1 rounded transition-[color,background-color,box-shadow] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 ${
-              viewType === "table" ? "bg-gold/20 text-gold shadow-sm" : "text-charcoal/40 dark:text-cultured-white/40 hover:bg-bone/60 dark:hover:bg-surface-dark hover:text-charcoal dark:hover:text-cultured-white"
-            }`}
-            title="Table view"
-          >
-            <Table2 className="w-3 h-3" />
-          </button>
-          <button
-            onClick={() => onViewTypeChange("kanban")}
-            className={`p-1 rounded transition-[color,background-color,box-shadow] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 ${
-              viewType === "kanban" ? "bg-gold/20 text-gold shadow-sm" : "text-charcoal/40 dark:text-cultured-white/40 hover:bg-bone/60 dark:hover:bg-surface-dark hover:text-charcoal dark:hover:text-cultured-white"
-            }`}
-            title="Kanban view"
-          >
-            <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <rect x="3" y="3" width="5" height="18" rx="1" />
-              <rect x="10" y="3" width="5" height="12" rx="1" />
-              <rect x="17" y="3" width="5" height="15" rx="1" />
-            </svg>
-          </button>
-          <button
-            onClick={() => onViewTypeChange("gallery")}
-            className={`p-1 rounded transition-[color,background-color,box-shadow] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 ${
-              viewType === "gallery" ? "bg-gold/20 text-gold shadow-sm" : "text-charcoal/40 dark:text-cultured-white/40 hover:bg-bone/60 dark:hover:bg-surface-dark hover:text-charcoal dark:hover:text-cultured-white"
-            }`}
-            title="Gallery view"
-          >
-            <LayoutGrid className="w-3 h-3" />
-          </button>
-        </div>
+            {/* View switcher */}
+            <button
+              onClick={() => onViewTypeChange("table")}
+              className={`p-1 rounded transition-[color,background-color,box-shadow] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 ${
+                viewType === "table" ? "bg-gold/20 text-gold shadow-sm" : "text-charcoal/40 dark:text-cultured-white/40 hover:bg-bone/60 dark:hover:bg-surface-dark hover:text-charcoal dark:hover:text-cultured-white"
+              }`}
+              title="Table view"
+            >
+              <Table2 className="w-3 h-3" />
+            </button>
+            <button
+              onClick={() => onViewTypeChange("kanban")}
+              className={`p-1 rounded transition-[color,background-color,box-shadow] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 ${
+                viewType === "kanban" ? "bg-gold/20 text-gold shadow-sm" : "text-charcoal/40 dark:text-cultured-white/40 hover:bg-bone/60 dark:hover:bg-surface-dark hover:text-charcoal dark:hover:text-cultured-white"
+              }`}
+              title="Kanban view"
+            >
+              <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="3" y="3" width="5" height="18" rx="1" />
+                <rect x="10" y="3" width="5" height="12" rx="1" />
+                <rect x="17" y="3" width="5" height="15" rx="1" />
+              </svg>
+            </button>
+            <button
+              onClick={() => onViewTypeChange("gallery")}
+              className={`p-1 rounded transition-[color,background-color,box-shadow] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 ${
+                viewType === "gallery" ? "bg-gold/20 text-gold shadow-sm" : "text-charcoal/40 dark:text-cultured-white/40 hover:bg-bone/60 dark:hover:bg-surface-dark hover:text-charcoal dark:hover:text-cultured-white"
+              }`}
+              title="Gallery view"
+            >
+              <LayoutGrid className="w-3 h-3" />
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* View content */}
-      <div className="min-h-[200px]">
-        {viewType === "table" && (
+      {/* View content - smaller min-height in single entry mode */}
+      <div className={singleEntryMode ? "min-h-[60px]" : "min-h-[200px]"}>
+        {/* In single entry mode, always show table view */}
+        {(viewType === "table" || singleEntryMode) && (
           <DatabaseTableView
             database={database}
             sortBy={sortBy}
             hiddenColumns={hiddenColumns}
+            filterEntryId={filterEntryId}
+            singleEntryMode={singleEntryMode}
             dealId={dealId}
             onSortChange={onSortChange}
           />
         )}
-        {viewType === "kanban" && (
+        {viewType === "kanban" && !singleEntryMode && (
           <DatabaseKanbanView
             database={database}
             groupBy={groupBy}
             onGroupByChange={onGroupByChange}
           />
         )}
-        {viewType === "gallery" && (
+        {viewType === "gallery" && !singleEntryMode && (
           <DatabaseGalleryView database={database} />
         )}
       </div>
 
-      {/* Bulk import dialog */}
-      <BulkImportDialog
-        database={database}
-        open={importDialogOpen}
-        onOpenChange={setImportDialogOpen}
-      />
+      {/* Bulk import dialog - only show when not in single entry mode */}
+      {!singleEntryMode && (
+        <BulkImportDialog
+          database={database}
+          open={importDialogOpen}
+          onOpenChange={setImportDialogOpen}
+        />
+      )}
     </div>
   );
 }
@@ -747,13 +768,20 @@ interface DatabaseTableViewProps {
   database: DatabaseWithEntries;
   sortBy: DatabaseSort | null;
   hiddenColumns: string[];
+  filterEntryId: string | null;
+  singleEntryMode: boolean;
   dealId?: string;
   onSortChange: (sort: DatabaseSort | null) => void;
 }
 
-function DatabaseTableView({ database, sortBy, hiddenColumns, dealId, onSortChange }: DatabaseTableViewProps) {
+function DatabaseTableView({ database, sortBy, hiddenColumns, filterEntryId, singleEntryMode, dealId, onSortChange }: DatabaseTableViewProps) {
   const visibleColumns = database.schema.columns.filter((col) => !hiddenColumns.includes(col.id));
-  const entries = database.entries || [];
+
+  // Filter entries when filterEntryId is set (single entry mode for deal properties)
+  const allEntries = database.entries || [];
+  const entries = filterEntryId
+    ? allEntries.filter(e => e.id === filterEntryId)
+    : allEntries;
 
   // Column order state (for drag-to-reorder)
   const [columnOrder, setColumnOrder] = useState<string[]>(() => visibleColumns.map((col) => col.id));
@@ -974,61 +1002,63 @@ function DatabaseTableView({ database, sortBy, hiddenColumns, dealId, onSortChan
                   />
                 ))}
               </SortableContext>
-              {/* Add Column - Notion-style inline input + type picker */}
-              <th className={`relative ${showAddColumn ? "min-w-[200px]" : "w-8"} px-1 transition-[width,min-width]`} role="columnheader">
-                {!showAddColumn ? (
-                  <button
-                    onClick={() => setShowAddColumn(true)}
-                    className="w-6 h-6 flex items-center justify-center text-charcoal/40 dark:text-cultured-white/40 hover:text-gold hover:bg-gold/10 rounded transition-colors"
-                    title="Add column"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                  </button>
-                ) : (
-                  <div ref={addColumnContainerRef}>
-                    {/* Inline name input styled like column header */}
-                    <div className="flex items-center gap-1.5 px-2 py-1.5">
-                      <Smile className="w-3.5 h-3.5 text-charcoal/40 dark:text-cultured-white/40" />
-                      <input
-                        type="text"
-                        value={newColName}
-                        onChange={(e) => setNewColName(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Escape") {
+              {/* Add Column - Notion-style inline input + type picker (hidden in single entry mode) */}
+              {!singleEntryMode && (
+                <th className={`relative ${showAddColumn ? "min-w-[200px]" : "w-8"} px-1 transition-[width,min-width]`} role="columnheader">
+                  {!showAddColumn ? (
+                    <button
+                      onClick={() => setShowAddColumn(true)}
+                      className="w-6 h-6 flex items-center justify-center text-charcoal/40 dark:text-cultured-white/40 hover:text-gold hover:bg-gold/10 rounded transition-colors"
+                      title="Add column"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                    </button>
+                  ) : (
+                    <div ref={addColumnContainerRef}>
+                      {/* Inline name input styled like column header */}
+                      <div className="flex items-center gap-1.5 px-2 py-1.5">
+                        <Smile className="w-3.5 h-3.5 text-charcoal/40 dark:text-cultured-white/40" />
+                        <input
+                          type="text"
+                          value={newColName}
+                          onChange={(e) => setNewColName(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Escape") {
+                              setShowAddColumn(false);
+                              setNewColName("");
+                            }
+                          }}
+                          placeholder="Type property name…"
+                          autoFocus
+                          className="flex-1 bg-transparent text-[11px] font-medium text-charcoal dark:text-cultured-white placeholder:text-charcoal/40 dark:placeholder:text-cultured-white/40 focus:outline-none"
+                        />
+                      </div>
+                      {/* Type picker dropdown - uses shared PropertyTypeSelector */}
+                      {addColumnDropdownPos && (
+                        <PropertyTypeSelector
+                          position={addColumnDropdownPos}
+                          onSelect={(type) => {
+                            // Use entered name or default to type label
+                            const typeDef = PROPERTY_TYPES.find(t => t.type === type);
+                            const columnName = newColName.trim() || typeDef?.label || type;
+                            addColumnMutation.mutate({
+                              databaseId: database.id,
+                              column: {
+                                name: columnName,
+                                type: type,
+                              },
+                            });
+                          }}
+                          onCancel={() => {
                             setShowAddColumn(false);
                             setNewColName("");
-                          }
-                        }}
-                        placeholder="Type property name…"
-                        autoFocus
-                        className="flex-1 bg-transparent text-[11px] font-medium text-charcoal dark:text-cultured-white placeholder:text-charcoal/40 dark:placeholder:text-cultured-white/40 focus:outline-none"
-                      />
+                          }}
+                        />
+                      )}
                     </div>
-                    {/* Type picker dropdown - uses shared PropertyTypeSelector */}
-                    {addColumnDropdownPos && (
-                      <PropertyTypeSelector
-                        position={addColumnDropdownPos}
-                        onSelect={(type) => {
-                          // Use entered name or default to type label
-                          const typeDef = PROPERTY_TYPES.find(t => t.type === type);
-                          const columnName = newColName.trim() || typeDef?.label || type;
-                          addColumnMutation.mutate({
-                            databaseId: database.id,
-                            column: {
-                              name: columnName,
-                              type: type,
-                            },
-                          });
-                        }}
-                        onCancel={() => {
-                          setShowAddColumn(false);
-                          setNewColName("");
-                        }}
-                      />
-                    )}
-                  </div>
-                )}
-              </th>
+                  )}
+                </th>
+              )}
             </tr>
           </thead>
         <tbody>
@@ -1063,6 +1093,7 @@ function DatabaseTableView({ database, sortBy, hiddenColumns, dealId, onSortChan
                     <RowActionsMenu
                       entry={entry}
                       database={database}
+                      singleEntryMode={singleEntryMode}
                       onEdit={() => handleEditEntry(entry)}
                     />
                   </td>
@@ -1081,8 +1112,8 @@ function DatabaseTableView({ database, sortBy, hiddenColumns, dealId, onSortChan
                       />
                     </td>
                   ))}
-                  {/* Empty cell for add column */}
-                  <td className="w-8" role="gridcell" />
+                  {/* Empty cell for add column (hidden in single entry mode) */}
+                  {!singleEntryMode && <td className="w-8" role="gridcell" />}
                 </motion.tr>
               ))
             )}
@@ -1100,17 +1131,19 @@ function DatabaseTableView({ database, sortBy, hiddenColumns, dealId, onSortChan
         </DragOverlay>
       </DndContext>
 
-      {/* Add row button */}
-      <motion.button
-        onClick={handleOpenNewForm}
-        whileHover={{ backgroundColor: 'rgba(243, 244, 246, 1)' }}
-        whileTap={{ scale: 0.99 }}
-        className="w-full px-2 py-1 text-left text-[11px] text-gray-400 dark:text-cultured-white/40 hover:text-gray-600 dark:hover:text-cultured-white flex items-center gap-1 transition-colors"
-        aria-label="Add new entry"
-      >
-        <Plus className="w-3 h-3" />
-        New
-      </motion.button>
+      {/* Add row button (hidden in single entry mode) */}
+      {!singleEntryMode && (
+        <motion.button
+          onClick={handleOpenNewForm}
+          whileHover={{ backgroundColor: 'rgba(243, 244, 246, 1)' }}
+          whileTap={{ scale: 0.99 }}
+          className="w-full px-2 py-1 text-left text-[11px] text-gray-400 dark:text-cultured-white/40 hover:text-gray-600 dark:hover:text-cultured-white flex items-center gap-1 transition-colors"
+          aria-label="Add new entry"
+        >
+          <Plus className="w-3 h-3" />
+          New
+        </motion.button>
+      )}
 
       {/* Entry form sheet */}
       <EntryFormSheet
@@ -2428,10 +2461,11 @@ function ColumnConfigPopover({ column, databaseId, dealId, onClose }: ColumnConf
 interface RowActionsMenuProps {
   entry: DatabaseEntry;
   database: DatabaseWithEntries;
+  singleEntryMode: boolean;
   onEdit: () => void;
 }
 
-function RowActionsMenu({ entry, database, onEdit }: RowActionsMenuProps) {
+function RowActionsMenu({ entry, database, singleEntryMode, onEdit }: RowActionsMenuProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const utils = api.useUtils();
 
@@ -2494,15 +2528,20 @@ function RowActionsMenu({ entry, database, onEdit }: RowActionsMenuProps) {
           <Edit className="w-3 h-3 mr-1.5" />
           Edit
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleDuplicate} disabled={duplicateMutation.isPending} className="text-[11px] py-1">
-          <Copy className="w-3 h-3 mr-1.5" />
-          {duplicateMutation.isPending ? "..." : "Duplicate"}
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => setShowDeleteConfirm(true)} destructive className="text-[11px] py-1">
-          <Trash2 className="w-3 h-3 mr-1.5" />
-          Delete
-        </DropdownMenuItem>
+        {/* Hide duplicate and delete in single entry mode (deal properties) */}
+        {!singleEntryMode && (
+          <>
+            <DropdownMenuItem onClick={handleDuplicate} disabled={duplicateMutation.isPending} className="text-[11px] py-1">
+              <Copy className="w-3 h-3 mr-1.5" />
+              {duplicateMutation.isPending ? "..." : "Duplicate"}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => setShowDeleteConfirm(true)} destructive className="text-[11px] py-1">
+              <Trash2 className="w-3 h-3 mr-1.5" />
+              Delete
+            </DropdownMenuItem>
+          </>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

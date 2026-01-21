@@ -173,7 +173,7 @@ export default function DealDetailPage() {
 
       {/* Deal Properties - Phase 12: Use Notion-style panel if entry exists, fallback to cards */}
       {deal.databaseEntryId ? (
-        <DealPropertiesPanel entryId={deal.databaseEntryId} className="mb-6" />
+        <DealPropertiesPanel entryId={deal.databaseEntryId} dealId={dealId} className="mb-6" />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <div className="bg-alabaster rounded-xl p-4 border border-gold/10">

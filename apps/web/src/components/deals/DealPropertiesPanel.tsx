@@ -8,6 +8,7 @@
  */
 "use client";
 
+import { useCallback } from "react";
 import { api } from "@/trpc/react";
 import {
   DollarSign,
@@ -20,62 +21,108 @@ import {
   Loader2,
 } from "lucide-react";
 import { PropertyRow } from "./PropertyRow";
+import { CellRenderer, type CellColumn, type StatusOption } from "@/components/shared/cells";
+import {
+  DEAL_STAGE_OPTIONS,
+  DEAL_PRIORITY_OPTIONS,
+  DEAL_SOURCE_OPTIONS,
+  DEAL_TYPE_OPTIONS,
+} from "@trato-hive/shared";
 
-// Status badge styles for stage and priority
-const stageBadgeStyles: Record<string, string> = {
-  SOURCING: "bg-slate-100 text-slate-700",
-  INITIAL_REVIEW: "bg-blue-100 text-blue-700",
-  PRELIMINARY_DUE_DILIGENCE: "bg-blue-100 text-blue-700",
-  DEEP_DUE_DILIGENCE: "bg-purple-100 text-purple-700",
-  NEGOTIATION: "bg-yellow-100 text-yellow-700",
-  CLOSING: "bg-yellow-100 text-yellow-700",
-  CLOSED_WON: "bg-green-100 text-green-700",
-  CLOSED_LOST: "bg-red-100 text-red-700",
+// Map StatusOption color to CellColumn StatusColor (extend types as needed)
+type ExtendedStatusColor = 'gray' | 'blue' | 'green' | 'yellow' | 'red' | 'purple' | 'violet' | 'pink' | 'orange' | 'amber' | 'emerald';
+
+// Column definitions for inline editing
+const PROPERTY_COLUMNS: Record<string, CellColumn> = {
+  stage: {
+    id: 'stage',
+    name: 'Stage',
+    type: 'STATUS',
+    statusOptions: DEAL_STAGE_OPTIONS.map((opt): StatusOption => ({
+      ...opt,
+      color: opt.color as ExtendedStatusColor,
+    })),
+  },
+  priority: {
+    id: 'priority',
+    name: 'Priority',
+    type: 'STATUS',
+    statusOptions: DEAL_PRIORITY_OPTIONS.map((opt): StatusOption => ({
+      ...opt,
+      color: opt.color as ExtendedStatusColor,
+    })),
+  },
+  type: {
+    id: 'type',
+    name: 'Type',
+    type: 'SELECT',
+    options: DEAL_TYPE_OPTIONS,
+  },
+  value: {
+    id: 'value',
+    name: 'Value',
+    type: 'NUMBER',
+  },
+  probability: {
+    id: 'probability',
+    name: 'Probability',
+    type: 'NUMBER',
+  },
+  expectedCloseDate: {
+    id: 'expectedCloseDate',
+    name: 'Expected Close',
+    type: 'DATE',
+  },
+  source: {
+    id: 'source',
+    name: 'Source',
+    type: 'SELECT',
+    options: DEAL_SOURCE_OPTIONS,
+  },
+  leadPartner: {
+    id: 'leadPartner',
+    name: 'Lead Partner',
+    type: 'PERSON',
+  },
 };
-
-const priorityBadgeStyles: Record<string, string> = {
-  NONE: "bg-slate-100 text-slate-500",
-  LOW: "bg-slate-100 text-slate-600",
-  MEDIUM: "bg-blue-100 text-blue-700",
-  HIGH: "bg-yellow-100 text-yellow-700",
-  URGENT: "bg-red-100 text-red-700",
-};
-
-function formatStageName(stage: string): string {
-  return stage
-    .split("_")
-    .map((word) => word.charAt(0) + word.slice(1).toLowerCase())
-    .join(" ");
-}
-
-function formatValue(value: number | null | undefined): string {
-  if (!value) return "-";
-  if (value >= 1000000000) return `$${(value / 1000000000).toFixed(1)}B`;
-  if (value >= 1000000) return `$${(value / 1000000).toFixed(0)}M`;
-  if (value >= 1000) return `$${(value / 1000).toFixed(0)}K`;
-  return `$${value.toFixed(0)}`;
-}
-
-function formatDate(date: string | null | undefined): string {
-  if (!date) return "-";
-  const d = new Date(date);
-  return d.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-}
 
 interface DealPropertiesPanelProps {
   entryId: string;
+  dealId?: string;
   className?: string;
 }
 
-export function DealPropertiesPanel({ entryId, className = "" }: DealPropertiesPanelProps) {
+export function DealPropertiesPanel({ entryId, dealId, className = "" }: DealPropertiesPanelProps) {
+  const utils = api.useUtils();
+
   // Fetch entry with schema
   const { data: entry, isLoading } = api.dealsDatabase.getEntry.useQuery(
     { entryId },
     { enabled: !!entryId }
+  );
+
+  // Mutation for updating entry properties
+  const updateEntry = api.dealsDatabase.updateEntry.useMutation({
+    onSuccess: () => {
+      // Invalidate entry query to refresh the panel
+      utils.dealsDatabase.getEntry.invalidate({ entryId });
+      // Also invalidate deal queries to keep pipeline in sync
+      if (dealId) {
+        utils.deal.get.invalidate({ id: dealId });
+        utils.deal.list.invalidate();
+      }
+    },
+  });
+
+  // Handler to save a property value
+  const handleSave = useCallback(
+    (columnId: string) => (newValue: unknown) => {
+      updateEntry.mutate({
+        entryId,
+        properties: { [columnId]: newValue },
+      });
+    },
+    [entryId, updateEntry]
   );
 
   if (isLoading) {
@@ -93,77 +140,91 @@ export function DealPropertiesPanel({ entryId, className = "" }: DealPropertiesP
   }
 
   const props = entry.properties as Record<string, unknown>;
-  const stage = (props.stage as string) || "SOURCING";
-  const priority = (props.priority as string) || "NONE";
-  const type = (props.type as string) || "ACQUISITION";
-  const value = props.value as number | null | undefined;
-  const probability = props.probability as number | null | undefined;
-  const expectedCloseDate = props.expectedCloseDate as string | null | undefined;
-  const source = props.source as string | null | undefined;
 
   return (
     <div className={`bg-alabaster rounded-xl border border-gold/10 p-4 ${className}`}>
-      <h3 className="text-sm font-medium text-charcoal/60 mb-3">Properties</h3>
+      <h3 className="text-sm font-medium text-charcoal/60 mb-3 uppercase tracking-wide">Properties</h3>
 
-      <div className="space-y-1">
+      <div className="space-y-0.5">
         {/* Stage */}
         <PropertyRow icon={Layers} label="Stage">
-          <span
-            className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
-              stageBadgeStyles[stage] || "bg-slate-100 text-slate-600"
-            }`}
-          >
-            {formatStageName(stage)}
-          </span>
+          <CellRenderer
+            column={PROPERTY_COLUMNS.stage}
+            value={props.stage}
+            onSave={handleSave('stage')}
+            className="text-sm"
+          />
         </PropertyRow>
 
         {/* Priority */}
         <PropertyRow icon={Target} label="Priority">
-          <span
-            className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
-              priorityBadgeStyles[priority] || "bg-slate-100 text-slate-500"
-            }`}
-          >
-            {priority === "NONE" ? "None" : priority.charAt(0) + priority.slice(1).toLowerCase()}
-          </span>
+          <CellRenderer
+            column={PROPERTY_COLUMNS.priority}
+            value={props.priority}
+            onSave={handleSave('priority')}
+            className="text-sm"
+          />
         </PropertyRow>
 
         {/* Type */}
         <PropertyRow icon={Tag} label="Type">
-          <span className="text-sm text-charcoal">
-            {type.charAt(0) + type.slice(1).toLowerCase()}
-          </span>
+          <CellRenderer
+            column={PROPERTY_COLUMNS.type}
+            value={props.type}
+            onSave={handleSave('type')}
+            className="text-sm"
+          />
         </PropertyRow>
 
         {/* Value */}
         <PropertyRow icon={DollarSign} label="Value">
-          <span className="text-sm font-medium text-charcoal">
-            {formatValue(value)}
-          </span>
+          <CellRenderer
+            column={PROPERTY_COLUMNS.value}
+            value={props.value}
+            onSave={handleSave('value')}
+            className="text-sm"
+          />
         </PropertyRow>
 
         {/* Probability */}
         <PropertyRow icon={TrendingUp} label="Probability">
-          <span className="text-sm text-charcoal">
-            {probability != null ? `${probability}%` : "-"}
-          </span>
+          <CellRenderer
+            column={PROPERTY_COLUMNS.probability}
+            value={props.probability}
+            onSave={handleSave('probability')}
+            className="text-sm"
+          />
         </PropertyRow>
 
         {/* Expected Close */}
         <PropertyRow icon={Calendar} label="Expected Close">
-          <span className="text-sm text-charcoal">
-            {formatDate(expectedCloseDate)}
-          </span>
+          <CellRenderer
+            column={PROPERTY_COLUMNS.expectedCloseDate}
+            value={props.expectedCloseDate}
+            onSave={handleSave('expectedCloseDate')}
+            className="text-sm"
+          />
         </PropertyRow>
 
         {/* Source */}
-        {source && (
-          <PropertyRow icon={User} label="Source">
-            <span className="text-sm text-charcoal">
-              {source.charAt(0) + source.slice(1).toLowerCase()}
-            </span>
-          </PropertyRow>
-        )}
+        <PropertyRow icon={User} label="Source">
+          <CellRenderer
+            column={PROPERTY_COLUMNS.source}
+            value={props.source}
+            onSave={handleSave('source')}
+            className="text-sm"
+          />
+        </PropertyRow>
+
+        {/* Lead Partner */}
+        <PropertyRow icon={User} label="Lead Partner">
+          <CellRenderer
+            column={PROPERTY_COLUMNS.leadPartner}
+            value={props.leadPartner}
+            onSave={handleSave('leadPartner')}
+            className="text-sm"
+          />
+        </PropertyRow>
       </div>
     </div>
   );

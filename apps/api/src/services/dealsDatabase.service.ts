@@ -197,6 +197,7 @@ export class DealsDatabaseService {
 
   /**
    * Update a deal entry's properties
+   * Syncs changes to Deal table for backward compatibility
    * Multi-tenancy: Validates entry belongs to org
    */
   async updateDealEntry(
@@ -204,10 +205,13 @@ export class DealsDatabaseService {
     updates: Partial<DealEntryProperties>,
     organizationId: string
   ) {
-    // Validate access
+    // Validate access and get linked deal
     const entry = await this.db.databaseEntry.findUnique({
       where: { id: entryId },
-      include: { database: true },
+      include: {
+        database: true,
+        deal: true,
+      },
     })
 
     if (!entry) {
@@ -245,6 +249,17 @@ export class DealsDatabaseService {
         where: { id: entry.pageId },
         data: { title: updates.name },
       })
+    }
+
+    // Sync changes to Deal table for backward compatibility with pipeline
+    if (entry.deal) {
+      const dealUpdate = DealsDatabaseService.mapPropertiesToDealUpdate(updates)
+      if (Object.keys(dealUpdate).length > 0) {
+        await this.db.deal.update({
+          where: { id: entry.deal.id },
+          data: dealUpdate,
+        })
+      }
     }
 
     return {

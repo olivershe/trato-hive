@@ -5,6 +5,7 @@ import { api } from "@/trpc/react";
 import { Loader2, ChevronRight, Link2 } from "lucide-react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
+import { DealPropertiesInlineDatabase } from "@/components/deals/DealPropertiesInlineDatabase";
 
 // Dynamic import to avoid SSR issues with Tiptap/Liveblocks
 const BlockEditor = dynamic(
@@ -101,27 +102,9 @@ export default function PageView() {
       {/* Backlinks - subtle indicator */}
       <BacklinksPanel pageId={pageId} />
 
-      {/* Database properties (if this is a database entry page) */}
-      {page.databaseEntry && page.databaseEntry.database && (
-        <div className="px-24 mb-4">
-          <div className="p-4 bg-alabaster/50 rounded-lg">
-            <p className="text-xs font-medium text-charcoal/50 uppercase tracking-wider mb-3">
-              Properties
-            </p>
-            <div className="grid grid-cols-2 gap-4">
-              {Object.entries(page.databaseEntry.properties as Record<string, unknown>).map(
-                ([key, value]) => (
-                  <div key={key}>
-                    <p className="text-xs text-charcoal/50">{key}</p>
-                    <p className="text-sm text-charcoal">
-                      {String(value ?? "-")}
-                    </p>
-                  </div>
-                )
-              )}
-            </div>
-          </div>
-        </div>
+      {/* Deal Properties Inline Database - show on root pages (no parent) */}
+      {page.dealId && !page.parentPageId && (
+        <DealPropertiesInlineDatabase dealId={page.dealId} />
       )}
 
       {/* Block Editor - full width, no border */}

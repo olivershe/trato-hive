@@ -438,6 +438,26 @@ export class DealService {
         },
       });
 
+      // 11. Create inline database view block for deal properties
+      await tx.block.create({
+        data: {
+          pageId: rootPage.id,
+          type: 'databaseViewBlock',
+          order: 1,
+          properties: {
+            databaseId: dealsDatabase.id,
+            viewType: 'table',
+            filterEntryId: databaseEntry.id,
+            singleEntryMode: true,
+            filters: [],
+            sortBy: null,
+            groupBy: null,
+            hiddenColumns: ['name'], // Name shown in page title already
+          },
+          createdBy: userId,
+        },
+      });
+
       return deal;
     });
   }

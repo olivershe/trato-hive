@@ -4,6 +4,7 @@
  * Export all deal-related components for convenient imports.
  */
 export { DealPropertiesPanel } from "./DealPropertiesPanel";
+export { DealPropertiesInlineDatabase } from "./DealPropertiesInlineDatabase";
 export { PropertyRow } from "./PropertyRow";
 export { DealQuickActions } from "./DealQuickActions";
 export { DealSidePanel } from "./DealSidePanel";

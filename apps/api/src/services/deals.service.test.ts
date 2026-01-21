@@ -221,14 +221,28 @@ describe('DealService', () => {
         }),
       });
 
-      // Verify only DealHeaderBlock created (database is now a page, not a block)
-      expect(blockCreate).toHaveBeenCalledTimes(1);
+      // Verify DealHeaderBlock and DatabaseViewBlock created
+      expect(blockCreate).toHaveBeenCalledTimes(2);
 
       // DealHeaderBlock on root page
       expect(blockCreate).toHaveBeenCalledWith({
         data: expect.objectContaining({
           type: 'deal_header',
           order: 0,
+        }),
+      });
+
+      // DatabaseViewBlock for deal properties (single entry mode)
+      expect(blockCreate).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          type: 'databaseViewBlock',
+          order: 1,
+          properties: expect.objectContaining({
+            singleEntryMode: true,
+            filterEntryId: expect.any(String),
+            viewType: 'table',
+            hiddenColumns: ['name'],
+          }),
         }),
       });
     });
