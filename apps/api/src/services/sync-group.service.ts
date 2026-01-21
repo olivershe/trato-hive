@@ -16,6 +16,11 @@ export interface SyncedBlock {
   properties: unknown;
 }
 
+// Helper to get organizationId from a page (supports both deal-scoped and org-level pages)
+function getPageOrgId(page: { deal?: { organizationId: string } | null; organizationId?: string | null }): string | null {
+  return page.deal?.organizationId ?? page.organizationId ?? null
+}
+
 export class SyncGroupService {
   constructor(private db: PrismaClient) {}
 
@@ -37,7 +42,7 @@ export class SyncGroupService {
       },
     });
 
-    if (!block || block.page.deal.organizationId !== organizationId) {
+    if (!block || getPageOrgId(block.page) !== organizationId) {
       throw new TRPCError({
         code: 'NOT_FOUND',
         message: 'Block not found',
@@ -75,7 +80,7 @@ export class SyncGroupService {
     // Filter to only blocks in this org
     type BlockWithRelations = typeof blocks[number];
     return blocks
-      .filter((b: BlockWithRelations) => b.page.deal.organizationId === organizationId)
+      .filter((b: BlockWithRelations) => getPageOrgId(b.page) === organizationId)
       .map((b: BlockWithRelations) => ({
         id: b.id,
         pageId: b.pageId,
@@ -104,7 +109,7 @@ export class SyncGroupService {
       },
     });
 
-    if (!sourceBlock || sourceBlock.page.deal.organizationId !== organizationId) {
+    if (!sourceBlock || getPageOrgId(sourceBlock.page) !== organizationId) {
       throw new TRPCError({
         code: 'NOT_FOUND',
         message: 'Source block not found',
@@ -117,7 +122,7 @@ export class SyncGroupService {
       include: { deal: true },
     });
 
-    if (!targetPage || targetPage.deal.organizationId !== organizationId) {
+    if (!targetPage || getPageOrgId(targetPage) !== organizationId) {
       throw new TRPCError({
         code: 'NOT_FOUND',
         message: 'Target page not found',
@@ -196,7 +201,7 @@ export class SyncGroupService {
       },
     });
 
-    if (!block || block.page.deal.organizationId !== organizationId) {
+    if (!block || getPageOrgId(block.page) !== organizationId) {
       throw new TRPCError({
         code: 'NOT_FOUND',
         message: 'Block not found',

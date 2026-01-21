@@ -143,6 +143,8 @@ describe('DealService', () => {
       const mockPage = { id: TEST_IDS.page, dealId: TEST_IDS.deal, title: 'Test Deal' };
       const mockBlock = { id: TEST_IDS.block, pageId: TEST_IDS.page };
       const mockDatabase = { id: 'clqddtracker12345678901234', name: 'Test Deal - Due Diligence Tracker' };
+      const mockDealsDb = { id: TEST_IDS.database, name: 'Deals', isOrgLevel: true, pageId: TEST_IDS.page };
+      const mockEntry = { id: TEST_IDS.entry, databaseId: TEST_IDS.database };
 
       // Mock transaction
       mockPrisma.$transaction.mockImplementation(async (fn) => {
@@ -150,7 +152,8 @@ describe('DealService', () => {
           deal: { create: vi.fn().mockResolvedValue(mockDeal) },
           page: { create: vi.fn().mockResolvedValue(mockPage), createMany: vi.fn().mockResolvedValue({ count: 3 }) },
           block: { create: vi.fn().mockResolvedValue(mockBlock), createMany: vi.fn().mockResolvedValue({ count: 4 }) },
-          database: { create: vi.fn().mockResolvedValue(mockDatabase) },
+          database: { create: vi.fn().mockResolvedValue(mockDatabase), findFirst: vi.fn().mockResolvedValue(mockDealsDb) },
+          databaseEntry: { create: vi.fn().mockResolvedValue(mockEntry) },
         };
         return fn(tx);
       });
@@ -175,18 +178,22 @@ describe('DealService', () => {
       const mockPage = { id: TEST_IDS.page, dealId: TEST_IDS.deal, title: 'Acme Acquisition' };
       const mockBlock = { id: TEST_IDS.block, pageId: TEST_IDS.page };
       const mockDatabase = { id: 'clqddtracker12345678901234', name: 'Acme Acquisition - Due Diligence Tracker' };
+      const mockDealsDb = { id: TEST_IDS.database, name: 'Deals', isOrgLevel: true, pageId: TEST_IDS.page };
+      const mockEntry = { id: TEST_IDS.entry, databaseId: TEST_IDS.database };
 
       const dealCreate = vi.fn().mockResolvedValue(mockDeal);
       const pageCreate = vi.fn().mockResolvedValue(mockPage);
       const blockCreate = vi.fn().mockResolvedValue(mockBlock);
       const databaseCreate = vi.fn().mockResolvedValue(mockDatabase);
+      const entryCreate = vi.fn().mockResolvedValue(mockEntry);
 
       mockPrisma.$transaction.mockImplementation(async (fn) => {
         const tx = {
           deal: { create: dealCreate },
           page: { create: pageCreate, createMany: vi.fn().mockResolvedValue({ count: 3 }) },
           block: { create: blockCreate, createMany: vi.fn().mockResolvedValue({ count: 4 }) },
-          database: { create: databaseCreate },
+          database: { create: databaseCreate, findFirst: vi.fn().mockResolvedValue(mockDealsDb) },
+          databaseEntry: { create: entryCreate },
         };
         return fn(tx);
       });
@@ -225,6 +232,75 @@ describe('DealService', () => {
         }),
       });
     });
+
+    // Phase 12: Test DatabaseEntry creation
+    it('should create DatabaseEntry in org-level Deals Database', async () => {
+      const mockDeal = createMockDeal({ name: 'Phase12 Deal', databaseEntryId: TEST_IDS.entry });
+      const mockPage = { id: TEST_IDS.page, dealId: TEST_IDS.deal, title: 'Phase12 Deal' };
+      const mockBlock = { id: TEST_IDS.block, pageId: TEST_IDS.page };
+      const mockDatabase = { id: 'clqddtracker12345678901234', name: 'DD Tracker' };
+      const mockDealsDb = { id: TEST_IDS.database, name: 'Deals', isOrgLevel: true, pageId: 'clqdealsdbpage1234567890' };
+      const mockEntry = { id: TEST_IDS.entry, databaseId: TEST_IDS.database };
+
+      const dealCreate = vi.fn().mockResolvedValue(mockDeal);
+      const entryCreate = vi.fn().mockResolvedValue(mockEntry);
+      const databaseFindFirst = vi.fn().mockResolvedValue(mockDealsDb);
+
+      mockPrisma.$transaction.mockImplementation(async (fn) => {
+        const tx = {
+          deal: { create: dealCreate },
+          page: { create: vi.fn().mockResolvedValue(mockPage), createMany: vi.fn().mockResolvedValue({ count: 3 }) },
+          block: { create: vi.fn().mockResolvedValue(mockBlock), createMany: vi.fn().mockResolvedValue({ count: 4 }) },
+          database: { create: vi.fn().mockResolvedValue(mockDatabase), findFirst: databaseFindFirst },
+          databaseEntry: { create: entryCreate },
+        };
+        return fn(tx);
+      });
+
+      await service.create(
+        {
+          name: 'Phase12 Deal',
+          type: 'ACQUISITION' as DealType,
+          stage: 'SOURCING' as DealStage,
+          currency: 'USD',
+          priority: 'NONE',
+          value: 1000000,
+        },
+        TEST_IDS.org,
+        TEST_IDS.user
+      );
+
+      // Verify Deals Database lookup
+      expect(databaseFindFirst).toHaveBeenCalledWith({
+        where: {
+          organizationId: TEST_IDS.org,
+          isOrgLevel: true,
+          name: 'Deals',
+        },
+      });
+
+      // Verify DatabaseEntry creation with deal properties
+      expect(entryCreate).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          databaseId: TEST_IDS.database,
+          properties: expect.objectContaining({
+            name: 'Phase12 Deal',
+            stage: 'SOURCING',
+            type: 'ACQUISITION',
+          }),
+          createdById: TEST_IDS.user,
+        }),
+      });
+
+      // Verify deal is linked to entry
+      expect(dealCreate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            databaseEntryId: TEST_IDS.entry,
+          }),
+        })
+      );
+    });
   });
 
   describe('update', () => {
@@ -258,6 +334,61 @@ describe('DealService', () => {
       ).rejects.toMatchObject({
         code: 'NOT_FOUND',
       });
+    });
+
+    // Phase 12: Test DatabaseEntry sync on update
+    it('should sync updates to DatabaseEntry if deal has databaseEntryId', async () => {
+      const existingDeal = createMockDeal({ databaseEntryId: TEST_IDS.entry });
+      const existingEntry = {
+        id: TEST_IDS.entry,
+        properties: { name: 'Old Name', stage: 'SOURCING' },
+        database: { organizationId: TEST_IDS.org },
+      };
+      const updatedDeal = createMockDeal({ name: 'Updated Deal', stage: 'DEEP_DUE_DILIGENCE' as DealStage, databaseEntryId: TEST_IDS.entry });
+
+      mockPrisma.deal.findUnique.mockResolvedValue(existingDeal);
+      mockPrisma.deal.update.mockResolvedValue(updatedDeal);
+      mockPrisma.databaseEntry.findUnique.mockResolvedValue(existingEntry);
+      mockPrisma.databaseEntry.update.mockResolvedValue({
+        ...existingEntry,
+        properties: { name: 'Updated Deal', stage: 'DEEP_DUE_DILIGENCE' },
+      });
+
+      const result = await service.update(
+        TEST_IDS.deal,
+        { name: 'Updated Deal', stage: 'DEEP_DUE_DILIGENCE' as DealStage },
+        TEST_IDS.org
+      );
+
+      expect(result.name).toBe('Updated Deal');
+
+      // Verify DatabaseEntry was updated
+      expect(mockPrisma.databaseEntry.update).toHaveBeenCalledWith({
+        where: { id: TEST_IDS.entry },
+        data: expect.objectContaining({
+          properties: expect.objectContaining({
+            name: 'Updated Deal',
+            stage: 'DEEP_DUE_DILIGENCE',
+          }),
+        }),
+      });
+    });
+
+    it('should not update DatabaseEntry if deal has no databaseEntryId', async () => {
+      const existingDeal = createMockDeal({ databaseEntryId: null });
+      const updatedDeal = createMockDeal({ name: 'Updated Deal', databaseEntryId: null });
+
+      mockPrisma.deal.findUnique.mockResolvedValue(existingDeal);
+      mockPrisma.deal.update.mockResolvedValue(updatedDeal);
+
+      await service.update(
+        TEST_IDS.deal,
+        { name: 'Updated Deal' },
+        TEST_IDS.org
+      );
+
+      // DatabaseEntry update should not be called
+      expect(mockPrisma.databaseEntry.update).not.toHaveBeenCalled();
     });
   });
 

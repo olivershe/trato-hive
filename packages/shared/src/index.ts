@@ -28,3 +28,15 @@ export type {
   DealAlert,
   AlertListResult,
 } from './types/alert'
+
+// Phase 12: Deals Database schema exports
+export {
+  DEAL_STAGE_OPTIONS,
+  DEAL_PRIORITY_OPTIONS,
+  DEAL_SOURCE_OPTIONS,
+  DEAL_TYPE_OPTIONS,
+  DEALS_DATABASE_SCHEMA,
+  DEALS_DATABASE_NAME,
+  DEALS_DATABASE_DESCRIPTION,
+} from './types/database'
+export type { DatabaseSchema } from './types/database'

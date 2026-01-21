@@ -35,6 +35,7 @@ import { watchRouter } from '../routers/watch';
 import { documentRouter } from '../routers/document';
 import { qaRouter } from '../routers/qa';
 import { alertsRouter } from '../routers/alerts';
+import { dealsDatabaseRouter } from '../routers/dealsDatabase';
 
 /**
  * Root application router
@@ -45,6 +46,7 @@ export const appRouter = router({
   deal: dealsRouter,
   dealField: dealFieldsRouter,
   database: databasesRouter,
+  dealsDatabase: dealsDatabaseRouter, // Phase 12: Org-level Deals Database
   dashboard: dashboardRouter,
   diligence: diligenceRouter,
   vdr: vdrRouter,

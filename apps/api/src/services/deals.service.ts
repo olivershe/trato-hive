@@ -3,10 +3,21 @@
  *
  * Business logic for Deal CRUD operations.
  * Enforces multi-tenancy via organizationId on all operations.
+ *
+ * Phase 12: Integrates with org-level Deals Database
+ * - Creates DatabaseEntry when deal is created
+ * - Syncs updates between Deal table and DatabaseEntry
  */
 import { TRPCError } from '@trpc/server';
 import type { PrismaClient, Deal, Prisma, DealStage, DealType } from '@trato-hive/db';
-import { DATABASE_TEMPLATES, type DealListInput, type RouterCreateDealInput } from '@trato-hive/shared';
+import {
+  DATABASE_TEMPLATES,
+  DEALS_DATABASE_SCHEMA,
+  DEALS_DATABASE_NAME,
+  DEALS_DATABASE_DESCRIPTION,
+  type DealListInput,
+  type RouterCreateDealInput,
+} from '@trato-hive/shared';
 
 export interface DealListResult {
   items: Deal[];
@@ -120,12 +131,24 @@ export class DealService {
   /**
    * Get single deal by ID
    * Multi-tenancy: Validates deal belongs to organization
+   * Phase 12: Includes databaseEntry relation for properties panel
    */
-  async getById(id: string, organizationId: string): Promise<Deal> {
+  async getById(id: string, organizationId: string) {
     const deal = await this.db.deal.findUnique({
       where: { id },
       include: {
         company: true,
+        // Phase 12: Include database entry with schema
+        databaseEntry: {
+          include: {
+            database: {
+              select: {
+                id: true,
+                schema: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -174,6 +197,8 @@ export class DealService {
    * Create new deal with Notion-style page tree
    * Multi-tenancy: Sets organizationId from context
    *
+   * Phase 12: Also creates DatabaseEntry in org-level Deals Database
+   *
    * Creates the following page structure:
    * - Root Page (deal name)
    *   - Due Diligence (folder)
@@ -191,7 +216,75 @@ export class DealService {
     userId: string
   ): Promise<Deal> {
     return this.db.$transaction(async (tx) => {
-      // 1. Create the deal
+      // Phase 12: Get or create the org-level Deals Database
+      let dealsDatabase = await tx.database.findFirst({
+        where: {
+          organizationId,
+          isOrgLevel: true,
+          name: DEALS_DATABASE_NAME,
+        },
+      });
+
+      if (!dealsDatabase) {
+        // Create org-level page for the database
+        const databasePage = await tx.page.create({
+          data: {
+            organizationId,
+            title: DEALS_DATABASE_NAME,
+            icon: '📊',
+            isDatabase: true,
+          },
+        });
+
+        // Create the Deals Database
+        dealsDatabase = await tx.database.create({
+          data: {
+            name: DEALS_DATABASE_NAME,
+            description: DEALS_DATABASE_DESCRIPTION,
+            schema: DEALS_DATABASE_SCHEMA as unknown as Prisma.InputJsonValue,
+            organizationId,
+            isOrgLevel: true,
+            pageId: databasePage.id,
+            createdById: userId,
+          },
+        });
+      }
+
+      // Phase 12: Create entry in Deals Database
+      const entryProperties = {
+        name: input.name,
+        stage: input.stage,
+        type: input.type,
+        priority: 'NONE', // Default priority
+        value: input.value ? Number(input.value) : null,
+        probability: input.probability,
+        source: null,
+        expectedCloseDate: input.expectedCloseDate
+          ? input.expectedCloseDate.toISOString()
+          : null,
+        leadPartner: null,
+      };
+
+      // Create entry page (will be linked to deal root page later)
+      const entryPage = await tx.page.create({
+        data: {
+          organizationId,
+          parentPageId: dealsDatabase.pageId,
+          title: input.name,
+          icon: '📋',
+        },
+      });
+
+      const databaseEntry = await tx.databaseEntry.create({
+        data: {
+          databaseId: dealsDatabase.id,
+          properties: entryProperties as Prisma.InputJsonValue,
+          pageId: entryPage.id,
+          createdById: userId,
+        },
+      });
+
+      // 1. Create the deal with link to database entry
       const deal = await tx.deal.create({
         data: {
           name: input.name,
@@ -205,6 +298,7 @@ export class DealService {
           notes: input.notes,
           companyId: input.companyId,
           organizationId,
+          databaseEntryId: databaseEntry.id, // Phase 12: Link to entry
         },
       });
 
@@ -351,14 +445,15 @@ export class DealService {
   /**
    * Update existing deal
    * Multi-tenancy: Validates ownership before update
+   * Phase 12: Syncs updates with DatabaseEntry if exists
    */
   async update(
     id: string,
     data: Partial<RouterCreateDealInput>,
     organizationId: string
   ): Promise<Deal> {
-    // First validate access
-    await this.getById(id, organizationId);
+    // First validate access and get current state
+    const existingDeal = await this.getById(id, organizationId);
 
     // Build update data with proper enum casts
     const updateData: Prisma.DealUpdateInput = {};
@@ -375,7 +470,49 @@ export class DealService {
       updateData.company = data.companyId ? { connect: { id: data.companyId } } : { disconnect: true };
     }
 
-    // Perform update
+    // Phase 12: Also update the DatabaseEntry if it exists
+    if (existingDeal.databaseEntryId) {
+      const entryUpdates: Record<string, unknown> = {};
+      if (data.name !== undefined) entryUpdates.name = data.name;
+      if (data.stage !== undefined) entryUpdates.stage = data.stage;
+      if (data.type !== undefined) entryUpdates.type = data.type;
+      if (data.value !== undefined) entryUpdates.value = data.value ? Number(data.value) : null;
+      if (data.probability !== undefined) entryUpdates.probability = data.probability;
+      if (data.expectedCloseDate !== undefined) {
+        entryUpdates.expectedCloseDate = data.expectedCloseDate
+          ? data.expectedCloseDate.toISOString()
+          : null;
+      }
+
+      // Get current entry properties and merge
+      const currentEntry = await this.db.databaseEntry.findUnique({
+        where: { id: existingDeal.databaseEntryId },
+      });
+
+      if (currentEntry) {
+        const mergedProperties = {
+          ...(currentEntry.properties as Record<string, unknown>),
+          ...entryUpdates,
+        };
+
+        await this.db.databaseEntry.update({
+          where: { id: existingDeal.databaseEntryId },
+          data: {
+            properties: mergedProperties as Prisma.InputJsonValue,
+          },
+        });
+
+        // Update entry page title if name changed
+        if (data.name && currentEntry.pageId) {
+          await this.db.page.update({
+            where: { id: currentEntry.pageId },
+            data: { title: data.name },
+          });
+        }
+      }
+    }
+
+    // Perform deal update
     return this.db.deal.update({
       where: { id },
       data: updateData,

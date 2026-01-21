@@ -374,3 +374,132 @@ export interface DatabaseViewConfig {
 export interface DatabaseViewBlockAttributes extends DatabaseViewConfig {
   databaseId: string | null // null = "Create New" or "Link" mode
 }
+
+// =============================================================================
+// Phase 12: Deals Database Schema (Org-Level)
+// =============================================================================
+
+/**
+ * Deal Stage Options for STATUS column type
+ */
+export const DEAL_STAGE_OPTIONS: StatusOption[] = [
+  { id: 'SOURCING', name: 'Sourcing', color: 'gray' },
+  { id: 'INITIAL_REVIEW', name: 'Initial Review', color: 'blue' },
+  { id: 'PRELIMINARY_DUE_DILIGENCE', name: 'Prelim DD', color: 'blue' },
+  { id: 'DEEP_DUE_DILIGENCE', name: 'Deep DD', color: 'purple' },
+  { id: 'NEGOTIATION', name: 'Negotiation', color: 'yellow' },
+  { id: 'CLOSING', name: 'Closing', color: 'yellow' },
+  { id: 'CLOSED_WON', name: 'Closed Won', color: 'green' },
+  { id: 'CLOSED_LOST', name: 'Closed Lost', color: 'red' },
+]
+
+/**
+ * Deal Priority Options for STATUS column type
+ */
+export const DEAL_PRIORITY_OPTIONS: StatusOption[] = [
+  { id: 'NONE', name: 'None', color: 'gray' },
+  { id: 'LOW', name: 'Low', color: 'gray' },
+  { id: 'MEDIUM', name: 'Medium', color: 'blue' },
+  { id: 'HIGH', name: 'High', color: 'yellow' },
+  { id: 'URGENT', name: 'Urgent', color: 'red' },
+]
+
+/**
+ * Deal Source Options for SELECT column type
+ */
+export const DEAL_SOURCE_OPTIONS: string[] = [
+  'Referral',
+  'Outbound',
+  'Inbound',
+  'Auction',
+  'Network',
+  'Other',
+]
+
+/**
+ * Deal Type Options for SELECT column type
+ */
+export const DEAL_TYPE_OPTIONS: string[] = [
+  'Acquisition',
+  'Investment',
+  'Partnership',
+  'Other',
+]
+
+/**
+ * DEALS_DATABASE_SCHEMA - Schema for the org-level Deals Database
+ * This is the standard schema used when creating the Deals Database for an organization.
+ * Columns match the Deal model fields for seamless data mapping.
+ */
+export const DEALS_DATABASE_SCHEMA: DatabaseSchema = {
+  columns: [
+    {
+      id: 'name',
+      name: 'Name',
+      type: 'TEXT',
+      width: 200,
+    },
+    {
+      id: 'stage',
+      name: 'Stage',
+      type: 'STATUS',
+      statusOptions: DEAL_STAGE_OPTIONS,
+      width: 140,
+    },
+    {
+      id: 'type',
+      name: 'Type',
+      type: 'SELECT',
+      options: DEAL_TYPE_OPTIONS,
+      width: 120,
+    },
+    {
+      id: 'priority',
+      name: 'Priority',
+      type: 'STATUS',
+      statusOptions: DEAL_PRIORITY_OPTIONS,
+      width: 100,
+    },
+    {
+      id: 'value',
+      name: 'Value',
+      type: 'NUMBER',
+      width: 120,
+    },
+    {
+      id: 'probability',
+      name: 'Probability',
+      type: 'NUMBER',
+      width: 100,
+    },
+    {
+      id: 'source',
+      name: 'Source',
+      type: 'SELECT',
+      options: DEAL_SOURCE_OPTIONS,
+      width: 120,
+    },
+    {
+      id: 'expectedCloseDate',
+      name: 'Expected Close',
+      type: 'DATE',
+      width: 140,
+    },
+    {
+      id: 'leadPartner',
+      name: 'Lead Partner',
+      type: 'PERSON',
+      width: 140,
+    },
+  ],
+}
+
+/**
+ * DEALS_DATABASE_NAME - Standard name for org-level Deals Database
+ */
+export const DEALS_DATABASE_NAME = 'Deals'
+
+/**
+ * DEALS_DATABASE_DESCRIPTION - Description for org-level Deals Database
+ */
+export const DEALS_DATABASE_DESCRIPTION = 'Organization deals pipeline powered by Notion-style database'

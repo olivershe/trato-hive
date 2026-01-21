@@ -19,6 +19,7 @@ import {
 import { useState } from "react";
 import dynamic from "next/dynamic";
 import { PinButton } from "@/components/sidebar";
+import { DealPropertiesPanel } from "@/components/deals";
 
 // Dynamic import to avoid SSR issues with Tiptap/Liveblocks
 const BlockEditor = dynamic(
@@ -104,9 +105,10 @@ export default function DealDetailPage() {
     );
   }
 
-  // Cast to include company relation (included by service but not in Prisma base type)
+  // Cast to include company and databaseEntry relations
   const deal = dealData as typeof dealData & {
     company?: { id: string; name: string } | null;
+    databaseEntryId?: string | null;
   };
 
   return (
@@ -169,46 +171,50 @@ export default function DealDetailPage() {
         </div>
       </div>
 
-      {/* Deal Info Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-alabaster rounded-xl p-4 border border-gold/10">
-          <div className="flex items-center gap-2 text-charcoal/60 text-sm mb-1">
-            <DollarSign className="w-4 h-4" />
-            Deal Value
+      {/* Deal Properties - Phase 12: Use Notion-style panel if entry exists, fallback to cards */}
+      {deal.databaseEntryId ? (
+        <DealPropertiesPanel entryId={deal.databaseEntryId} className="mb-6" />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <div className="bg-alabaster rounded-xl p-4 border border-gold/10">
+            <div className="flex items-center gap-2 text-charcoal/60 text-sm mb-1">
+              <DollarSign className="w-4 h-4" />
+              Deal Value
+            </div>
+            <p className="text-xl font-bold text-charcoal">
+              {formatValue(deal.value ? Number(deal.value) : null)}
+            </p>
           </div>
-          <p className="text-xl font-bold text-charcoal">
-            {formatValue(deal.value ? Number(deal.value) : null)}
-          </p>
-        </div>
 
-        <div className="bg-alabaster rounded-xl p-4 border border-gold/10">
-          <div className="flex items-center gap-2 text-charcoal/60 text-sm mb-1">
-            <TrendingUp className="w-4 h-4" />
-            Probability
+          <div className="bg-alabaster rounded-xl p-4 border border-gold/10">
+            <div className="flex items-center gap-2 text-charcoal/60 text-sm mb-1">
+              <TrendingUp className="w-4 h-4" />
+              Probability
+            </div>
+            <p className="text-xl font-bold text-charcoal">{deal.probability ?? 0}%</p>
           </div>
-          <p className="text-xl font-bold text-charcoal">{deal.probability ?? 0}%</p>
-        </div>
 
-        <div className="bg-alabaster rounded-xl p-4 border border-gold/10">
-          <div className="flex items-center gap-2 text-charcoal/60 text-sm mb-1">
-            <Calendar className="w-4 h-4" />
-            Expected Close
+          <div className="bg-alabaster rounded-xl p-4 border border-gold/10">
+            <div className="flex items-center gap-2 text-charcoal/60 text-sm mb-1">
+              <Calendar className="w-4 h-4" />
+              Expected Close
+            </div>
+            <p className="text-xl font-bold text-charcoal">
+              {formatDate(deal.expectedCloseDate)}
+            </p>
           </div>
-          <p className="text-xl font-bold text-charcoal">
-            {formatDate(deal.expectedCloseDate)}
-          </p>
-        </div>
 
-        <div className="bg-alabaster rounded-xl p-4 border border-gold/10">
-          <div className="flex items-center gap-2 text-charcoal/60 text-sm mb-1">
-            <Edit3 className="w-4 h-4" />
-            Deal Type
+          <div className="bg-alabaster rounded-xl p-4 border border-gold/10">
+            <div className="flex items-center gap-2 text-charcoal/60 text-sm mb-1">
+              <Edit3 className="w-4 h-4" />
+              Deal Type
+            </div>
+            <p className="text-xl font-bold text-charcoal capitalize">
+              {deal.type.toLowerCase()}
+            </p>
           </div>
-          <p className="text-xl font-bold text-charcoal capitalize">
-            {deal.type.toLowerCase()}
-          </p>
         </div>
-      </div>
+      )}
 
       {/* Tabs */}
       <div className="flex gap-4 mb-4 border-b border-gold/10">

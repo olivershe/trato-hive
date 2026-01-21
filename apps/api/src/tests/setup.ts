@@ -81,6 +81,8 @@ export function createMockDeal(overrides?: Partial<Deal>): Deal {
     priority: 'NONE' as const,
     source: null,
     customFields: null,
+    // Phase 12: Database entry link
+    databaseEntryId: null,
     createdAt: new Date(),
     updatedAt: new Date(),
     ...overrides,
@@ -135,6 +137,10 @@ interface MockDatabase {
   createdById: string;
   createdAt: Date;
   updatedAt: Date;
+  // Phase 12: Org-level database fields
+  isOrgLevel?: boolean;
+  pageId?: string;
+  dealId?: string | null;
 }
 
 // Mock database entry type
@@ -167,6 +173,10 @@ export function createMockDatabase(overrides?: Partial<MockDatabase>): MockDatab
     createdById: TEST_IDS.user,
     createdAt: new Date(),
     updatedAt: new Date(),
+    // Phase 12: Org-level database defaults
+    isOrgLevel: false,
+    pageId: TEST_IDS.page,
+    dealId: TEST_IDS.deal,
     ...overrides,
   };
 }
@@ -288,6 +298,7 @@ export function createMockPrisma() {
       findUnique: vi.fn(),
       create: vi.fn(),
       createMany: vi.fn(),
+      update: vi.fn(),
     },
     block: {
       create: vi.fn(),
@@ -317,6 +328,7 @@ export function createMockPrisma() {
     database: {
       findMany: vi.fn(),
       findUnique: vi.fn(),
+      findFirst: vi.fn(),
       create: vi.fn(),
       update: vi.fn(),
       delete: vi.fn(),
