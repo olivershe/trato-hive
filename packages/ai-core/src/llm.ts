@@ -13,8 +13,14 @@ import {
   type LLMConfig,
   type LLMResponse,
   type LLMGenerateOptions,
+  type LLMToolGenerateOptions,
+  type LLMToolResponse,
   type TokenUsage,
   type RetryConfig,
+  type ToolCall,
+  type ToolResult,
+  type ConversationMessage,
+  type AssistantContent,
   LLMError,
   calculateCost,
   DEFAULT_RETRY_CONFIG,
@@ -130,6 +136,217 @@ IMPORTANT: Respond with valid JSON only. No markdown, no code blocks, just the J
   }
 
   /**
+   * Generate completion with tool calling support (Claude only)
+   * Supports multi-turn conversations with tool use and tool results
+   */
+  async generateWithTools(options: LLMToolGenerateOptions): Promise<LLMToolResponse> {
+    if (this.config.provider !== 'claude') {
+      throw new LLMError(
+        'Tool calling is only supported with Claude provider',
+        'INVALID_REQUEST',
+        this.config.provider
+      );
+    }
+
+    const maxRetries = options.maxRetries ?? this.retryConfig.maxRetries;
+    let lastError: Error | undefined;
+
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        const startTime = Date.now();
+        return await this.generateClaudeWithTools(options, startTime);
+      } catch (error) {
+        lastError = error as Error;
+        const llmError = this.classifyError(error as Error);
+
+        if (!llmError.retryable || attempt === maxRetries) {
+          throw llmError;
+        }
+
+        const delay = Math.min(
+          this.retryConfig.initialDelayMs * Math.pow(this.retryConfig.backoffMultiplier, attempt),
+          this.retryConfig.maxDelayMs
+        );
+
+        await this.sleep(delay);
+      }
+    }
+
+    throw new LLMError(
+      `Failed after ${maxRetries + 1} attempts: ${lastError?.message}`,
+      'UNKNOWN',
+      this.config.provider,
+      false,
+      lastError
+    );
+  }
+
+  /**
+   * Continue a tool-enabled conversation with tool results
+   */
+  async continueWithToolResults(
+    previousMessages: ConversationMessage[],
+    assistantResponse: AssistantContent[],
+    toolResults: ToolResult[],
+    options: LLMToolGenerateOptions
+  ): Promise<LLMToolResponse> {
+    // Build messages array with previous context, assistant response, and tool results
+    const messages: ConversationMessage[] = [
+      ...previousMessages,
+      { role: 'assistant' as const, content: assistantResponse },
+      {
+        role: 'user' as const,
+        content: toolResults.map((r) => ({
+          type: 'tool_result' as const,
+          tool_use_id: r.tool_use_id,
+          content: r.content,
+          is_error: r.is_error,
+        })),
+      },
+    ];
+
+    return this.generateWithTools({
+      ...options,
+      messages,
+    });
+  }
+
+  /**
+   * Generate completion with tools using Claude
+   */
+  private async generateClaudeWithTools(
+    options: LLMToolGenerateOptions,
+    startTime: number
+  ): Promise<LLMToolResponse> {
+    if (!this.claude) {
+      throw new LLMError('Claude client not initialized', 'INVALID_REQUEST', 'claude');
+    }
+
+    const model = this.config.model || 'claude-sonnet-4-5-20250929';
+
+    // Build messages - either from provided messages or from a simple prompt
+    const messages = options.messages || [];
+
+    // Build Anthropic-compatible messages
+    // The Anthropic SDK expects specific content block types, so we construct them directly
+    const anthropicMessages: Anthropic.Messages.MessageParam[] = messages.map((m) => {
+      if (m.role === 'user') {
+        if (typeof m.content === 'string') {
+          return { role: 'user' as const, content: m.content };
+        }
+        // Tool results - construct as ToolResultBlockParam array
+        const toolResultContent: Anthropic.Messages.ToolResultBlockParam[] = m.content.map((c) => ({
+          type: 'tool_result' as const,
+          tool_use_id: c.tool_use_id,
+          content: c.content,
+          is_error: c.is_error,
+        }));
+        return {
+          role: 'user' as const,
+          content: toolResultContent,
+        };
+      }
+      // Assistant message
+      if (typeof m.content === 'string') {
+        return { role: 'assistant' as const, content: m.content };
+      }
+      // Assistant message with content blocks
+      type AssistantContentBlock = Anthropic.Messages.TextBlockParam | Anthropic.Messages.ToolUseBlockParam;
+      const assistantContent: AssistantContentBlock[] = m.content.map((c): AssistantContentBlock => {
+        if (c.type === 'text') {
+          return { type: 'text' as const, text: c.text };
+        }
+        return {
+          type: 'tool_use' as const,
+          id: c.id,
+          name: c.name,
+          input: c.input,
+        };
+      });
+      return {
+        role: 'assistant' as const,
+        content: assistantContent,
+      };
+    });
+
+    // Build request params
+    const requestParams: Anthropic.Messages.MessageCreateParamsNonStreaming = {
+      model,
+      max_tokens: options.maxTokens || 4096,
+      messages: anthropicMessages,
+    };
+
+    // Add system prompt if provided
+    if (options.systemPrompt) {
+      requestParams.system = options.systemPrompt;
+    }
+
+    // Add temperature if provided
+    if (options.temperature !== undefined) {
+      requestParams.temperature = options.temperature;
+    }
+
+    // Add tools if provided
+    if (options.tools && options.tools.length > 0) {
+      requestParams.tools = options.tools.map((t) => ({
+        name: t.name,
+        description: t.description,
+        input_schema: t.input_schema as Anthropic.Messages.Tool.InputSchema,
+      }));
+
+      // Add tool_choice if provided
+      if (options.tool_choice) {
+        if (typeof options.tool_choice === 'string') {
+          requestParams.tool_choice =
+            options.tool_choice === 'auto'
+              ? { type: 'auto' }
+              : { type: 'any' };
+        } else {
+          requestParams.tool_choice = {
+            type: 'tool',
+            name: options.tool_choice.name,
+          };
+        }
+      }
+    }
+
+    const response = await this.claude.messages.create(requestParams);
+
+    // Extract text content and tool calls
+    let textContent = '';
+    const toolCalls: ToolCall[] = [];
+
+    for (const block of response.content) {
+      if (block.type === 'text') {
+        textContent += block.text;
+      } else if (block.type === 'tool_use') {
+        toolCalls.push({
+          id: block.id,
+          name: block.name,
+          input: block.input as Record<string, unknown>,
+        });
+      }
+    }
+
+    const tokensUsed: TokenUsage = {
+      prompt: response.usage.input_tokens,
+      completion: response.usage.output_tokens,
+      total: response.usage.input_tokens + response.usage.output_tokens,
+    };
+
+    return {
+      content: textContent,
+      toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
+      stopReason: response.stop_reason as LLMToolResponse['stopReason'],
+      tokensUsed,
+      model,
+      cost: calculateCost(model, tokensUsed),
+      latencyMs: Date.now() - startTime,
+      provider: 'claude',
+    };
+  }
+
+  /**
    * Generate completion using Claude
    */
   private async generateClaude(
@@ -141,7 +358,7 @@ IMPORTANT: Respond with valid JSON only. No markdown, no code blocks, just the J
       throw new LLMError('Claude client not initialized', 'INVALID_REQUEST', 'claude');
     }
 
-    const model = this.config.model || 'claude-sonnet-4-5-20250514';
+    const model = this.config.model || 'claude-sonnet-4-5-20250929';
 
     const response = await this.claude.messages.create({
       model,
@@ -282,7 +499,7 @@ IMPORTANT: Respond with valid JSON only. No markdown, no code blocks, just the J
    * Get current model
    */
   get model(): string {
-    return this.config.model || (this.config.provider === 'claude' ? 'claude-sonnet-4-5-20250514' : 'gpt-4-turbo');
+    return this.config.model || (this.config.provider === 'claude' ? 'claude-sonnet-4-5-20250929' : 'gpt-4-turbo');
   }
 }
 
@@ -304,7 +521,7 @@ export function createClaudeClient(apiKey: string, model?: string): LLMClient {
   return new LLMClient({
     provider: 'claude',
     apiKey,
-    model: model || 'claude-sonnet-4-5-20250514',
+    model: model || 'claude-sonnet-4-5-20250929',
   });
 }
 

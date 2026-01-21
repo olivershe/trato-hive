@@ -8,6 +8,10 @@
 // Agent definitions
 export * from './document-agent';
 export * from './diligence-agent';
+export * from './action-agent';
+
+// Tools
+export * from './tools';
 
 // Worker utilities
 export * from './workers';

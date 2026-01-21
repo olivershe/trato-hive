@@ -39,6 +39,7 @@ model User {
   reviewedQAAnswers QAAnswer[]    @relation("QAAnswerReviewer") // Q&A answers reviewed by user
   leadDeals        Deal[]         @relation("DealLeadPartner") // Deals where user is lead partner
   dealViewConfigs  DealViewConfig[] // User's deal view preferences
+  coworkerConversations CoworkerConversation[] // Hive Copilot conversations
 
   @@map("users")
 }
@@ -105,6 +106,7 @@ model Organization {
   databases        Database[]
   dealFieldSchemas DealFieldSchema[] // Custom field definitions
   pages            Page[]            // Org-level pages (Phase 12)
+  coworkerConversations CoworkerConversation[] // Hive Copilot conversations
 
   @@map("organizations")
 }
@@ -872,4 +874,29 @@ model DealViewConfig {
   @@index([userId])
   @@index([organizationId])
   @@map("deal_view_configs")
+}
+
+// =============================================================================
+// HIVE COPILOT CONVERSATIONS (Phase 12: Coworker AI)
+// =============================================================================
+
+model CoworkerConversation {
+  id             String  @id @default(cuid())
+  organizationId String
+  userId         String
+  title          String? // Auto-generated from first message
+  messages       Json    @db.JsonB // Array of { role, content, timestamp, executedActions? }
+  context        Json?   @db.JsonB // { dealId?, companyId? }
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([userId])
+  @@index([organizationId, userId])
+  @@index([updatedAt])
+  @@map("coworker_conversations")
 }

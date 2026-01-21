@@ -30,7 +30,7 @@ vi.mock('@langchain/openai', () => ({
 describe('calculateCost', () => {
   it('should calculate cost correctly for Claude Sonnet', () => {
     const tokens: TokenUsage = { prompt: 1000, completion: 500, total: 1500 };
-    const cost = calculateCost('claude-sonnet-4-5-20250514', tokens);
+    const cost = calculateCost('claude-sonnet-4-5-20250929', tokens);
 
     // Input: 1000 tokens * $3.0/1M = $0.003
     // Output: 500 tokens * $15.0/1M = $0.0075
@@ -58,13 +58,13 @@ describe('calculateCost', () => {
 
   it('should handle zero tokens', () => {
     const tokens: TokenUsage = { prompt: 0, completion: 0, total: 0 };
-    const cost = calculateCost('claude-sonnet-4-5-20250514', tokens);
+    const cost = calculateCost('claude-sonnet-4-5-20250929', tokens);
     expect(cost).toBe(0);
   });
 
   it('should handle large token counts', () => {
     const tokens: TokenUsage = { prompt: 1000000, completion: 500000, total: 1500000 };
-    const cost = calculateCost('claude-sonnet-4-5-20250514', tokens);
+    const cost = calculateCost('claude-sonnet-4-5-20250929', tokens);
 
     // Input: 1M tokens * $3.0/1M = $3.0
     // Output: 500K tokens * $15.0/1M = $7.5
@@ -94,7 +94,7 @@ describe('LLMError', () => {
 
 describe('MODEL_PRICING', () => {
   it('should have pricing for Claude models', () => {
-    expect(MODEL_PRICING['claude-sonnet-4-5-20250514']).toBeDefined();
+    expect(MODEL_PRICING['claude-sonnet-4-5-20250929']).toBeDefined();
     expect(MODEL_PRICING['claude-3-haiku-20240307']).toBeDefined();
     expect(MODEL_PRICING['claude-3-opus-20240229']).toBeDefined();
   });
@@ -137,7 +137,7 @@ describe('LLMClient', () => {
       });
 
       expect(client.provider).toBe('claude');
-      expect(client.model).toBe('claude-sonnet-4-5-20250514');
+      expect(client.model).toBe('claude-sonnet-4-5-20250929');
     });
 
     it('should accept valid OpenAI config', () => {
@@ -177,7 +177,7 @@ describe('LLMClient', () => {
 
       expect(client).toBeInstanceOf(LLMClient);
       expect(client.provider).toBe('claude');
-      expect(client.model).toBe('claude-sonnet-4-5-20250514');
+      expect(client.model).toBe('claude-sonnet-4-5-20250929');
     });
 
     it('createClaudeClient should accept custom model', () => {

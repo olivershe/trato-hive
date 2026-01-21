@@ -194,7 +194,7 @@ export class StreamingService {
    */
   private getModel() {
     if (this.config.provider === 'claude') {
-      const modelId = this.config.model || 'claude-sonnet-4-5-20250514';
+      const modelId = this.config.model || 'claude-sonnet-4-5-20250929';
       return anthropic(modelId);
     } else {
       const modelId = this.config.model || 'gpt-4-turbo';
@@ -220,7 +220,7 @@ export function createStreamingService(config: StreamConfig): StreamingService {
 export function createClaudeStreamingService(model?: string): StreamingService {
   return new StreamingService({
     provider: 'claude',
-    model: model || 'claude-sonnet-4-5-20250514',
+    model: model || 'claude-sonnet-4-5-20250929',
   });
 }
 
