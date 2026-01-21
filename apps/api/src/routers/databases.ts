@@ -333,4 +333,104 @@ export const databasesRouter = router({
         input.limit
       )
     }),
+
+  // ===========================================================================
+  // Entry Relation Operations (Junction Table)
+  // ===========================================================================
+
+  /**
+   * database.linkEntries - Link two entries via relation
+   * Auth: organizationProtectedProcedure
+   */
+  linkEntries: organizationProtectedProcedure
+    .input(
+      z.object({
+        sourceEntryId: z.string().cuid(),
+        targetEntryId: z.string().cuid(),
+        columnId: z.string().min(1),
+        sourceDatabaseId: z.string().cuid(),
+        targetDatabaseId: z.string().cuid(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const service = new DatabaseService(ctx.db)
+      return service.linkEntries(input, ctx.organizationId)
+    }),
+
+  /**
+   * database.unlinkEntries - Unlink two entries via relation
+   * Auth: organizationProtectedProcedure
+   */
+  unlinkEntries: organizationProtectedProcedure
+    .input(
+      z.object({
+        sourceEntryId: z.string().cuid(),
+        targetEntryId: z.string().cuid(),
+        columnId: z.string().min(1),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const service = new DatabaseService(ctx.db)
+      return service.unlinkEntries(input, ctx.organizationId)
+    }),
+
+  /**
+   * database.getRelatedEntries - Get related entries for a cell
+   * Auth: organizationProtectedProcedure
+   */
+  getRelatedEntries: organizationProtectedProcedure
+    .input(
+      z.object({
+        entryId: z.string().cuid(),
+        columnId: z.string().min(1),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const service = new DatabaseService(ctx.db)
+      return service.getRelatedEntriesForCell(
+        input.entryId,
+        input.columnId,
+        ctx.organizationId
+      )
+    }),
+
+  /**
+   * database.listDatabasesForRelation - List databases for relation picker
+   * Scoped to the deal/company tree for proper data isolation
+   * Auth: organizationProtectedProcedure
+   */
+  listDatabasesForRelation: organizationProtectedProcedure
+    .input(
+      z.object({
+        excludeDatabaseId: z.string().cuid().optional(),
+        dealId: z.string().cuid().optional(),
+        companyId: z.string().cuid().optional(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const service = new DatabaseService(ctx.db)
+      return service.listDatabasesForRelation(ctx.organizationId, {
+        dealId: input.dealId,
+        companyId: input.companyId,
+        excludeDatabaseId: input.excludeDatabaseId,
+      })
+    }),
+
+  /**
+   * database.validateTargetDatabase - Validate target database for relation config
+   * Auth: organizationProtectedProcedure
+   */
+  validateTargetDatabase: organizationProtectedProcedure
+    .input(
+      z.object({
+        targetDatabaseId: z.string().cuid(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const service = new DatabaseService(ctx.db)
+      return service.validateTargetDatabase(
+        input.targetDatabaseId,
+        ctx.organizationId
+      )
+    }),
 })

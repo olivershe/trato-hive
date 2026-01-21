@@ -9,6 +9,7 @@
 import { useState, useCallback } from "react";
 import { X, Plus } from "lucide-react";
 import { api } from "@/trpc/react";
+import { RelationConfigDialog, type RelationConfig } from "@/components/shared/cells/RelationConfigDialog";
 
 // =============================================================================
 // Types
@@ -69,6 +70,8 @@ export function AddFieldDialog({ open, onOpenChange, onSuccess }: AddFieldDialog
   const [statusOptions, setStatusOptions] = useState<StatusOptionInput[]>([]);
   const [newStatusName, setNewStatusName] = useState("");
   const [newStatusColor, setNewStatusColor] = useState<StatusColor>("gray");
+  // Relation type specific state
+  const [relationConfig, setRelationConfig] = useState<RelationConfig | null>(null);
 
   const utils = api.useUtils();
   const createMutation = api.dealField.create.useMutation({
@@ -89,6 +92,7 @@ export function AddFieldDialog({ open, onOpenChange, onSuccess }: AddFieldDialog
     setStatusOptions([]);
     setNewStatusName("");
     setNewStatusColor("gray");
+    setRelationConfig(null);
   }, []);
 
   const handleClose = useCallback(() => {
@@ -118,6 +122,8 @@ export function AddFieldDialog({ open, onOpenChange, onSuccess }: AddFieldDialog
       type,
       options: fieldOptions,
       required,
+      // Include relation config for RELATION type
+      ...(type === "RELATION" && relationConfig ? { relationConfig } : {}),
     });
   };
 
@@ -161,7 +167,8 @@ export function AddFieldDialog({ open, onOpenChange, onSuccess }: AddFieldDialog
 
   const showOptionsInput = type === "SELECT" || type === "MULTI_SELECT";
   const showStatusInput = type === "STATUS";
-  const showAdvancedNotice = type === "RELATION" || type === "ROLLUP" || type === "FORMULA";
+  const showRelationInput = type === "RELATION";
+  const showAdvancedNotice = type === "ROLLUP" || type === "FORMULA";
 
   if (!open) return null;
 
@@ -354,11 +361,18 @@ export function AddFieldDialog({ open, onOpenChange, onSuccess }: AddFieldDialog
             </div>
           )}
 
+          {/* Relation Configuration (for RELATION type) */}
+          {showRelationInput && (
+            <RelationConfigDialog
+              onConfigChange={setRelationConfig}
+              initialConfig={relationConfig}
+            />
+          )}
+
           {/* Advanced Type Notice */}
           {showAdvancedNotice && (
             <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
               <p className="text-sm text-amber-800 dark:text-amber-200">
-                {type === "RELATION" && "Relation fields let you link records from different databases. Configuration options coming soon."}
                 {type === "ROLLUP" && "Rollup fields compute values from related records (sum, count, etc.). Configuration options coming soon."}
                 {type === "FORMULA" && "Formula fields calculate values using expressions. Configuration options coming soon."}
               </p>
@@ -389,7 +403,7 @@ export function AddFieldDialog({ open, onOpenChange, onSuccess }: AddFieldDialog
             </button>
             <button
               type="submit"
-              disabled={!name.trim() || createMutation.isPending || (showOptionsInput && options.length === 0) || (showStatusInput && statusOptions.length === 0)}
+              disabled={!name.trim() || createMutation.isPending || (showOptionsInput && options.length === 0) || (showStatusInput && statusOptions.length === 0) || (showRelationInput && !relationConfig)}
               className="px-4 py-2 rounded-lg bg-orange text-white hover:bg-orange/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {createMutation.isPending ? "Creating..." : "Create Field"}

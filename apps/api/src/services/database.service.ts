@@ -1015,4 +1015,321 @@ export class DatabaseService {
 
     return filtered
   }
+
+  // ===========================================================================
+  // Entry Relation Operations (Junction Table)
+  // ===========================================================================
+
+  /**
+   * Validate that target database exists and belongs to the same organization
+   */
+  async validateTargetDatabase(
+    targetDatabaseId: string,
+    organizationId: string
+  ): Promise<{ valid: boolean; database?: { id: string; name: string } }> {
+    const database = await this.db.database.findUnique({
+      where: { id: targetDatabaseId },
+      select: { id: true, name: true, organizationId: true },
+    })
+
+    if (!database || database.organizationId !== organizationId) {
+      return { valid: false }
+    }
+
+    return { valid: true, database: { id: database.id, name: database.name } }
+  }
+
+  /**
+   * Link entries via junction table
+   * Multi-tenancy: Validates both source and target databases
+   */
+  async linkEntries(
+    input: {
+      sourceEntryId: string
+      targetEntryId: string
+      columnId: string
+      sourceDatabaseId: string
+      targetDatabaseId: string
+    },
+    organizationId: string
+  ) {
+    // Validate source database access
+    const sourceDatabase = await this.getById(input.sourceDatabaseId, organizationId)
+
+    // Validate the column exists and is a RELATION type
+    const column = sourceDatabase.schema.columns.find(
+      (col: DatabaseColumn) => col.id === input.columnId
+    )
+
+    if (!column) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Column not found',
+      })
+    }
+
+    if (column.type !== 'RELATION') {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'Column is not a RELATION type',
+      })
+    }
+
+    if (!column.relationConfig) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'Column has no relation configuration',
+      })
+    }
+
+    // Validate target database matches the column config
+    if (column.relationConfig.targetDatabaseId !== input.targetDatabaseId) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'Target database does not match column configuration',
+      })
+    }
+
+    // Validate target database access
+    const targetValidation = await this.validateTargetDatabase(
+      input.targetDatabaseId,
+      organizationId
+    )
+
+    if (!targetValidation.valid) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Target database not found',
+      })
+    }
+
+    // Validate source entry exists
+    const sourceEntry = await this.db.databaseEntry.findUnique({
+      where: { id: input.sourceEntryId },
+      select: { id: true, databaseId: true },
+    })
+
+    if (!sourceEntry || sourceEntry.databaseId !== input.sourceDatabaseId) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Source entry not found',
+      })
+    }
+
+    // Validate target entry exists
+    const targetEntry = await this.db.databaseEntry.findUnique({
+      where: { id: input.targetEntryId },
+      select: { id: true, databaseId: true },
+    })
+
+    if (!targetEntry || targetEntry.databaseId !== input.targetDatabaseId) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Target entry not found',
+      })
+    }
+
+    // For "one" relations, check if there's an existing link and remove it
+    if (column.relationConfig.relationType === 'one') {
+      await this.db.databaseEntryRelation.deleteMany({
+        where: {
+          sourceEntryId: input.sourceEntryId,
+          sourceColumnId: input.columnId,
+        },
+      })
+    }
+
+    // Create the relation link
+    const relation = await this.db.databaseEntryRelation.upsert({
+      where: {
+        sourceEntryId_sourceColumnId_targetEntryId: {
+          sourceEntryId: input.sourceEntryId,
+          sourceColumnId: input.columnId,
+          targetEntryId: input.targetEntryId,
+        },
+      },
+      create: {
+        sourceEntryId: input.sourceEntryId,
+        sourceColumnId: input.columnId,
+        sourceDatabaseId: input.sourceDatabaseId,
+        targetEntryId: input.targetEntryId,
+        targetDatabaseId: input.targetDatabaseId,
+      },
+      update: {}, // No-op for existing relations
+    })
+
+    return relation
+  }
+
+  /**
+   * Unlink entries via junction table
+   * Multi-tenancy: Validates source database access
+   */
+  async unlinkEntries(
+    input: {
+      sourceEntryId: string
+      targetEntryId: string
+      columnId: string
+    },
+    organizationId: string
+  ) {
+    // Find the relation to validate access
+    const relation = await this.db.databaseEntryRelation.findUnique({
+      where: {
+        sourceEntryId_sourceColumnId_targetEntryId: {
+          sourceEntryId: input.sourceEntryId,
+          sourceColumnId: input.columnId,
+          targetEntryId: input.targetEntryId,
+        },
+      },
+      include: {
+        sourceEntry: {
+          include: { database: true },
+        },
+      },
+    })
+
+    if (!relation) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Relation not found',
+      })
+    }
+
+    // Validate organization access
+    if (relation.sourceEntry.database.organizationId !== organizationId) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Relation not found',
+      })
+    }
+
+    // Delete the relation
+    await this.db.databaseEntryRelation.delete({
+      where: { id: relation.id },
+    })
+
+    return { success: true }
+  }
+
+  /**
+   * Get related entries for a cell (for display)
+   * Returns entry titles from the target database
+   */
+  async getRelatedEntriesForCell(
+    entryId: string,
+    columnId: string,
+    organizationId: string
+  ): Promise<Array<{ id: string; title: string }>> {
+    // Get all relations for this entry/column
+    const relations = await this.db.databaseEntryRelation.findMany({
+      where: {
+        sourceEntryId: entryId,
+        sourceColumnId: columnId,
+      },
+      include: {
+        targetEntry: {
+          include: { database: true },
+        },
+      },
+    })
+
+    if (relations.length === 0) {
+      return []
+    }
+
+    // Validate organization access via the first relation
+    if (relations[0].targetEntry.database.organizationId !== organizationId) {
+      return []
+    }
+
+    // Get the target database schema for title column
+    const targetDatabaseId = relations[0].targetDatabaseId
+    const targetDatabase = await this.db.database.findUnique({
+      where: { id: targetDatabaseId },
+      select: { schema: true },
+    })
+
+    if (!targetDatabase) {
+      return []
+    }
+
+    const schema = targetDatabase.schema as unknown as DatabaseSchema
+    const titleColumn = schema.columns.find(
+      (col: DatabaseColumn) => col.type === 'TEXT'
+    ) || schema.columns[0]
+
+    // Map to titles
+    return relations.map((rel) => {
+      const props = rel.targetEntry.properties as Record<string, unknown>
+      const title = titleColumn
+        ? (props[titleColumn.id] as string) || 'Untitled'
+        : 'Untitled'
+      return { id: rel.targetEntryId, title }
+    })
+  }
+
+  /**
+   * List databases for relation picker
+   * Scoped to the same deal tree or company tree for data isolation
+   *
+   * @param organizationId - Multi-tenancy filter
+   * @param dealId - Optional: scope to databases in this deal's page tree
+   * @param companyId - Optional: scope to databases in this company's page tree
+   * @param excludeDatabaseId - Optional: exclude this database (typically self)
+   */
+  async listDatabasesForRelation(
+    organizationId: string,
+    options?: {
+      dealId?: string
+      companyId?: string
+      excludeDatabaseId?: string
+    }
+  ): Promise<Array<{ id: string; name: string; entryCount: number }>> {
+    const { dealId, companyId, excludeDatabaseId } = options || {}
+
+    // Build the where clause
+    const where: Prisma.DatabaseWhereInput = {
+      organizationId,
+      ...(excludeDatabaseId ? { id: { not: excludeDatabaseId } } : {}),
+    }
+
+    // Scope to deal tree if dealId provided
+    if (dealId) {
+      where.dealId = dealId
+    }
+
+    // Scope to company tree if companyId provided (future: when company pages have databases)
+    // For now, companyId scoping is a placeholder
+    if (companyId && !dealId) {
+      // Companies may have associated databases in the future
+      // For now, we filter by deal pages that involve this company
+      const dealsWithCompany = await this.db.dealCompany.findMany({
+        where: { companyId },
+        select: { dealId: true },
+      })
+      const dealIds = dealsWithCompany.map((dc) => dc.dealId)
+      if (dealIds.length > 0) {
+        where.dealId = { in: dealIds }
+      }
+    }
+
+    const databases = await this.db.database.findMany({
+      where,
+      select: {
+        id: true,
+        name: true,
+        _count: {
+          select: { entries: true },
+        },
+      },
+      orderBy: { name: 'asc' },
+    })
+
+    return databases.map((db) => ({
+      id: db.id,
+      name: db.name,
+      entryCount: db._count.entries,
+    }))
+  }
 }

@@ -16,6 +16,7 @@ import {
   STATUS_COLOR_CLASSES,
   DEFAULT_STATUS_OPTIONS,
 } from "./types";
+import { RelationCellEditor } from "./RelationCellEditor";
 
 export function CellRenderer({
   column,
@@ -23,6 +24,8 @@ export function CellRenderer({
   onSave,
   disabled = false,
   className,
+  entryId,
+  databaseId,
 }: CellRendererProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState<string>(String(value ?? ""));
@@ -235,6 +238,33 @@ export function CellRenderer({
         ) : (
           <span className="text-charcoal/20 dark:text-cultured-white/20">-</span>
         )}
+      </div>
+    );
+  }
+
+  // RELATION type - Linked entries via junction table
+  if (column.type === "RELATION" && column.relationConfig && entryId && databaseId) {
+    return (
+      <RelationCellEditor
+        column={column}
+        entryId={entryId}
+        databaseId={databaseId}
+        disabled={disabled}
+        className={className}
+      />
+    );
+  }
+
+  // RELATION type without required props - show placeholder
+  if (column.type === "RELATION") {
+    return (
+      <div
+        className={cn(
+          "min-h-[22px] px-0.5 py-0.5 text-[11px] text-charcoal/30 dark:text-cultured-white/30 italic flex items-center",
+          className
+        )}
+      >
+        {column.relationConfig ? "Configure cell" : "Configure relation"}
       </div>
     );
   }
