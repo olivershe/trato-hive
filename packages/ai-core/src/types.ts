@@ -64,7 +64,7 @@ export type LLMErrorCode =
 
 export const MODEL_PRICING: Record<string, { input: number; output: number }> = {
   // Claude models
-  'claude-sonnet-4-5-20250514': { input: 3.0, output: 15.0 },
+  'claude-sonnet-4-5-20250929': { input: 3.0, output: 15.0 },
   'claude-3-5-sonnet-20241022': { input: 3.0, output: 15.0 },
   'claude-3-haiku-20240307': { input: 0.25, output: 1.25 },
   'claude-3-opus-20240229': { input: 15.0, output: 75.0 },
@@ -125,3 +125,89 @@ export const generateOptionsSchema = z.object({
 });
 
 export type LLMConfig = z.infer<typeof llmConfigSchema>;
+
+// =============================================================================
+// Tool Calling Types (for ActionAgent support)
+// =============================================================================
+
+/**
+ * Tool definition for LLM tool calling
+ */
+export interface Tool {
+  name: string;
+  description: string;
+  input_schema: {
+    type: 'object';
+    properties: Record<string, unknown>;
+    required?: string[];
+  };
+}
+
+/**
+ * Tool call returned by the LLM
+ */
+export interface ToolCall {
+  id: string;
+  name: string;
+  input: Record<string, unknown>;
+}
+
+/**
+ * Tool result to send back to the LLM
+ */
+export interface ToolResult {
+  tool_use_id: string;
+  content: string;
+  is_error?: boolean;
+}
+
+/**
+ * Stop reason for generation
+ */
+export type StopReason = 'end_turn' | 'tool_use' | 'max_tokens' | 'stop_sequence';
+
+/**
+ * Extended response for tool-enabled generation
+ */
+export interface LLMToolResponse extends LLMResponse {
+  toolCalls?: ToolCall[];
+  stopReason: StopReason;
+}
+
+/**
+ * Message types for multi-turn conversations with tool use
+ */
+export type TextContent = {
+  type: 'text';
+  text: string;
+};
+
+export type ToolUseContent = {
+  type: 'tool_use';
+  id: string;
+  name: string;
+  input: Record<string, unknown>;
+};
+
+export type ToolResultContent = {
+  type: 'tool_result';
+  tool_use_id: string;
+  content: string;
+  is_error?: boolean;
+};
+
+export type AssistantContent = TextContent | ToolUseContent;
+export type UserContent = string | ToolResultContent[];
+
+export type ConversationMessage =
+  | { role: 'user'; content: UserContent }
+  | { role: 'assistant'; content: string | AssistantContent[] };
+
+/**
+ * Options for tool-enabled generation
+ */
+export interface LLMToolGenerateOptions extends LLMGenerateOptions {
+  tools?: Tool[];
+  tool_choice?: 'auto' | 'any' | { type: 'tool'; name: string };
+  messages?: ConversationMessage[];
+}

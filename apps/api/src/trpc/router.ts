@@ -36,6 +36,7 @@ import { documentRouter } from '../routers/document';
 import { qaRouter } from '../routers/qa';
 import { alertsRouter } from '../routers/alerts';
 import { dealsDatabaseRouter } from '../routers/dealsDatabase';
+import { coworkerRouter } from '../routers/coworker';
 
 /**
  * Root application router
@@ -60,6 +61,7 @@ export const appRouter = router({
   document: documentRouter,
   qa: qaRouter,
   alerts: alertsRouter,
+  coworker: coworkerRouter, // Phase 12: Hive Copilot AI co-worker
 });
 
 /**

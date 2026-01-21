@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   Briefcase,
   Search,
+  Sparkles,
   Plus,
   Loader2,
   PanelLeftClose,
@@ -39,6 +40,11 @@ const navigation = [
     name: "Command Center",
     href: "/",
     icon: LayoutDashboard,
+  },
+  {
+    name: "Hive Copilot",
+    href: "/copilot",
+    icon: Sparkles,
   },
   {
     name: "Deals",
