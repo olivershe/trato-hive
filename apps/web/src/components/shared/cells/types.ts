@@ -77,6 +77,9 @@ export interface CellRendererProps {
   onSave?: (value: unknown) => void;
   disabled?: boolean;
   className?: string;
+  // For RELATION type - needed to manage links via junction table
+  entryId?: string;
+  databaseId?: string;
 }
 
 // =============================================================================

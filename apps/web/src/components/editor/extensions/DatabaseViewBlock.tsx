@@ -264,6 +264,7 @@ function DatabaseViewCard({ node, updateAttributes }: NodeViewProps) {
         sortBy={sortBy}
         groupBy={groupBy}
         hiddenColumns={hiddenColumns}
+        dealId={dealId}
         onViewTypeChange={(vt) => updateBlockAttrs({ viewType: vt })}
         onFiltersChange={(f) => updateBlockAttrs({ filters: f })}
         onSortChange={(s) => updateBlockAttrs({ sortBy: s })}
@@ -495,6 +496,7 @@ interface DatabaseViewProps {
   sortBy: DatabaseSort | null;
   groupBy: string | null;
   hiddenColumns: string[];
+  dealId?: string;
   onViewTypeChange: (viewType: DatabaseViewTypeValue) => void;
   onFiltersChange: (filters: DatabaseFilter[]) => void;
   onSortChange: (sort: DatabaseSort | null) => void;
@@ -510,6 +512,7 @@ function DatabaseView({
   sortBy,
   groupBy,
   hiddenColumns,
+  dealId,
   onViewTypeChange,
   onFiltersChange: _onFiltersChange, // Reserved for future filter UI
   onSortChange,
@@ -621,6 +624,7 @@ function DatabaseView({
             database={database}
             sortBy={sortBy}
             hiddenColumns={hiddenColumns}
+            dealId={dealId}
             onSortChange={onSortChange}
           />
         )}
@@ -743,10 +747,11 @@ interface DatabaseTableViewProps {
   database: DatabaseWithEntries;
   sortBy: DatabaseSort | null;
   hiddenColumns: string[];
+  dealId?: string;
   onSortChange: (sort: DatabaseSort | null) => void;
 }
 
-function DatabaseTableView({ database, sortBy, hiddenColumns, onSortChange }: DatabaseTableViewProps) {
+function DatabaseTableView({ database, sortBy, hiddenColumns, dealId, onSortChange }: DatabaseTableViewProps) {
   const visibleColumns = database.schema.columns.filter((col) => !hiddenColumns.includes(col.id));
   const entries = database.entries || [];
 
@@ -1124,6 +1129,7 @@ function DatabaseTableView({ database, sortBy, hiddenColumns, onSortChange }: Da
           <ColumnConfigPopover
             column={configColumn}
             databaseId={database.id}
+            dealId={dealId}
             onClose={() => {
               setConfigColumn(null);
               setConfigPosition(null);
@@ -1914,10 +1920,11 @@ function FormField({ column, value, onChange }: FormFieldProps) {
 interface ColumnConfigPopoverProps {
   column: DatabaseColumn;
   databaseId: string;
+  dealId?: string;
   onClose: () => void;
 }
 
-function ColumnConfigPopover({ column, databaseId, onClose }: ColumnConfigPopoverProps) {
+function ColumnConfigPopover({ column, databaseId, dealId, onClose }: ColumnConfigPopoverProps) {
   const [name, setName] = useState(column.name);
   const [type, setType] = useState(column.type);
   const [options, setOptions] = useState<string[]>(column.options || []);
@@ -1962,9 +1969,9 @@ function ColumnConfigPopover({ column, databaseId, onClose }: ColumnConfigPopove
     column.formulaConfig?.resultType || "text"
   );
 
-  // Fetch available databases for RELATION type
-  const { data: availableDatabases } = api.database.list.useQuery(
-    { page: 1, pageSize: 50 },
+  // Fetch available databases for RELATION type (scoped to deal tree)
+  const { data: availableDatabases } = api.database.listDatabasesForRelation.useQuery(
+    { excludeDatabaseId: databaseId, dealId },
     { enabled: type === "RELATION" }
   );
 
@@ -2244,13 +2251,11 @@ function ColumnConfigPopover({ column, databaseId, onClose }: ColumnConfigPopove
               className="w-full px-1.5 py-0.5 text-[11px] rounded-sm border border-bone dark:border-charcoal/60 bg-alabaster dark:bg-surface-dark text-charcoal dark:text-cultured-white focus:border-gold focus:ring-1 focus:ring-gold/20 transition-colors"
             >
               <option value="">Select database…</option>
-              {availableDatabases?.items
-                .filter((db) => db.id !== databaseId) // Exclude current database
-                .map((db) => (
-                  <option key={db.id} value={db.id}>
-                    {db.name}
-                  </option>
-                ))}
+              {availableDatabases?.map((db) => (
+                <option key={db.id} value={db.id}>
+                  {db.name} ({db.entryCount} {db.entryCount === 1 ? "entry" : "entries"})
+                </option>
+              ))}
             </select>
           </div>
           <div>

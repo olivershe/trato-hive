@@ -84,10 +84,23 @@ export function PropertyTypeSelector({
   onSelect,
   onCancel,
 }: PropertyTypeSelectorProps) {
+  // Calculate available space and constrain dropdown
+  const dropdownHeight = 320; // Approximate height of dropdown
+  const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 800;
+  const availableSpace = viewportHeight - position.top - 16; // 16px padding from bottom
+  const needsFlip = availableSpace < dropdownHeight && position.top > dropdownHeight;
+
+  // If not enough space below and enough space above, flip to show above
+  const adjustedTop = needsFlip ? position.top - dropdownHeight - 8 : position.top;
+
   return createPortal(
     <div
-      className="fixed z-[9999] w-72 bg-alabaster dark:bg-deep-grey rounded-lg border border-bone dark:border-charcoal/60 shadow-xl"
-      style={{ top: position.top, left: position.left }}
+      className="fixed z-[9999] w-72 bg-alabaster dark:bg-deep-grey rounded-lg border border-bone dark:border-charcoal/60 shadow-xl overflow-hidden flex flex-col"
+      style={{
+        top: Math.max(8, adjustedTop),
+        left: position.left,
+        maxHeight: `calc(100vh - ${Math.max(8, adjustedTop) + 16}px)`,
+      }}
     >
       {/* Header */}
       <div className="px-3 py-2 border-b border-bone/50 dark:border-charcoal/50 flex items-center gap-2">
@@ -97,8 +110,8 @@ export function PropertyTypeSelector({
         <Search className="w-3 h-3 text-charcoal/40 dark:text-cultured-white/40" />
       </div>
 
-      {/* Type grid - 2 columns */}
-      <div className="p-1.5 grid grid-cols-2 gap-0.5">
+      {/* Type grid - 2 columns with scroll */}
+      <div className="p-1.5 grid grid-cols-2 gap-0.5 overflow-y-auto flex-1 min-h-0">
         {PROPERTY_TYPES.map(({ type, label, icon: Icon }) => (
           <button
             key={type}

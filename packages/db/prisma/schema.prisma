@@ -615,10 +615,39 @@ model DatabaseEntry {
   database Database @relation(fields: [databaseId], references: [id], onDelete: Cascade)
   creator  User     @relation("DatabaseEntryCreator", fields: [createdById], references: [id])
 
+  // Relations for RELATION column type
+  sourceRelations DatabaseEntryRelation[] @relation("SourceRelations")
+  targetRelations DatabaseEntryRelation[] @relation("TargetRelations")
+
   @@index([databaseId])
   @@index([pageId])
   @@index([createdById])
   @@map("database_entries")
+}
+
+// =============================================================================
+// DATABASE ENTRY RELATIONS (Junction table for RELATION columns)
+// =============================================================================
+
+model DatabaseEntryRelation {
+  id               String @id @default(cuid())
+  sourceEntryId    String
+  sourceColumnId   String // The RELATION column ID in the source database
+  sourceDatabaseId String // Source database for validation
+  targetEntryId    String
+  targetDatabaseId String // Target database for validation
+
+  createdAt DateTime @default(now())
+
+  sourceEntry DatabaseEntry @relation("SourceRelations", fields: [sourceEntryId], references: [id], onDelete: Cascade)
+  targetEntry DatabaseEntry @relation("TargetRelations", fields: [targetEntryId], references: [id], onDelete: Cascade)
+
+  @@unique([sourceEntryId, sourceColumnId, targetEntryId])
+  @@index([sourceEntryId, sourceColumnId])
+  @@index([targetEntryId])
+  @@index([sourceDatabaseId])
+  @@index([targetDatabaseId])
+  @@map("database_entry_relations")
 }
 
 // =============================================================================

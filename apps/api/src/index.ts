@@ -57,7 +57,7 @@ fastify.register(helmet, {
 
 // CORS for frontend access
 fastify.register(cors, {
-  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  origin: true, // Allow all origins in dev, reflecting the request origin
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 });
