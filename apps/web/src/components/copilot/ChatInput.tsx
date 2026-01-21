@@ -20,7 +20,7 @@ export function ChatInput({
   onSend,
   disabled = false,
   isSending = false,
-  placeholder = 'How can I help you today?',
+  placeholder = 'How can I help you today?…',
 }: ChatInputProps) {
   const [message, setMessage] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -116,7 +116,7 @@ export function ChatInput({
             aria-label="Send message"
           >
             {isSending ? (
-              <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />
+              <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none" aria-hidden="true" />
             ) : (
               <Send className="w-5 h-5" aria-hidden="true" />
             )}

@@ -102,7 +102,7 @@ export function MessageList({ messages, isLoading }: MessageListProps) {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6">
+    <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6" role="log" aria-label="Conversation messages" aria-live="polite">
       {messages.map((message) => (
         <Message key={message.id} message={message} />
       ))}
@@ -113,8 +113,8 @@ export function MessageList({ messages, isLoading }: MessageListProps) {
             <Bot className="w-4 h-4 text-white" aria-hidden="true" />
           </div>
           <div className="flex items-center gap-2 px-4 py-3 bg-white border border-gold/10 rounded-2xl rounded-bl-md">
-            <Loader2 className="w-4 h-4 animate-spin text-orange" aria-hidden="true" />
-            <span className="text-sm text-charcoal/60">Thinking...</span>
+            <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none text-orange" aria-hidden="true" />
+            <span className="text-sm text-charcoal/60">Thinking…</span>
           </div>
         </div>
       )}

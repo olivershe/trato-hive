@@ -103,8 +103,8 @@ export function CoworkerDashboard() {
       {/* Logo */}
       <div className="flex-shrink-0 pb-6">
         <div className="flex justify-center">
-          <div className="w-10 h-10 bg-orange rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-sm">TH</span>
+          <div className="w-10 h-10 bg-orange rounded-lg flex items-center justify-center" role="img" aria-label="Trato Hive logo">
+            <span className="text-white font-bold text-sm" aria-hidden="true">TH</span>
           </div>
         </div>
       </div>
@@ -145,7 +145,7 @@ export function CoworkerDashboard() {
 
           {/* Error Display */}
           {error && (
-            <div className="mb-4 px-4 py-3 bg-red-50 border border-red-200 rounded-xl">
+            <div className="mb-4 px-4 py-3 bg-red-50 border border-red-200 rounded-xl" role="alert" aria-live="polite">
               <p className="text-sm text-red-800">{error}</p>
             </div>
           )}
@@ -158,8 +158,8 @@ export function CoworkerDashboard() {
               disabled={isLoading}
               placeholder={
                 hasMessages
-                  ? 'Continue the conversation...'
-                  : 'How can I help you today?'
+                  ? 'Continue the conversation…'
+                  : 'How can I help you today?…'
               }
             />
 
