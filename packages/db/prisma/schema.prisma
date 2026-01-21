@@ -104,6 +104,7 @@ model Organization {
   documents        Document[]
   databases        Database[]
   dealFieldSchemas DealFieldSchema[] // Custom field definitions
+  pages            Page[]            // Org-level pages (Phase 12)
 
   @@map("organizations")
 }
@@ -270,6 +271,10 @@ model Deal {
   priority      DealPriority @default(NONE)
   source        DealSource?
   customFields  Json?        @db.JsonB // { "field_cuid": value, ... }
+
+  // Phase 12: Link to Deals Database entry (when deal is represented as a database entry)
+  databaseEntryId String?        @unique
+  databaseEntry   DatabaseEntry? @relation("DealEntry", fields: [databaseEntryId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -568,10 +573,13 @@ enum DatabaseColumnType {
 model Database {
   id             String  @id @default(cuid())
   organizationId String
-  dealId         String // Database scoped to deal
+  dealId         String? // Optional: null for org-level databases (e.g., Deals Database)
   pageId         String  @unique // Database IS a page
   name           String
   description    String? @db.Text
+
+  // Org-level flag: true for organization-wide databases like Deals Database
+  isOrgLevel Boolean @default(false)
 
   // Column definitions stored as JSONB array:
   // [{ id: string, name: string, type: DatabaseColumnType, options?: string[], width?: number }]
@@ -582,7 +590,7 @@ model Database {
   updatedAt   DateTime @updatedAt
 
   organization Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  deal         Deal            @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  deal         Deal?           @relation(fields: [dealId], references: [id], onDelete: Cascade)
   page         Page            @relation(fields: [pageId], references: [id], onDelete: Cascade)
   creator      User            @relation("DatabaseCreator", fields: [createdById], references: [id])
   entries      DatabaseEntry[]
@@ -590,6 +598,7 @@ model Database {
   @@index([organizationId])
   @@index([dealId])
   @@index([createdById])
+  @@index([organizationId, isOrgLevel])
   @@map("databases")
 }
 
@@ -618,6 +627,9 @@ model DatabaseEntry {
   // Relations for RELATION column type
   sourceRelations DatabaseEntryRelation[] @relation("SourceRelations")
   targetRelations DatabaseEntryRelation[] @relation("TargetRelations")
+
+  // Phase 12: Reverse relation for deals represented as entries
+  deal Deal? @relation("DealEntry")
 
   @@index([databaseId])
   @@index([pageId])
@@ -672,18 +684,22 @@ model Page {
   companyId  String?  // For COMPANY_PAGE type
   documentId String?  // For DOCUMENT_PAGE type
 
-  // Hierarchy - Pages nest infinitely within a Deal
-  dealId       String
-  parentPageId String?
-  order        Int     @default(0)
-  isDatabase   Boolean @default(false)
+  // Hierarchy - Pages nest infinitely within a Deal or Organization
+  dealId         String?  // Optional: null for org-level pages (Phase 12)
+  organizationId String?  // For org-level pages (e.g., Deals Database page)
+  parentPageId   String?
+  order          Int      @default(0)
+  isDatabase     Boolean  @default(false)
 
   // Self-referential hierarchy
   parent   Page?  @relation("PageHierarchy", fields: [parentPageId], references: [id], onDelete: Cascade)
   children Page[] @relation("PageHierarchy")
 
-  // Deal relation (required - all pages belong to a deal)
-  deal Deal @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  // Deal relation (optional - org-level pages don't have deals)
+  deal Deal? @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  // Organization relation (for org-level pages)
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   // Entity relations (for typed pages)
   company  Company?  @relation(fields: [companyId], references: [id], onDelete: SetNull)
@@ -706,8 +722,10 @@ model Page {
   updatedAt DateTime @updatedAt
 
   @@index([dealId])
+  @@index([organizationId])
   @@index([parentPageId])
   @@index([dealId, parentPageId])
+  @@index([organizationId, parentPageId])
   @@index([companyId])
   @@index([documentId])
   @@map("pages")

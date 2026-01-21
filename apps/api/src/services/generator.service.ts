@@ -133,8 +133,9 @@ export class GeneratorService {
       })
     }
 
-    // Verify organization access via Deal
-    if (page.deal.organizationId !== organizationId) {
+    // Verify organization access via Deal or Organization (for org-level pages)
+    const pageOrgId = page.deal?.organizationId ?? page.organizationId
+    if (pageOrgId !== organizationId) {
       throw new TRPCError({
         code: 'FORBIDDEN',
         message: 'Access denied to this page',

@@ -81,6 +81,8 @@ export function createMockDeal(overrides?: Partial<Deal>): Deal {
     priority: 'NONE' as const,
     source: null,
     customFields: null,
+    // Phase 12: Database entry link
+    databaseEntryId: null,
     createdAt: new Date(),
     updatedAt: new Date(),
     ...overrides,

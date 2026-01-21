@@ -184,7 +184,9 @@ export class PageService {
       });
     }
 
-    if (page.deal.organizationId !== organizationId) {
+    // Verify organization access via Deal or Organization (for org-level pages)
+    const pageOrgId = page.deal?.organizationId ?? page.organizationId
+    if (pageOrgId !== organizationId) {
       throw new TRPCError({
         code: 'NOT_FOUND',
         message: 'Page not found',
