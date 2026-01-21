@@ -93,6 +93,9 @@ describe('Deals Router Integration', () => {
       const mockDeal = createMockDeal();
       const mockPage = { id: TEST_IDS.page, dealId: TEST_IDS.deal, title: 'New Deal' };
       const mockBlock = { id: TEST_IDS.block, pageId: TEST_IDS.page };
+      // Phase 12: Mock org-level Deals Database
+      const mockDealsDb = { id: TEST_IDS.database, name: 'Deals', isOrgLevel: true, pageId: 'clqdealsdbpage1234567890' };
+      const mockEntry = { id: TEST_IDS.entry, databaseId: TEST_IDS.database };
 
       const mockDatabase = { id: 'clqddtracker12345678901234', name: 'New Deal - Due Diligence Tracker' };
       mockPrisma.$transaction.mockImplementation(async (fn) => {
@@ -100,7 +103,8 @@ describe('Deals Router Integration', () => {
           deal: { create: vi.fn().mockResolvedValue(mockDeal) },
           page: { create: vi.fn().mockResolvedValue(mockPage), createMany: vi.fn().mockResolvedValue({ count: 3 }) },
           block: { create: vi.fn().mockResolvedValue(mockBlock), createMany: vi.fn().mockResolvedValue({ count: 4 }) },
-          database: { create: vi.fn().mockResolvedValue(mockDatabase) },
+          database: { create: vi.fn().mockResolvedValue(mockDatabase), findFirst: vi.fn().mockResolvedValue(mockDealsDb) },
+          databaseEntry: { create: vi.fn().mockResolvedValue(mockEntry) },
         };
         return fn(tx);
       });

@@ -219,7 +219,7 @@ async function runMigration(dryRun: boolean = false): Promise<MigrationStats> {
     // Get a system user for creating entries (use first admin)
     const systemUser = await prisma.user.findFirst({
       where: {
-        organizationMemberships: {
+        organizations: {
           some: {
             role: "ADMIN",
           },
