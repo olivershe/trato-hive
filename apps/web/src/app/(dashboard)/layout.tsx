@@ -3,6 +3,7 @@
 import { Sidebar } from "@/components/layouts/Sidebar";
 import { SidebarProvider, useSidebar } from "@/components/layouts/SidebarContext";
 import { CommandPaletteProvider } from "@/components/CommandPaletteProvider";
+import { AgentPicker } from "@/components/editor/AgentPicker";
 import { useRecentTracker } from "@/hooks";
 
 function DashboardContent({ children }: { children: React.ReactNode }) {
@@ -22,6 +23,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
       >
         {children}
       </main>
+      <AgentPicker />
     </div>
   );
 }

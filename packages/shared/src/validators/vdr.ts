@@ -20,6 +20,10 @@ export const listDocumentsInputSchema = z.object({
     .enum(['UPLOADING', 'PROCESSING', 'PARSED', 'INDEXED', 'FAILED'])
     .optional(),
   search: z.string().optional(), // Search by document name
+  // AI Tag filters (Document Vault)
+  documentTypes: z.array(z.string()).optional(), // Filter by AI document type
+  industries: z.array(z.string()).optional(), // Filter by AI industry
+  contentTags: z.array(z.string()).optional(), // Filter by content tags (AND logic)
 })
 
 export type ListDocumentsInput = z.infer<typeof listDocumentsInputSchema>
@@ -133,3 +137,34 @@ export const renameFolderInputSchema = z.object({
 })
 
 export type RenameFolderInput = z.infer<typeof renameFolderInputSchema>
+
+/**
+ * Update Document Tags Input - Manual tag override
+ */
+export const updateDocumentTagsInputSchema = z.object({
+  documentId: z.string().cuid('Invalid document ID'),
+  aiDocumentType: z.string().optional(),
+  aiIndustry: z.string().optional(),
+  contentTags: z.array(z.string()).optional(),
+})
+
+export type UpdateDocumentTagsInput = z.infer<typeof updateDocumentTagsInputSchema>
+
+/**
+ * Get Available Tags Input - Get unique tags for filters
+ */
+export const getAvailableTagsInputSchema = z.object({
+  dealId: z.string().cuid('Invalid deal ID').optional(),
+})
+
+export type GetAvailableTagsInput = z.infer<typeof getAvailableTagsInputSchema>
+
+/**
+ * List Deals With Document Counts Input - For Vault deal cards
+ */
+export const listDealsWithDocCountsInputSchema = z.object({
+  stage: z.enum(['ACTIVE', 'CLOSED', 'ALL']).default('ALL'),
+  search: z.string().optional(),
+})
+
+export type ListDealsWithDocCountsInput = z.infer<typeof listDealsWithDocCountsInputSchema>

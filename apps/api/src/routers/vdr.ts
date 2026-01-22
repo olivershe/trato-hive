@@ -18,6 +18,9 @@ import {
   deleteDocumentInputSchema,
   getDocumentInputSchema,
   renameFolderInputSchema,
+  updateDocumentTagsInputSchema,
+  getAvailableTagsInputSchema,
+  listDealsWithDocCountsInputSchema,
 } from '@trato-hive/shared';
 
 export const vdrRouter = router({
@@ -131,5 +134,38 @@ export const vdrRouter = router({
     .mutation(async ({ ctx, input }) => {
       const service = new VDRService(ctx.db);
       return service.renameFolder(ctx.organizationId, input);
+    }),
+
+  /**
+   * vdr.updateTags - Update document tags (manual override)
+   * Auth: organizationProtectedProcedure
+   */
+  updateTags: organizationProtectedProcedure
+    .input(updateDocumentTagsInputSchema)
+    .mutation(async ({ ctx, input }) => {
+      const service = new VDRService(ctx.db);
+      return service.updateDocumentTags(ctx.organizationId, input);
+    }),
+
+  /**
+   * vdr.getAvailableTags - Get available tags for filter dropdowns
+   * Auth: organizationProtectedProcedure
+   */
+  getAvailableTags: organizationProtectedProcedure
+    .input(getAvailableTagsInputSchema)
+    .query(async ({ ctx, input }) => {
+      const service = new VDRService(ctx.db);
+      return service.getAvailableTags(ctx.organizationId, input);
+    }),
+
+  /**
+   * vdr.listDealsWithDocCounts - List deals with document counts for Vault
+   * Auth: organizationProtectedProcedure
+   */
+  listDealsWithDocCounts: organizationProtectedProcedure
+    .input(listDealsWithDocCountsInputSchema)
+    .query(async ({ ctx, input }) => {
+      const service = new VDRService(ctx.db);
+      return service.listDealsWithDocCounts(ctx.organizationId, input);
     }),
 });

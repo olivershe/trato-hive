@@ -20,6 +20,8 @@ import { useState } from "react";
 import dynamic from "next/dynamic";
 import { PinButton } from "@/components/sidebar";
 import { DealPropertiesPanel } from "@/components/deals";
+import { UploadModal } from "@/components/vault";
+import { useUploadModal } from "@/hooks";
 
 // Dynamic import to avoid SSR issues with Tiptap/Liveblocks
 const BlockEditor = dynamic(
@@ -75,6 +77,9 @@ export default function DealDetailPage() {
   const params = useParams();
   const dealId = params.id as string;
   const [activeTab, setActiveTab] = useState<"overview" | "notes">("overview");
+
+  // Upload modal hook - listens for vault:upload event from slash command
+  const uploadModal = useUploadModal({ dealId });
 
   // Fetch deal data with its associated page (for BlockEditor)
   const { data: dealData, isLoading, error } = api.deal.getWithPage.useQuery({ id: dealId });
@@ -347,6 +352,13 @@ export default function DealDetailPage() {
         )}
       </>
     )}
+
+    {/* Upload Modal - Triggered by /upload slash command */}
+    <UploadModal
+      open={uploadModal.isOpen}
+      onClose={uploadModal.close}
+      dealId={dealId}
+    />
   </>
   );
 }

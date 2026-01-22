@@ -22,6 +22,7 @@ import {
   type EmbeddingService,
   type FactExtractor,
 } from '@trato-hive/semantic-layer';
+import { DocumentTaggerService } from '@trato-hive/ai-core';
 
 // =============================================================================
 // Types & Configuration
@@ -45,6 +46,8 @@ export interface DocumentAgentDependencies {
   vectorStore: VectorStore;
   embeddings: EmbeddingService;
   factExtractor: FactExtractor;
+  /** Document tagger for AI auto-tagging (optional) */
+  documentTagger?: DocumentTaggerService;
 }
 
 export interface ProcessDocumentOptions {
@@ -52,6 +55,8 @@ export interface ProcessDocumentOptions {
   skipEmbeddings?: boolean;
   /** Skip fact extraction (for reprocessing) */
   skipFacts?: boolean;
+  /** Skip AI tagging (for reprocessing) */
+  skipTagging?: boolean;
 }
 
 export interface ProcessDocumentResult {
@@ -60,6 +65,7 @@ export interface ProcessDocumentResult {
   chunksCreated: number;
   chunksEmbedded: number;
   factsExtracted: number;
+  tagsApplied: boolean;
   processingTimeMs: number;
   error?: string;
 }
@@ -94,6 +100,7 @@ export class DocumentAgent {
     let chunksCreated = 0;
     let chunksEmbedded = 0;
     let factsExtracted = 0;
+    let tagsApplied = false;
 
     try {
       // 1. Get document and update status to PROCESSING
@@ -114,7 +121,17 @@ export class DocumentAgent {
       const chunks = await this.storeChunks(documentId, parseResult.chunks);
       chunksCreated = chunks.length;
 
-      // 5. Generate embeddings and index in vector store
+      // 5. Apply AI tags (Document Vault feature)
+      if (!options.skipTagging && this.deps.documentTagger) {
+        tagsApplied = await this.applyAITags(
+          documentId,
+          document.name,
+          chunks,
+          document.organizationId
+        );
+      }
+
+      // 6. Generate embeddings and index in vector store
       if (!options.skipEmbeddings) {
         chunksEmbedded = await this.embedAndIndexChunks(
           chunks,
@@ -124,7 +141,7 @@ export class DocumentAgent {
         );
       }
 
-      // 6. Extract facts from chunks
+      // 7. Extract facts from chunks
       if (!options.skipFacts) {
         factsExtracted = await this.extractFacts(
           chunks,
@@ -133,7 +150,7 @@ export class DocumentAgent {
         );
       }
 
-      // 7. Update status to INDEXED
+      // 8. Update status to INDEXED
       await this.updateDocumentStatus(documentId, 'INDEXED');
 
       return {
@@ -142,6 +159,7 @@ export class DocumentAgent {
         chunksCreated,
         chunksEmbedded,
         factsExtracted,
+        tagsApplied,
         processingTimeMs: Date.now() - startTime,
       };
     } catch (error) {
@@ -156,6 +174,7 @@ export class DocumentAgent {
         chunksCreated,
         chunksEmbedded,
         factsExtracted,
+        tagsApplied,
         processingTimeMs: Date.now() - startTime,
         error: error instanceof Error ? error.message : 'Unknown error',
       };
@@ -167,7 +186,7 @@ export class DocumentAgent {
    */
   async reprocessDocument(
     documentId: string,
-    options: { reextractFacts?: boolean; reembed?: boolean } = {}
+    options: { reextractFacts?: boolean; reembed?: boolean; retag?: boolean } = {}
   ): Promise<ProcessDocumentResult> {
     // Delete existing chunks, embeddings, and facts if reprocessing
     if (options.reembed) {
@@ -178,9 +197,25 @@ export class DocumentAgent {
       await this.deleteExistingFacts(documentId);
     }
 
+    // Reset tags if re-tagging
+    if (options.retag) {
+      await this.deps.db.document.update({
+        where: { id: documentId },
+        data: {
+          aiDocumentType: null,
+          aiIndustry: null,
+          contentTags: [],
+          tagsAppliedAt: null,
+          tagsConfidence: null,
+          tagsOverridden: false,
+        },
+      });
+    }
+
     return this.processDocument(documentId, {
       skipEmbeddings: !options.reembed,
       skipFacts: !options.reextractFacts,
+      skipTagging: !options.retag,
     });
   }
 
@@ -378,6 +413,64 @@ export class DocumentAgent {
     await this.deps.db.fact.deleteMany({
       where: { documentId },
     });
+  }
+
+  /**
+   * Apply AI tags to a document (Document Vault feature)
+   */
+  private async applyAITags(
+    documentId: string,
+    documentName: string,
+    chunks: StoredChunk[],
+    _organizationId: string
+  ): Promise<boolean> {
+    if (!this.deps.documentTagger) {
+      return false;
+    }
+
+    try {
+      // Check if tags have been manually overridden
+      const document = await this.deps.db.document.findUnique({
+        where: { id: documentId },
+        select: { tagsOverridden: true },
+      });
+
+      if (document?.tagsOverridden) {
+        // Don't overwrite manually set tags
+        return false;
+      }
+
+      // Get first few chunks for content analysis (approximately 3 pages worth)
+      const contentForTagging = chunks
+        .slice(0, 10)
+        .map((c) => c.content)
+        .join('\n\n');
+
+      // Run AI tagging
+      const result = await this.deps.documentTagger.tagDocument(
+        contentForTagging,
+        documentName
+      );
+
+      // Update document with tags
+      await this.deps.db.document.update({
+        where: { id: documentId },
+        data: {
+          aiDocumentType: result.tags.documentType,
+          aiIndustry: result.tags.industry,
+          contentTags: result.tags.contentTags,
+          tagsAppliedAt: new Date(),
+          tagsConfidence: result.overallConfidence,
+          tagsOverridden: false,
+        },
+      });
+
+      return true;
+    } catch (error) {
+      // Log but don't fail the pipeline - tagging is non-critical
+      console.error(`Failed to apply AI tags to document ${documentId}:`, error);
+      return false;
+    }
   }
 }
 

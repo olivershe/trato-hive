@@ -16,6 +16,9 @@ import {
   type MoveDocumentInput,
   type DeleteDocumentInput,
   type RenameFolderInput,
+  type UpdateDocumentTagsInput,
+  type GetAvailableTagsInput,
+  type ListDealsWithDocCountsInput,
 } from '@trato-hive/shared';
 
 // =============================================================================
@@ -44,6 +47,30 @@ export interface DocumentListItem {
   };
   createdAt: Date;
   updatedAt: Date;
+  // AI-Applied Tags (Document Vault)
+  aiDocumentType: string | null;
+  aiIndustry: string | null;
+  contentTags: string[];
+  tagsAppliedAt: Date | null;
+  tagsConfidence: number | null;
+  tagsOverridden: boolean;
+}
+
+export interface AvailableTags {
+  documentTypes: string[];
+  industries: string[];
+  contentTags: string[];
+}
+
+export interface DealWithDocCount {
+  id: string;
+  name: string;
+  stage: string;
+  documentCount: number;
+  company: {
+    id: string;
+    name: string;
+  } | null;
 }
 
 export interface ListDocumentsResult {
@@ -95,7 +122,7 @@ export class VDRService {
     organizationId: string,
     input: ListDocumentsInput
   ): Promise<ListDocumentsResult> {
-    const { page, pageSize, folderPath, dealId, companyId, status, search } = input;
+    const { page, pageSize, folderPath, dealId, companyId, status, search, documentTypes, industries, contentTags } = input;
     const skip = (page - 1) * pageSize;
 
     // Build where clause
@@ -133,6 +160,20 @@ export class VDRService {
       };
     }
 
+    // AI Tag filters (Document Vault)
+    if (documentTypes && documentTypes.length > 0) {
+      where.aiDocumentType = { in: documentTypes };
+    }
+
+    if (industries && industries.length > 0) {
+      where.aiIndustry = { in: industries };
+    }
+
+    if (contentTags && contentTags.length > 0) {
+      // Use hasEvery for AND logic - document must have all specified tags
+      where.contentTags = { hasEvery: contentTags };
+    }
+
     const [documents, total] = await Promise.all([
       this.db.document.findMany({
         where,
@@ -153,8 +194,15 @@ export class VDRService {
               email: true,
             },
           },
+          // AI Tag fields
+          aiDocumentType: true,
+          aiIndustry: true,
+          contentTags: true,
+          tagsAppliedAt: true,
+          tagsConfidence: true,
+          tagsOverridden: true,
         },
-        orderBy: [{ folderPath: 'asc' }, { name: 'asc' }],
+        orderBy: [{ createdAt: 'desc' }, { name: 'asc' }],
         skip,
         take: pageSize,
       }),
@@ -165,6 +213,12 @@ export class VDRService {
       items: documents.map((doc) => ({
         ...doc,
         folderPath: doc.folderPath ?? null,
+        aiDocumentType: doc.aiDocumentType ?? null,
+        aiIndustry: doc.aiIndustry ?? null,
+        contentTags: doc.contentTags ?? [],
+        tagsAppliedAt: doc.tagsAppliedAt ?? null,
+        tagsConfidence: doc.tagsConfidence ?? null,
+        tagsOverridden: doc.tagsOverridden ?? false,
       })),
       pagination: {
         page,
@@ -576,5 +630,189 @@ export class VDRService {
       newPath,
       documentsUpdated: updated,
     };
+  }
+
+  /**
+   * Update document tags (manual override)
+   */
+  async updateDocumentTags(
+    organizationId: string,
+    input: UpdateDocumentTagsInput
+  ): Promise<Document> {
+    const { documentId, aiDocumentType, aiIndustry, contentTags } = input;
+
+    // Verify document belongs to organization
+    const document = await this.getDocument(organizationId, documentId);
+
+    // Build update data
+    const updateData: Record<string, unknown> = {
+      tagsOverridden: true,
+    };
+
+    if (aiDocumentType !== undefined) {
+      updateData.aiDocumentType = aiDocumentType;
+    }
+
+    if (aiIndustry !== undefined) {
+      updateData.aiIndustry = aiIndustry;
+    }
+
+    if (contentTags !== undefined) {
+      updateData.contentTags = contentTags;
+    }
+
+    return this.db.document.update({
+      where: { id: document.id },
+      data: updateData,
+    });
+  }
+
+  /**
+   * Get available tags for filter dropdowns
+   */
+  async getAvailableTags(
+    organizationId: string,
+    input: GetAvailableTagsInput
+  ): Promise<AvailableTags> {
+    const { dealId } = input;
+
+    // Build where clause
+    const where: Record<string, unknown> = {
+      organizationId,
+    };
+
+    if (dealId) {
+      where.dealId = dealId;
+    }
+
+    // Get distinct values for each tag type
+    const documents = await this.db.document.findMany({
+      where,
+      select: {
+        aiDocumentType: true,
+        aiIndustry: true,
+        contentTags: true,
+      },
+    });
+
+    // Extract unique values
+    const documentTypes = new Set<string>();
+    const industries = new Set<string>();
+    const contentTags = new Set<string>();
+
+    for (const doc of documents) {
+      if (doc.aiDocumentType) {
+        documentTypes.add(doc.aiDocumentType);
+      }
+      if (doc.aiIndustry) {
+        industries.add(doc.aiIndustry);
+      }
+      for (const tag of doc.contentTags || []) {
+        contentTags.add(tag);
+      }
+    }
+
+    return {
+      documentTypes: Array.from(documentTypes).sort(),
+      industries: Array.from(industries).sort(),
+      contentTags: Array.from(contentTags).sort(),
+    };
+  }
+
+  /**
+   * List deals with document counts (for Vault deal cards)
+   */
+  async listDealsWithDocCounts(
+    organizationId: string,
+    input: ListDealsWithDocCountsInput
+  ): Promise<DealWithDocCount[]> {
+    const { stage, search } = input;
+
+    // Build where clause for deals
+    const dealWhere: Record<string, unknown> = {
+      organizationId,
+    };
+
+    // Filter by stage
+    if (stage === 'ACTIVE') {
+      dealWhere.stage = {
+        notIn: ['CLOSED_WON', 'CLOSED_LOST'],
+      };
+    } else if (stage === 'CLOSED') {
+      dealWhere.stage = {
+        in: ['CLOSED_WON', 'CLOSED_LOST'],
+      };
+    }
+
+    // Search by name
+    if (search) {
+      dealWhere.name = {
+        contains: search,
+        mode: 'insensitive',
+      };
+    }
+
+    // Get deals with document counts
+    const deals = await this.db.deal.findMany({
+      where: dealWhere,
+      select: {
+        id: true,
+        name: true,
+        stage: true,
+        company: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        _count: {
+          select: {
+            documents: true,
+          },
+        },
+      },
+      orderBy: [{ updatedAt: 'desc' }],
+    });
+
+    return deals.map((deal) => ({
+      id: deal.id,
+      name: deal.name,
+      stage: deal.stage,
+      company: deal.company,
+      documentCount: deal._count.documents,
+    }));
+  }
+
+  /**
+   * Apply AI tags to a document
+   */
+  async applyAITags(
+    organizationId: string,
+    documentId: string,
+    tags: {
+      aiDocumentType: string;
+      aiIndustry: string;
+      contentTags: string[];
+      confidence: number;
+    }
+  ): Promise<Document> {
+    // Verify document belongs to organization
+    const document = await this.getDocument(organizationId, documentId);
+
+    // Don't overwrite if user has manually edited tags
+    if (document.tagsOverridden) {
+      return document;
+    }
+
+    return this.db.document.update({
+      where: { id: document.id },
+      data: {
+        aiDocumentType: tags.aiDocumentType,
+        aiIndustry: tags.aiIndustry,
+        contentTags: tags.contentTags,
+        tagsAppliedAt: new Date(),
+        tagsConfidence: tags.confidence,
+      },
+    });
   }
 }

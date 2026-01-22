@@ -44,3 +44,6 @@ export {
   type PageContext,
   type PageContextType,
 } from "./usePageContext";
+
+// Vault upload modal (Document Vault)
+export { useUploadModal } from "./useUploadModal";
