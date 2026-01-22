@@ -1,6 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
+import { useState, useRef, useEffect } from "react";
 import { api } from "@/trpc/react";
 import { Loader2, ChevronRight, Link2 } from "lucide-react";
 import Link from "next/link";
@@ -19,6 +20,83 @@ const BlockEditor = dynamic(
     ),
   }
 );
+
+// Editable page title component - Notion style
+function EditableTitle({
+  pageId,
+  initialTitle,
+  icon,
+}: {
+  pageId: string;
+  initialTitle: string;
+  icon?: string | null;
+}) {
+  const [title, setTitle] = useState(initialTitle || "Untitled");
+  const [isEditing, setIsEditing] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const utils = api.useUtils();
+
+  const updateMutation = api.page.update.useMutation({
+    onSuccess: () => {
+      // Invalidate queries to refresh sidebar and breadcrumbs
+      utils.page.get.invalidate({ id: pageId });
+      utils.page.getTree.invalidate();
+      utils.page.getBreadcrumbs.invalidate({ pageId });
+    },
+  });
+
+  // Focus input when editing starts
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [isEditing]);
+
+  const handleSave = () => {
+    setIsEditing(false);
+    const trimmedTitle = title.trim() || "Untitled";
+    setTitle(trimmedTitle);
+
+    if (trimmedTitle !== initialTitle) {
+      updateMutation.mutate({ id: pageId, title: trimmedTitle });
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleSave();
+    } else if (e.key === "Escape") {
+      setTitle(initialTitle || "Untitled");
+      setIsEditing(false);
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-3">
+      {icon && <span className="text-5xl">{icon}</span>}
+      {isEditing ? (
+        <input
+          ref={inputRef}
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          onBlur={handleSave}
+          onKeyDown={handleKeyDown}
+          className="text-4xl font-bold text-charcoal bg-transparent border-none outline-none w-full focus:ring-0"
+          placeholder="Untitled"
+        />
+      ) : (
+        <h1
+          onClick={() => setIsEditing(true)}
+          className="text-4xl font-bold text-charcoal cursor-text hover:bg-charcoal/5 rounded px-1 -mx-1 transition-colors"
+        >
+          {title}
+        </h1>
+      )}
+    </div>
+  );
+}
 
 // Breadcrumb component - Notion style (subtle, at very top)
 function Breadcrumbs({ pageId, dealId }: { pageId: string; dealId: string }) {
@@ -89,14 +167,13 @@ export default function PageView() {
       {/* Breadcrumbs - subtle at top */}
       <Breadcrumbs pageId={pageId} dealId={dealId} />
 
-      {/* Page Header - Notion style */}
+      {/* Page Header - Notion style with editable title */}
       <div className="px-24 pt-8 pb-4">
-        <div className="flex items-center gap-3">
-          {page.icon && <span className="text-5xl">{page.icon}</span>}
-          <h1 className="text-4xl font-bold text-charcoal">
-            {page.title || "Untitled"}
-          </h1>
-        </div>
+        <EditableTitle
+          pageId={pageId}
+          initialTitle={page.title}
+          icon={page.icon}
+        />
       </div>
 
       {/* Backlinks - subtle indicator */}

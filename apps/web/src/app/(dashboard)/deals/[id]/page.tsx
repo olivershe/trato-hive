@@ -16,12 +16,13 @@ import {
   Edit3,
   CheckCircle2,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { PinButton } from "@/components/sidebar";
 import { DealPropertiesPanel } from "@/components/deals";
 import { UploadModal } from "@/components/vault";
-import { useUploadModal } from "@/hooks";
+import { useUploadModal, useTrackRecentVisit } from "@/hooks";
+import { SidebarItemType } from "@trato-hive/shared";
 
 // Dynamic import to avoid SSR issues with Tiptap/Liveblocks
 const BlockEditor = dynamic(
@@ -86,6 +87,29 @@ export default function DealDetailPage() {
 
   // Fetch fact sheet
   const { data: factSheet } = api.deal.getFactSheet.useQuery({ dealId });
+
+  // Update document title when deal loads
+  useEffect(() => {
+    if (dealData?.name) {
+      document.title = `${dealData.name} | Trato Hive`;
+    }
+    return () => {
+      document.title = "Trato Hive | Intelligent M&A Canvas";
+    };
+  }, [dealData?.name]);
+
+  // Track deal visit in sidebar recents with actual name
+  useTrackRecentVisit(
+    dealData
+      ? {
+          id: dealId,
+          type: SidebarItemType.DEAL,
+          title: dealData.name,
+          icon: "💼",
+          href: `/deals/${dealId}`,
+        }
+      : null
+  );
 
   if (isLoading) {
     return (

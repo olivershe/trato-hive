@@ -47,7 +47,7 @@ function DealsToolbar() {
   const handleCreateDeal = () => {
     setIsCreating(true);
     createDealMutation.mutate({
-      name: `New Deal ${Date.now().toString(36)}`,
+      name: "Untitled Deal",
       type: "ACQUISITION",
       stage: "SOURCING",
     });

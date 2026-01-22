@@ -12,7 +12,7 @@ const MAX_PINNED = 7
 /**
  * Maximum number of recent items tracked (FIFO)
  */
-const MAX_RECENT = 7
+const MAX_RECENT = 3
 
 /**
  * Sidebar state shape
