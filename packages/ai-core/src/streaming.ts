@@ -1,10 +1,11 @@
 /**
  * Streaming Service
  *
- * Real-time streaming for chat-like interactions using Vercel AI SDK.
+ * Real-time streaming for chat-like interactions using Vercel AI SDK v5.
  * Implements the hybrid approach: Vercel AI SDK for streaming UI, Anthropic SDK for backend.
+ * Supports file attachments for multimodal AI (PDFs, images, etc.)
  */
-import { streamText, type CoreMessage } from 'ai';
+import { streamText, type ModelMessage } from 'ai';
 import { anthropic } from '@ai-sdk/anthropic';
 import { openai } from '@ai-sdk/openai';
 
@@ -18,6 +19,16 @@ export interface StreamConfig {
   model?: string;
 }
 
+/**
+ * File attachment for multimodal AI inputs
+ * Supports PDFs, images (PNG, JPEG, GIF, WEBP), and text files
+ */
+export interface FileAttachment {
+  url: string;
+  contentType?: string;
+  name?: string;
+}
+
 export interface StreamOptions {
   systemPrompt?: string;
   maxTokens?: number;
@@ -25,6 +36,8 @@ export interface StreamOptions {
   onToken?: (token: string) => void;
   onFinish?: (result: StreamResult) => void;
   abortSignal?: AbortSignal;
+  /** File attachments for multimodal analysis (PDFs, images, etc.) */
+  attachments?: FileAttachment[];
 }
 
 export interface StreamResult {
@@ -53,7 +66,7 @@ export class StreamingService {
    * Returns an async generator that yields text chunks
    */
   async *streamResponse(prompt: string, options: StreamOptions = {}): AsyncGenerator<string> {
-    const messages: CoreMessage[] = [];
+    const messages: ModelMessage[] = [];
 
     if (options.systemPrompt) {
       messages.push({ role: 'system', content: options.systemPrompt });
@@ -66,7 +79,7 @@ export class StreamingService {
     const result = streamText({
       model: model as unknown as Parameters<typeof streamText>[0]['model'],
       messages,
-      maxTokens: options.maxTokens || 4096,
+      maxOutputTokens: options.maxTokens || 4096,
       temperature: options.temperature,
       abortSignal: options.abortSignal,
     });
@@ -85,9 +98,9 @@ export class StreamingService {
     options.onFinish?.({
       content: fullContent,
       tokensUsed: {
-        prompt: usage?.promptTokens || 0,
-        completion: usage?.completionTokens || 0,
-        total: (usage?.promptTokens || 0) + (usage?.completionTokens || 0),
+        prompt: usage?.inputTokens || 0,
+        completion: usage?.outputTokens || 0,
+        total: usage?.totalTokens || 0,
       },
       finishReason: finishReason || 'unknown',
     });
@@ -95,10 +108,10 @@ export class StreamingService {
 
   /**
    * Stream a chat conversation
-   * Supports multi-turn conversations
+   * Supports multi-turn conversations and file attachments
    */
   async *streamChat(
-    messages: CoreMessage[],
+    messages: ModelMessage[],
     options: StreamOptions = {}
   ): AsyncGenerator<string> {
     const allMessages = [...messages];
@@ -107,13 +120,19 @@ export class StreamingService {
       allMessages.unshift({ role: 'system', content: options.systemPrompt });
     }
 
+    // Build messages with attachments if provided
+    const messagesWithAttachments = this.buildMessagesWithAttachments(
+      allMessages,
+      options.attachments
+    );
+
     const model = this.getModel();
     let fullContent = '';
 
     const result = streamText({
       model: model as unknown as Parameters<typeof streamText>[0]['model'],
-      messages: allMessages,
-      maxTokens: options.maxTokens || 4096,
+      messages: messagesWithAttachments,
+      maxOutputTokens: options.maxTokens || 4096,
       temperature: options.temperature,
       abortSignal: options.abortSignal,
     });
@@ -131,12 +150,54 @@ export class StreamingService {
     options.onFinish?.({
       content: fullContent,
       tokensUsed: {
-        prompt: usage?.promptTokens || 0,
-        completion: usage?.completionTokens || 0,
-        total: (usage?.promptTokens || 0) + (usage?.completionTokens || 0),
+        prompt: usage?.inputTokens || 0,
+        completion: usage?.outputTokens || 0,
+        total: usage?.totalTokens || 0,
       },
       finishReason: finishReason || 'unknown',
     });
+  }
+
+  /**
+   * Build messages array with file attachments on the last user message
+   * Uses Vercel AI SDK v6's parts array for multimodal input
+   */
+  private buildMessagesWithAttachments(
+    messages: ModelMessage[],
+    attachments?: FileAttachment[]
+  ): ModelMessage[] {
+    if (!attachments?.length) {
+      return messages;
+    }
+
+    // Find the last user message to attach files to
+    const result = [...messages];
+    for (let i = result.length - 1; i >= 0; i--) {
+      const msg = result[i];
+      if (msg.role === 'user') {
+        // In AI SDK v6, we use a content array with parts for multimodal content
+        const textContent = typeof msg.content === 'string' ? msg.content : '';
+
+        // Build parts array with text and file parts
+        // AI SDK v6 FilePart uses 'data' (not 'url') which can be a URL string
+        const parts: Array<{ type: 'text'; text: string } | { type: 'file'; data: string; mediaType: string }> = [
+          { type: 'text', text: textContent },
+          ...attachments.map((a) => ({
+            type: 'file' as const,
+            data: a.url, // AI SDK v6 accepts URLs in the 'data' field
+            mediaType: a.contentType || 'application/octet-stream',
+          })),
+        ];
+
+        result[i] = {
+          role: 'user',
+          content: parts,
+        } as ModelMessage;
+        break;
+      }
+    }
+
+    return result;
   }
 
   /**
@@ -147,7 +208,7 @@ export class StreamingService {
     prompt: string,
     options: StreamOptions = {}
   ): Promise<ReturnType<typeof streamText>> {
-    const messages: CoreMessage[] = [];
+    const messages: ModelMessage[] = [];
 
     if (options.systemPrompt) {
       messages.push({ role: 'system', content: options.systemPrompt });
@@ -159,7 +220,7 @@ export class StreamingService {
     return streamText({
       model: model as unknown as Parameters<typeof streamText>[0]['model'],
       messages,
-      maxTokens: options.maxTokens || 4096,
+      maxOutputTokens: options.maxTokens || 4096,
       temperature: options.temperature,
       abortSignal: options.abortSignal,
     });
@@ -249,11 +310,16 @@ export interface ChatMessage {
 }
 
 /**
- * Convert ChatMessage array to CoreMessage array
+ * Convert ChatMessage array to ModelMessage array
  */
-export function toCoreMessages(messages: ChatMessage[]): CoreMessage[] {
+export function toModelMessages(messages: ChatMessage[]): ModelMessage[] {
   return messages.map((m) => ({
     role: m.role,
     content: m.content,
   }));
 }
+
+/**
+ * @deprecated Use toModelMessages instead (renamed in AI SDK v5)
+ */
+export const toCoreMessages = toModelMessages;

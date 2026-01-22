@@ -11,6 +11,8 @@ import {
   Loader2,
   PanelLeftClose,
   PanelLeft,
+  FolderArchive,
+  Bot,
 } from "lucide-react";
 import { useState, useCallback } from "react";
 import { api } from "@/trpc/react";
@@ -52,9 +54,19 @@ const navigation = [
     icon: Briefcase,
   },
   {
+    name: "Vault",
+    href: "/vault",
+    icon: FolderArchive,
+  },
+  {
     name: "Discovery",
     href: "/discovery",
     icon: Search,
+  },
+  {
+    name: "Agents",
+    href: "/agents",
+    icon: Bot,
   },
 ];
 

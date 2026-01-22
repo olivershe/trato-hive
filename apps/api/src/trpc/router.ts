@@ -13,6 +13,7 @@
  * - vdr - Virtual Data Room document management
  * - generator - Document export (PPTX/DOCX)
  * - sourcing - Company search and discovery
+ * - agent - Custom AI agents [TASK-128]
  *
  * @see apps/api/CLAUDE.md for router patterns
  */
@@ -37,6 +38,7 @@ import { qaRouter } from '../routers/qa';
 import { alertsRouter } from '../routers/alerts';
 import { dealsDatabaseRouter } from '../routers/dealsDatabase';
 import { coworkerRouter } from '../routers/coworker';
+import { agentRouter } from '../routers/agent';
 
 /**
  * Root application router
@@ -62,6 +64,7 @@ export const appRouter = router({
   qa: qaRouter,
   alerts: alertsRouter,
   coworker: coworkerRouter, // Phase 12: Hive Copilot AI co-worker
+  agent: agentRouter, // Custom AI agents [TASK-128]
 });
 
 /**

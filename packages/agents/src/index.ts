@@ -9,6 +9,7 @@
 export * from './document-agent';
 export * from './diligence-agent';
 export * from './action-agent';
+export * from './custom-agent';
 
 // Tools
 export * from './tools';

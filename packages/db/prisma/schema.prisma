@@ -40,6 +40,7 @@ model User {
   leadDeals        Deal[]         @relation("DealLeadPartner") // Deals where user is lead partner
   dealViewConfigs  DealViewConfig[] // User's deal view preferences
   coworkerConversations CoworkerConversation[] // Hive Copilot conversations
+  createdAgents    CustomAgent[]  @relation("CustomAgentCreator") // Custom AI agents created by user
 
   @@map("users")
 }
@@ -107,6 +108,7 @@ model Organization {
   dealFieldSchemas DealFieldSchema[] // Custom field definitions
   pages            Page[]            // Org-level pages (Phase 12)
   coworkerConversations CoworkerConversation[] // Hive Copilot conversations
+  customAgents     CustomAgent[]     // Custom AI agents
 
   @@map("organizations")
 }
@@ -395,6 +397,16 @@ model Document {
   // Reducto AI metadata
   reductoJobId String?
   reductoData  Json? // Structured data from Reducto
+
+  // AI-Applied Tags (Document Vault)
+  aiDocumentType String?   // AI classified type: "merger_agreement", "financial_statement", etc.
+  aiIndustry     String?   // AI detected industry: "technology", "healthcare", etc.
+  contentTags    String[]  @default([]) // e.g., ["confidential", "draft", "needs_review"]
+
+  // Tagging Metadata
+  tagsAppliedAt  DateTime?
+  tagsConfidence Float?    // 0-1 overall confidence score
+  tagsOverridden Boolean   @default(false) // User manually edited tags
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -899,4 +911,52 @@ model CoworkerConversation {
   @@index([organizationId, userId])
   @@index([updatedAt])
   @@map("coworker_conversations")
+}
+
+// =============================================================================
+// CUSTOM AI AGENTS (User-Defined Agents)
+// =============================================================================
+
+enum AgentOutputFormat {
+  FREEFORM  // Free text response
+  TABLE     // Structured table output
+  BULLETS   // Bullet point list
+  SUMMARY   // Executive summary format
+  JSON      // Raw JSON output
+}
+
+model CustomAgent {
+  id             String @id @default(cuid())
+  organizationId String
+
+  // Agent Definition
+  name           String                // Display name: "Financial Analyst"
+  slug           String                // URL-safe slug: "financial-analyst"
+  description    String?  @db.Text     // Short description for menu
+  promptTemplate String   @db.Text     // System prompt + user template
+  outputFormat   AgentOutputFormat @default(FREEFORM)
+
+  // Configuration
+  icon           String?  @default("🤖")
+  color          String?               // Badge color
+  tags           String[] @default([])
+  isActive       Boolean  @default(true)
+  isSystem       Boolean  @default(false) // Pre-built agents (cannot be deleted)
+
+  // Usage Tracking
+  callCount      Int      @default(0)
+  lastCalledAt   DateTime?
+
+  // Audit
+  createdById    String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  creator        User         @relation("CustomAgentCreator", fields: [createdById], references: [id])
+
+  @@unique([organizationId, slug])
+  @@index([organizationId, isActive])
+  @@index([createdById])
+  @@map("custom_agents")
 }

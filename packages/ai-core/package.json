@@ -24,13 +24,13 @@
     "clean": "rm -rf dist coverage .turbo"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "^3.0.2",
-    "@ai-sdk/openai": "^3.0.2",
+    "@ai-sdk/anthropic": "^3.0.21",
+    "@ai-sdk/openai": "^3.0.17",
     "@anthropic-ai/sdk": "^0.32.1",
     "@langchain/core": "^1.0.4",
     "@langchain/openai": "^0.3.12",
     "@trato-hive/shared": "workspace:*",
-    "ai": "^4.3.19",
+    "ai": "^6.0.47",
     "langchain": "^0.3.11",
     "zod": "^3.23.8"
   },

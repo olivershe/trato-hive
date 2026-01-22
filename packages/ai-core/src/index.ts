@@ -16,3 +16,6 @@ export * from './rag';
 
 // Streaming utilities
 export * from './streaming';
+
+// Document tagging
+export * from './document-tagger';

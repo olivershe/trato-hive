@@ -13,6 +13,7 @@ import { seedDocuments } from './seed/documents';
 import { seedFacts } from './seed/facts';
 import { seedPages } from './seed/pages';
 import { seedPhase11 } from './seed/phase11';
+import { seedAgents } from './seed/agents';
 
 const prisma = new PrismaClient();
 
@@ -60,6 +61,11 @@ async function main() {
     const phase11 = await seedPhase11(deals, companies, users);
     console.log(`✓ Phase 11: ${phase11.dealCompanies} deal-company links, ${phase11.companyWatches} company watches ready\n`);
 
+    // Step 9: Seed Custom Agents
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    const agentsCount = await seedAgents(firms, users);
+    console.log(`✓ Agents: ${agentsCount} system agents created\n`);
+
     // Summary
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     console.log('🎉 Database seed completed successfully!\n');
@@ -74,6 +80,7 @@ async function main() {
     console.log(`   • ${facts.length} Facts (verifiable facts with citations)`);
     console.log(`   • ${pages.length} Pages (Block Protocol foundation)`);
     console.log(`   • ${blocks.length} Blocks (hierarchical content structure)`);
+    console.log(`   • ${agentsCount} Custom Agents (system agents per org)`);
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 
     // Sample queries to verify data

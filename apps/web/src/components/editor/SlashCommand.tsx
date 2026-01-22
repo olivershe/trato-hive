@@ -23,6 +23,8 @@ import {
     FolderOpen,
     Search,
     Building2,
+    Upload,
+    Bot,
 } from "lucide-react";
 import { CommandListRenderer } from "./CommandListRenderer";
 
@@ -137,10 +139,22 @@ export const suggestionItems = [
     {
         title: "Data Room",
         description: "Virtual Data Room file explorer",
-        searchTerms: ["vdr", "dataroom", "files", "documents", "upload", "folder", "explorer"],
+        searchTerms: ["vdr", "dataroom", "files", "documents", "folder", "explorer"],
         icon: <FolderOpen size={18} className="text-gold" />,
         command: ({ editor, range }: any) => {
             editor.chain().focus().deleteRange(range).setVDRBlock({}).run();
+        },
+    },
+    {
+        title: "Upload",
+        description: "Upload documents to this deal's vault",
+        searchTerms: ["upload", "file", "document", "vault", "attach", "add"],
+        icon: <Upload size={18} className="text-orange" />,
+        command: ({ editor, range }: any) => {
+            editor.chain().focus().deleteRange(range).run();
+            // Dispatch custom event to trigger upload modal
+            // The deal context will be picked up by the modal
+            window.dispatchEvent(new CustomEvent("vault:upload"));
         },
     },
     {
@@ -177,6 +191,18 @@ export const suggestionItems = [
                 factIds: [],
                 status: "pending",
             }).run();
+        },
+    },
+    {
+        title: "Custom Agent",
+        description: "Run a custom AI agent with documents",
+        searchTerms: ["agent", "custom", "ai", "analysis", "document", "pdf", "review"],
+        icon: <Bot size={18} className="text-orange" />,
+        command: ({ editor, range }: any) => {
+            // Opens the agent selection modal
+            editor.chain().focus().deleteRange(range).run();
+            // Dispatch custom event to trigger agent picker
+            window.dispatchEvent(new CustomEvent("agent:picker"));
         },
     },
     {
