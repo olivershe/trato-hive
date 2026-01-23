@@ -57,8 +57,8 @@ function DealCard({ deal }: DealCardProps) {
     <Link
       href={`/vault/${deal.id}`}
       className="
-        block bg-alabaster rounded-xl p-5 border border-gold/10
-        hover:border-orange/30 hover:shadow-md transition-all duration-200
+        block bg-alabaster rounded-xl p-5 border border-charcoal/10
+        hover:border-charcoal/20 hover:bg-bone transition-colors duration-150
         group
       "
     >
