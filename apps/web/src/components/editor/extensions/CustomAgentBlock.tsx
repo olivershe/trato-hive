@@ -22,6 +22,7 @@ import {
   FolderOpen,
   CheckCircle,
   Search,
+  ChevronDown,
 } from "lucide-react";
 import { api } from "@/trpc/react";
 import ReactMarkdown from "react-markdown";
@@ -911,11 +912,17 @@ function CustomAgentCard({ node, updateAttributes }: NodeViewProps) {
 
           {/* Result State */}
           {status === "complete" && result && (
-            <div className="prose prose-sm dark:prose-invert max-w-none">
-              <div className="p-4 bg-alabaster dark:bg-surface-dark rounded-lg">
-                <ReactMarkdown>{result}</ReactMarkdown>
+            <details className="group" open>
+              <summary className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-charcoal/60 dark:text-cultured-white/60 uppercase tracking-wide hover:text-charcoal dark:hover:text-cultured-white transition-colors mb-2">
+                <ChevronDown className="w-3 h-3 transition-transform group-open:rotate-180" />
+                <span>Analysis Result</span>
+              </summary>
+              <div className="prose prose-sm dark:prose-invert max-w-none">
+                <div className="p-4 bg-alabaster dark:bg-surface-dark rounded-lg">
+                  <ReactMarkdown>{result}</ReactMarkdown>
+                </div>
               </div>
-            </div>
+            </details>
           )}
         </div>
       </div>
