@@ -59,7 +59,7 @@ export const CommandListRenderer = forwardRef((props: CommandListProps, ref) => 
     }));
 
     return (
-        <div className="z-50 h-auto max-h-[330px] w-72 overflow-y-auto rounded-xl border border-gold/20 bg-alabaster/90 p-2 shadow-xl backdrop-blur-md transition-[opacity,transform] dark:bg-charcoal/90 dark:border-white/10 scrollbar-thin scrollbar-thumb-gold/20 scrollbar-track-transparent overscroll-contain">
+        <div className="z-50 h-auto max-h-[330px] w-72 overflow-y-auto rounded-2xl border border-white/30 bg-white/60 p-2 shadow-[0_8px_32px_rgba(0,0,0,0.08),0_0_0_1px_rgba(255,255,255,0.5)_inset] backdrop-blur-2xl backdrop-saturate-150 transition-[opacity,transform] dark:bg-charcoal/60 dark:border-white/10 dark:shadow-[0_8px_32px_rgba(0,0,0,0.3),0_0_0_1px_rgba(255,255,255,0.1)_inset] scrollbar-thin scrollbar-thumb-gold/20 scrollbar-track-transparent overscroll-contain">
             {props.items.length > 0 ? (
                 props.items.map((item, index) => (
                     <button

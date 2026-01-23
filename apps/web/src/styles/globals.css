@@ -42,3 +42,25 @@ main {
 .inline-citation::after {
     content: "]";
 }
+
+/* Reset tippy container - let inner React component handle all styling */
+.tippy-box,
+.tippy-box[data-state="visible"],
+.tippy-box[data-state="hidden"],
+.tippy-box[data-placement^="top"],
+.tippy-box[data-placement^="bottom"],
+.tippy-box[data-placement^="left"],
+.tippy-box[data-placement^="right"] {
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+.tippy-content {
+    padding: 0 !important;
+}
+.tippy-arrow {
+    display: none !important;
+}

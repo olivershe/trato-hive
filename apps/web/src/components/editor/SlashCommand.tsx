@@ -77,6 +77,8 @@ const renderItems = () => {
                 interactive: true,
                 trigger: "manual",
                 placement: "bottom-start",
+                arrow: false,
+                offset: [0, 8],
             });
         },
         onUpdate: (props: any) => {
