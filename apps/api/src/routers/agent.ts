@@ -15,6 +15,7 @@ import {
 } from '@trato-hive/shared'
 import { createCustomAgentExecutor } from '@trato-hive/agents'
 import { createClaudeStreamingService } from '@trato-hive/ai-core'
+import { createStorageClientFromEnv } from '@trato-hive/data-plane'
 
 function createAgentService(ctx: { db: any }) {
   return new AgentService(ctx.db)
@@ -118,12 +119,30 @@ export const agentRouter = router({
         })),
       ]
 
+      // Resolve S3 keys to signed URLs for attachments
+      // S3 keys don't start with http, so we need to convert them to presigned URLs
+      const storageClient = createStorageClientFromEnv()
+      const resolvedAttachments = await Promise.all(
+        allAttachments.map(async (attachment) => {
+          // If it's already a full URL, use it as-is
+          if (attachment.url.startsWith('http://') || attachment.url.startsWith('https://')) {
+            return attachment
+          }
+          // Otherwise, it's an S3 key - generate a presigned URL
+          const signedUrl = await storageClient.getPresignedUrl(attachment.url, 3600) // 1 hour expiry
+          return {
+            ...attachment,
+            url: signedUrl,
+          }
+        })
+      )
+
       // Create the streaming service and executor
       const streaming = createClaudeStreamingService()
       const executor = createCustomAgentExecutor({ streaming })
 
       console.log('[Agent Execute] Starting execution for agent:', agent.name)
-      console.log('[Agent Execute] Attachments count:', allAttachments.length)
+      console.log('[Agent Execute] Attachments count:', resolvedAttachments.length)
 
       try {
         // Execute the agent with the AI
@@ -154,7 +173,7 @@ export const agentRouter = router({
             },
           },
           userPrompt: input.userPrompt,
-          attachments: allAttachments,
+          attachments: resolvedAttachments,
         })
 
         console.log('[Agent Execute] Result content length:', result.content.length)

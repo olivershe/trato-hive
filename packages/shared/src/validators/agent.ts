@@ -21,9 +21,10 @@ const agentOutputFormatValues = Object.values(AgentOutputFormat) as [string, ...
 
 /**
  * File Attachment Schema - for multimodal AI inputs
+ * Note: url can be either a full URL or an S3 key (which gets resolved to a signed URL)
  */
 export const fileAttachmentSchema = z.object({
-  url: z.string().url('Invalid file URL'),
+  url: z.string().min(1, 'File URL or S3 key is required'),
   contentType: z.string().optional(),
   name: z.string().optional(),
 })

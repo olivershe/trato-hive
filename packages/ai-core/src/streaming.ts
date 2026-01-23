@@ -121,7 +121,8 @@ export class StreamingService {
     }
 
     // Build messages with attachments if provided
-    const messagesWithAttachments = this.buildMessagesWithAttachments(
+    // Use async method to handle local URLs (converts to base64 for AI provider access)
+    const messagesWithAttachments = await this.buildMessagesWithAttachmentsAsync(
       allMessages,
       options.attachments
     );
@@ -198,6 +199,58 @@ export class StreamingService {
     }
 
     return result;
+  }
+
+  /**
+   * Build messages with attachments, fetching local URLs and converting to base64
+   * This is needed because AI providers can't access localhost URLs
+   */
+  async buildMessagesWithAttachmentsAsync(
+    messages: ModelMessage[],
+    attachments?: FileAttachment[]
+  ): Promise<ModelMessage[]> {
+    if (!attachments?.length) {
+      return messages;
+    }
+
+    // Fetch local URLs and convert to base64
+    const processedAttachments = await Promise.all(
+      attachments.map(async (a) => {
+        // Check if URL is local (localhost, 127.0.0.1, or internal network)
+        const isLocalUrl = a.url.includes('localhost') ||
+                          a.url.includes('127.0.0.1') ||
+                          a.url.includes('0.0.0.0') ||
+                          a.url.includes('host.docker.internal');
+
+        if (isLocalUrl) {
+          try {
+            // Fetch the file content
+            const response = await fetch(a.url);
+            if (!response.ok) {
+              console.warn(`[StreamingService] Failed to fetch local file: ${a.url} - ${response.status}`);
+              return null;
+            }
+            const buffer = await response.arrayBuffer();
+            const base64 = Buffer.from(buffer).toString('base64');
+            const dataUrl = `data:${a.contentType || 'application/octet-stream'};base64,${base64}`;
+            return {
+              ...a,
+              url: dataUrl,
+            };
+          } catch (error) {
+            console.error(`[StreamingService] Error fetching local file: ${a.url}`, error);
+            return null;
+          }
+        }
+        return a;
+      })
+    );
+
+    // Filter out failed attachments
+    const validAttachments = processedAttachments.filter((a): a is FileAttachment => a !== null);
+
+    // Now use the synchronous method with processed attachments
+    return this.buildMessagesWithAttachments(messages, validAttachments);
   }
 
   /**
