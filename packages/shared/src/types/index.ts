@@ -156,6 +156,13 @@ export type {
 } from './qa'
 export { QAAnswerStatus } from './qa'
 
+// Copilot UI Block Types
+export type {
+  CopilotBlockComponent,
+  CopilotBlockLayout,
+  UIBlock,
+} from './copilot-ui'
+
 // Alert Types (AI Pipeline Alerts)
 export type {
   AlertTypeValue,

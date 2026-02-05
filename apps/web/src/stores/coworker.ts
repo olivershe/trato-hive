@@ -14,6 +14,12 @@ export interface ExecutedAction {
     success: boolean;
     message: string;
     data?: unknown;
+    ui?: {
+      component: string;
+      props: Record<string, unknown>;
+      initialState?: Record<string, unknown>;
+      layout?: 'inline' | 'full-width';
+    };
   };
 }
 

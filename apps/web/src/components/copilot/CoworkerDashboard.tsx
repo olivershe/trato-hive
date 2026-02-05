@@ -96,6 +96,16 @@ export function CoworkerDashboard() {
     [sendMessage]
   );
 
+  const handleBlockAction = useCallback(
+    (message: string, context?: Record<string, unknown>) => {
+      const ctx = context
+        ? { dealId: context.dealId as string | undefined, companyId: context.companyId as string | undefined }
+        : undefined;
+      sendMessage(message, ctx);
+    },
+    [sendMessage]
+  );
+
   const hasMessages = messages.length > 0;
 
   return (
@@ -139,7 +149,7 @@ export function CoworkerDashboard() {
           {/* Message List */}
           {hasMessages && (
             <div className="flex-1 bg-alabaster rounded-2xl border border-gold/10 mb-6 overflow-hidden">
-              <MessageList messages={messages} isLoading={isSending} />
+              <MessageList messages={messages} isLoading={isSending} onAction={handleBlockAction} />
             </div>
           )}
 

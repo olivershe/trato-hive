@@ -49,7 +49,7 @@ const DEAL_STAGES = [
 // =============================================================================
 
 export const searchDealsSchema = z.object({
-  query: z.string().describe('Search query for deals'),
+  query: z.string().optional().describe('Search query to filter deals by name'),
   stage: z.enum(DEAL_STAGES).optional().describe('Filter by deal stage'),
   limit: z.number().int().positive().max(20).optional().describe('Maximum results to return'),
 });
@@ -77,13 +77,13 @@ export type CreateTaskInput = z.infer<typeof createTaskSchema>;
 export const searchDealsTool: Tool = {
   name: 'search_deals',
   description:
-    'Search for deals in the CRM by name, stage, or other criteria. Returns a list of matching deals.',
+    'Search for deals in the CRM. You can filter by name, stage, or both. At least one of query or stage must be provided.',
   input_schema: {
     type: 'object',
     properties: {
       query: {
         type: 'string',
-        description: 'Search query for deals',
+        description: 'Search query to filter deals by name. Optional if stage is provided.',
       },
       stage: {
         type: 'string',
@@ -94,7 +94,7 @@ export const searchDealsTool: Tool = {
         description: 'Maximum results to return (default: 10)',
       },
     },
-    required: ['query'],
+    required: [],
   },
 };
 
@@ -168,18 +168,31 @@ export async function executeSearchDeals(
   deps: SearchToolDeps,
   input: SearchDealsInput,
   context: SearchToolContext
-): Promise<{ success: boolean; message: string; deals: Record<string, unknown>[] }> {
+): Promise<{ success: boolean; message: string; deals: Record<string, unknown>[]; ui?: { component: string; props: Record<string, unknown>; layout?: 'inline' | 'full-width' } }> {
   // Validate input
   const validated = searchDealsSchema.parse(input);
   const limit = validated.limit ?? 10;
 
+  // Need at least one filter
+  if (!validated.query && !validated.stage) {
+    return {
+      success: false,
+      message: 'Please provide a search query or a stage filter.',
+      deals: [],
+    };
+  }
+
   // Build where clause
   const where: Prisma.DealWhereInput = {
     organizationId: context.organizationId,
-    OR: [
-      { name: { contains: validated.query, mode: 'insensitive' } },
-    ],
   };
+
+  // Add name-based text search only when query is provided
+  if (validated.query) {
+    where.OR = [
+      { name: { contains: validated.query, mode: 'insensitive' } },
+    ];
+  }
 
   if (validated.stage) {
     where.stage = validated.stage as DealStage;
@@ -197,17 +210,31 @@ export async function executeSearchDeals(
     },
   });
 
+  const mappedDeals = deals.map((d) => ({
+    id: d.id,
+    name: d.name,
+    stage: d.stage,
+    probability: d.probability,
+    value: d.value?.toString(),
+    company: d.company ? { id: d.company.id, name: d.company.name } : null,
+  }));
+
+  const filterDesc = [
+    validated.query ? `matching "${validated.query}"` : null,
+    validated.stage ? `in ${validated.stage} stage` : null,
+  ].filter(Boolean).join(' ');
+
   return {
     success: true,
-    message: `Found ${deals.length} deal(s) matching "${validated.query}"`,
-    deals: deals.map((d) => ({
-      id: d.id,
-      name: d.name,
-      stage: d.stage,
-      probability: d.probability,
-      value: d.value?.toString(),
-      company: d.company ? { id: d.company.id, name: d.company.name } : null,
-    })),
+    message: `Found ${deals.length} deal(s) ${filterDesc}`,
+    deals: mappedDeals,
+    ui: mappedDeals.length > 0
+      ? {
+          component: 'deal-search-results',
+          props: { query: validated.query ?? '', deals: mappedDeals, totalCount: mappedDeals.length },
+          layout: 'full-width',
+        }
+      : undefined,
   };
 }
 
@@ -222,6 +249,7 @@ export async function executeSearchKnowledge(
   success: boolean;
   message: string;
   results: Array<{ content: string; source: string; score: number }>;
+  ui?: { component: string; props: Record<string, unknown>; layout?: 'inline' | 'full-width' };
 }> {
   // Validate input
   const validated = searchKnowledgeSchema.parse(input);
@@ -246,14 +274,23 @@ export async function executeSearchKnowledge(
       },
     });
 
+    const factResults = facts.map((f) => ({
+      content: `${f.subject} ${f.predicate} ${f.object}`,
+      source: f.document?.name || 'Unknown',
+      score: f.confidence,
+    }));
+
     return {
       success: true,
       message: `Found ${facts.length} fact(s) matching "${validated.query}"`,
-      results: facts.map((f) => ({
-        content: `${f.subject} ${f.predicate} ${f.object}`,
-        source: f.document?.name || 'Unknown',
-        score: f.confidence,
-      })),
+      results: factResults,
+      ui: factResults.length > 0
+        ? {
+            component: 'knowledge-results',
+            props: { query: validated.query, results: factResults },
+            layout: 'full-width',
+          }
+        : undefined,
     };
   }
 
@@ -270,14 +307,23 @@ export async function executeSearchKnowledge(
     }
   );
 
+  const vectorResults = searchResults.map((r: VectorSearchResult) => ({
+    content: r.content,
+    source: r.metadata.documentName || 'Unknown',
+    score: r.score,
+  }));
+
   return {
     success: true,
     message: `Found ${searchResults.length} relevant document(s) for "${validated.query}"`,
-    results: searchResults.map((r: VectorSearchResult) => ({
-      content: r.content,
-      source: r.metadata.documentName || 'Unknown',
-      score: r.score,
-    })),
+    results: vectorResults,
+    ui: vectorResults.length > 0
+      ? {
+          component: 'knowledge-results',
+          props: { query: validated.query, results: vectorResults },
+          layout: 'full-width',
+        }
+      : undefined,
   };
 }
 

@@ -43,6 +43,16 @@ export const listConversationsInputSchema = z.object({
 // =============================================================================
 
 /**
+ * UI Block schema — describes an interactive component to render inline
+ */
+export const uiBlockSchema = z.object({
+  component: z.string(),
+  props: z.record(z.unknown()),
+  initialState: z.record(z.unknown()).optional(),
+  layout: z.enum(['inline', 'full-width']).optional(),
+});
+
+/**
  * Executed action schema
  */
 export const executedActionSchema = z.object({
@@ -52,6 +62,7 @@ export const executedActionSchema = z.object({
     success: z.boolean(),
     message: z.string(),
     data: z.unknown().optional(),
+    ui: uiBlockSchema.optional(),
   }),
 });
 
