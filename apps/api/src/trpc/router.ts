@@ -39,6 +39,7 @@ import { alertsRouter } from '../routers/alerts';
 import { dealsDatabaseRouter } from '../routers/dealsDatabase';
 import { coworkerRouter } from '../routers/coworker';
 import { agentRouter } from '../routers/agent';
+import { pageGenerationRouter } from '../routers/page-generation';
 
 /**
  * Root application router
@@ -65,6 +66,7 @@ export const appRouter = router({
   alerts: alertsRouter,
   coworker: coworkerRouter, // Phase 12: Hive Copilot AI co-worker
   agent: agentRouter, // Custom AI agents [TASK-128]
+  pageGeneration: pageGenerationRouter, // AI page generation [TASK-145]
 });
 
 /**

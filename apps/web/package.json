@@ -49,6 +49,7 @@
     "@tiptap/react": "^3.14.0",
     "@tiptap/starter-kit": "^3.14.0",
     "@tiptap/suggestion": "^3.14.0",
+    "@trato-hive/ai-core": "workspace:^",
     "@trato-hive/api": "workspace:^",
     "@trato-hive/auth": "workspace:*",
     "@trato-hive/db": "workspace:*",
