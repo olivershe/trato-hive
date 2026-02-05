@@ -2,17 +2,20 @@
  * MessageList Component
  *
  * Displays the conversation history between user and Hive Copilot.
- * Shows executed actions with their results.
+ * Shows executed actions with their results, including interactive UI blocks.
  */
 'use client';
 
 import { useEffect, useRef } from 'react';
 import { User, Bot, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
 import type { CoworkerMessage, ExecutedAction } from '@/stores/coworker';
+import { CopilotBlockRenderer } from './blocks';
 
 interface MessageListProps {
   messages: CoworkerMessage[];
   isLoading?: boolean;
+  onAction?: (message: string, context?: Record<string, unknown>) => void;
+  isHistorical?: boolean;
 }
 
 function ActionBadge({ action }: { action: ExecutedAction }) {
@@ -36,8 +39,20 @@ function ActionBadge({ action }: { action: ExecutedAction }) {
   );
 }
 
-function Message({ message }: { message: CoworkerMessage }) {
+function Message({
+  message,
+  onAction,
+  isHistorical,
+}: {
+  message: CoworkerMessage;
+  onAction?: (message: string, context?: Record<string, unknown>) => void;
+  isHistorical?: boolean;
+}) {
   const isUser = message.role === 'user';
+
+  // Split actions into those with UI blocks and those without
+  const actionsWithUI = message.executedActions?.filter((a) => a.result.ui) ?? [];
+  const actionsWithoutUI = message.executedActions?.filter((a) => !a.result.ui) ?? [];
 
   return (
     <div className={`flex gap-3 ${isUser ? 'flex-row-reverse' : ''}`}>
@@ -68,10 +83,27 @@ function Message({ message }: { message: CoworkerMessage }) {
           <p className="text-sm whitespace-pre-wrap">{message.content}</p>
         </div>
 
-        {/* Executed Actions */}
-        {message.executedActions && message.executedActions.length > 0 && (
+        {/* Interactive UI Blocks */}
+        {actionsWithUI.length > 0 && (
+          <div className="mt-3 space-y-3">
+            {actionsWithUI.map((action, i) => (
+              <CopilotBlockRenderer
+                key={i}
+                component={action.result.ui!.component}
+                props={action.result.ui!.props}
+                initialState={action.result.ui!.initialState}
+                layout={action.result.ui!.layout}
+                onAction={onAction}
+                isHistorical={isHistorical}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Action Badges (only for actions without UI blocks) */}
+        {actionsWithoutUI.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-2">
-            {message.executedActions.map((action, i) => (
+            {actionsWithoutUI.map((action, i) => (
               <ActionBadge key={i} action={action} />
             ))}
           </div>
@@ -89,7 +121,7 @@ function Message({ message }: { message: CoworkerMessage }) {
   );
 }
 
-export function MessageList({ messages, isLoading }: MessageListProps) {
+export function MessageList({ messages, isLoading, onAction, isHistorical }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom when new messages arrive
@@ -104,7 +136,12 @@ export function MessageList({ messages, isLoading }: MessageListProps) {
   return (
     <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6" role="log" aria-label="Conversation messages" aria-live="polite">
       {messages.map((message) => (
-        <Message key={message.id} message={message} />
+        <Message
+          key={message.id}
+          message={message}
+          onAction={onAction}
+          isHistorical={isHistorical}
+        />
       ))}
 
       {isLoading && (

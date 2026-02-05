@@ -152,7 +152,7 @@ export async function executeUpdateDeal(
   db: PrismaClient,
   input: UpdateDealInput,
   context: DealToolContext
-): Promise<{ success: boolean; message: string; deal?: Record<string, unknown> }> {
+): Promise<{ success: boolean; message: string; deal?: Record<string, unknown>; ui?: { component: string; props: Record<string, unknown>; layout?: 'inline' | 'full-width' } }> {
   // Validate input
   const validated = updateDealSchema.parse(input);
 
@@ -203,6 +203,14 @@ export async function executeUpdateDeal(
     };
   }
 
+  // Capture before values for changed fields
+  const beforeValues: Record<string, unknown> = {
+    stage: deal.stage,
+    probability: deal.probability,
+    value: deal.value?.toString(),
+    notes: deal.notes,
+  };
+
   // Build update data
   const updateData: Record<string, unknown> = {};
   if (validated.stage !== undefined) updateData.stage = validated.stage as DealStage;
@@ -226,6 +234,13 @@ export async function executeUpdateDeal(
     },
   });
 
+  // Build changes list for the UI block
+  const changes = Object.keys(updateData).map((field) => ({
+    field,
+    from: beforeValues[field] as string | number | null,
+    to: (field === 'value' ? updatedDeal.value?.toString() : (updatedDeal as Record<string, unknown>)[field]) as string | number | null,
+  }));
+
   return {
     success: true,
     message: `Deal "${updatedDeal.name}" updated successfully.`,
@@ -235,6 +250,21 @@ export async function executeUpdateDeal(
       stage: updatedDeal.stage,
       probability: updatedDeal.probability,
       value: updatedDeal.value?.toString(),
+    },
+    ui: {
+      component: 'deal-mutation-confirmation',
+      props: {
+        type: 'updated',
+        deal: {
+          id: updatedDeal.id,
+          name: updatedDeal.name,
+          stage: updatedDeal.stage,
+          probability: updatedDeal.probability,
+          value: updatedDeal.value?.toString(),
+        },
+        changes,
+      },
+      layout: 'full-width',
     },
   };
 }
@@ -246,7 +276,7 @@ export async function executeCreateDeal(
   db: PrismaClient,
   input: CreateDealInput,
   context: DealToolContext
-): Promise<{ success: boolean; message: string; deal?: Record<string, unknown> }> {
+): Promise<{ success: boolean; message: string; deal?: Record<string, unknown>; ui?: { component: string; props: Record<string, unknown>; layout?: 'inline' | 'full-width' } }> {
   // Validate input
   const validated = createDealSchema.parse(input);
 
@@ -297,6 +327,20 @@ export async function executeCreateDeal(
       companyId: deal.companyId,
       value: deal.value?.toString(),
     },
+    ui: {
+      component: 'deal-mutation-confirmation',
+      props: {
+        type: 'created',
+        deal: {
+          id: deal.id,
+          name: deal.name,
+          stage: deal.stage,
+          value: deal.value?.toString(),
+          companyName: company.name,
+        },
+      },
+      layout: 'full-width',
+    },
   };
 }
 
@@ -307,7 +351,7 @@ export async function executeGetDealSummary(
   db: PrismaClient,
   input: GetDealSummaryInput,
   context: DealToolContext
-): Promise<{ success: boolean; message: string; summary?: Record<string, unknown> }> {
+): Promise<{ success: boolean; message: string; summary?: Record<string, unknown>; ui?: { component: string; props: Record<string, unknown>; layout?: 'inline' | 'full-width' } }> {
   // Validate input
   const validated = getDealSummarySchema.parse(input);
 
@@ -368,32 +412,39 @@ export async function executeGetDealSummary(
     };
   }
 
+  const summaryData = {
+    id: deal.id,
+    name: deal.name,
+    stage: deal.stage,
+    probability: deal.probability,
+    value: deal.value?.toString(),
+    company: deal.company
+      ? { id: deal.company.id, name: deal.company.name }
+      : null,
+    recentDocuments: deal.documents.map((d) => ({
+      id: d.id,
+      name: d.name,
+      status: d.status,
+      createdAt: d.createdAt,
+    })),
+    recentActivity: deal.activities.map((a) => ({
+      id: a.id,
+      type: a.type,
+      description: a.description,
+      createdAt: a.createdAt,
+    })),
+    createdAt: deal.createdAt,
+    updatedAt: deal.updatedAt,
+  };
+
   return {
     success: true,
     message: `Summary for deal "${deal.name}"`,
-    summary: {
-      id: deal.id,
-      name: deal.name,
-      stage: deal.stage,
-      probability: deal.probability,
-      value: deal.value?.toString(),
-      company: deal.company
-        ? { id: deal.company.id, name: deal.company.name }
-        : null,
-      recentDocuments: deal.documents.map((d) => ({
-        id: d.id,
-        name: d.name,
-        status: d.status,
-        createdAt: d.createdAt,
-      })),
-      recentActivity: deal.activities.map((a) => ({
-        id: a.id,
-        type: a.type,
-        description: a.description,
-        createdAt: a.createdAt,
-      })),
-      createdAt: deal.createdAt,
-      updatedAt: deal.updatedAt,
+    summary: summaryData,
+    ui: {
+      component: 'deal-summary-card',
+      props: { summary: summaryData },
+      layout: 'full-width',
     },
   };
 }

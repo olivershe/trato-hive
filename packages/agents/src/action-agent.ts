@@ -76,7 +76,12 @@ export interface ActionResponse {
 export interface ExecutedAction {
   tool: string;
   input: Record<string, unknown>;
-  result: { success: boolean; message: string; data?: unknown };
+  result: {
+    success: boolean;
+    message: string;
+    data?: unknown;
+    ui?: { component: string; props: Record<string, unknown>; initialState?: Record<string, unknown>; layout?: 'inline' | 'full-width' };
+  };
 }
 
 export interface PendingAction {
@@ -243,7 +248,7 @@ export class ActionAgent {
     toolName: string,
     input: Record<string, unknown>,
     context: ActionContext
-  ): Promise<{ success: boolean; message: string; data?: unknown }> {
+  ): Promise<{ success: boolean; message: string; data?: unknown; ui?: { component: string; props: Record<string, unknown>; initialState?: Record<string, unknown>; layout?: 'inline' | 'full-width' } }> {
     const toolContext = {
       organizationId: context.organizationId,
       userId: context.userId,
