@@ -50,6 +50,14 @@ export function AIGenerationToolbar({
           </div>
         )}
 
+        {/* Initial loading — before outline arrives */}
+        {isGenerating && !progress && (
+          <div className="flex items-center gap-2 text-sm text-charcoal/60">
+            <Loader2 className="w-4 h-4 animate-spin text-orange" />
+            <span>Generating...</span>
+          </div>
+        )}
+
         {/* Error message */}
         {error && (
           <span className="text-sm text-red-600">{error}</span>

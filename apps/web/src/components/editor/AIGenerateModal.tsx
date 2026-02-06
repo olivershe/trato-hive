@@ -93,6 +93,7 @@ export function AIGenerateModal({
           </div>
           <button
             onClick={onClose}
+            aria-label="Close"
             className="p-1 rounded-md hover:bg-charcoal/5 text-charcoal/40 hover:text-charcoal transition-colors"
           >
             <X className="w-5 h-5" />

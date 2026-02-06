@@ -213,7 +213,7 @@ export default function PageView() {
       )}
 
       {/* Empty page AI prompt */}
-      {!isGenerating && !isComplete && page.title === "Untitled" && (
+      {!isGenerating && !isComplete && (page.title === "Untitled" || page.title === "New Page") && (
         <div className="px-24 pb-2">
           <button
             onClick={() => window.dispatchEvent(new CustomEvent('ai:generate-page'))}
