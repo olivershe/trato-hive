@@ -1,7 +1,7 @@
 /**
  * Page Generation Router
  *
- * [TASK-145] tRPC router for AI page generation.
+ * [TASK-136] tRPC router for AI page generation.
  * Start/poll/cancel async generation jobs.
  */
 import { z } from 'zod';
@@ -49,6 +49,10 @@ const pollProgressSchema = z.object({
 
 const cancelGenerationSchema = z.object({
   generationId: z.string(),
+});
+
+const cleanupDatabasesSchema = z.object({
+  databaseIds: z.array(z.string()),
 });
 
 // =============================================================================
@@ -120,5 +124,15 @@ export const pageGenerationRouter = router({
     .mutation(async ({ ctx, input }) => {
       const service = getService(ctx.db);
       return service.cancelGeneration(input.generationId);
+    }),
+
+  /**
+   * Clean up orphaned databases created during a discarded generation.
+   */
+  cleanupDatabases: organizationProtectedProcedure
+    .input(cleanupDatabasesSchema)
+    .mutation(async ({ ctx, input }) => {
+      const service = getService(ctx.db);
+      return service.cleanupDatabases(input.databaseIds, ctx.organizationId);
     }),
 });

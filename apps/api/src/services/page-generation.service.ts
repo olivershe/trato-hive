@@ -1,10 +1,11 @@
 /**
  * Page Generation Service
  *
- * [TASK-144] Orchestrates between GeneratorAgent and database creation.
+ * [TASK-136] Orchestrates between GeneratorAgent and database creation.
  * Uses in-memory state for generation progress (polling-based streaming).
  */
 import type { PrismaClient } from '@trato-hive/db';
+import { TRPCError } from '@trpc/server';
 import type {
   PageGenerationRequest,
   GeneratedBlock,
@@ -12,8 +13,8 @@ import type {
 } from '@trato-hive/ai-core';
 import type { PageGenerationEvent } from '@trato-hive/ai-core';
 import {
-  type GeneratorAgentDependencies,
-  GeneratorAgent,
+  type PageGenerationAgentDependencies,
+  PageGenerationAgent,
 } from '@trato-hive/agents';
 import { createDatabaseFromGeneration } from '@trato-hive/agents';
 import { createId } from '@paralleldrive/cuid2';
@@ -41,11 +42,14 @@ const GENERATION_TTL_MS = 10 * 60 * 1000;
 export class PageGenerationService {
   private generations = new Map<string, GenerationState>();
   private readonly db: PrismaClient;
-  private readonly agentDeps: GeneratorAgentDependencies;
+  private readonly agentDeps: PageGenerationAgentDependencies;
+  private cleanupInterval: ReturnType<typeof setInterval>;
 
-  constructor(db: PrismaClient, agentDeps: GeneratorAgentDependencies) {
+  constructor(db: PrismaClient, agentDeps: PageGenerationAgentDependencies) {
     this.db = db;
     this.agentDeps = agentDeps;
+    // Periodic cleanup every 5 minutes to prevent memory leaks
+    this.cleanupInterval = setInterval(() => this.cleanupStale(), 5 * 60 * 1000);
   }
 
   /**
@@ -56,6 +60,27 @@ export class PageGenerationService {
     input: PageGenerationRequest,
     template?: GenerationTemplate
   ): Promise<{ generationId: string }> {
+    // Validate page belongs to organization
+    const page = await this.db.page.findUnique({
+      where: { id: input.pageId },
+      include: { deal: { select: { organizationId: true } } },
+    });
+    if (!page) {
+      throw new TRPCError({ code: 'NOT_FOUND', message: 'Page not found' });
+    }
+    const pageOrgId = page.deal?.organizationId ?? page.organizationId;
+    if (pageOrgId !== input.organizationId) {
+      throw new TRPCError({ code: 'NOT_FOUND', message: 'Page not found' });
+    }
+
+    // Validate deal if provided
+    if (input.dealId) {
+      const deal = await this.db.deal.findUnique({ where: { id: input.dealId } });
+      if (!deal || deal.organizationId !== input.organizationId) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Deal not found' });
+      }
+    }
+
     const generationId = createId();
 
     // Initialize state
@@ -131,6 +156,31 @@ export class PageGenerationService {
     return { success: true };
   }
 
+  /**
+   * Clean up orphaned databases from a discarded generation.
+   * Deletes pages (which cascade to Database and DatabaseEntry via relations).
+   */
+  async cleanupDatabases(databaseIds: string[], organizationId: string): Promise<{ deleted: number }> {
+    if (databaseIds.length === 0) return { deleted: 0 };
+
+    // Find databases owned by this organization
+    const databases = await this.db.database.findMany({
+      where: { id: { in: databaseIds }, organizationId },
+      select: { id: true, pageId: true },
+    });
+
+    const pageIds = databases.map((d) => d.pageId);
+
+    // Delete pages (cascades to Database and DatabaseEntry via relations)
+    if (pageIds.length > 0) {
+      await this.db.page.deleteMany({
+        where: { id: { in: pageIds } },
+      });
+    }
+
+    return { deleted: databases.length };
+  }
+
   // ===========================================================================
   // Private Methods
   // ===========================================================================
@@ -143,7 +193,7 @@ export class PageGenerationService {
     const state = this.generations.get(generationId);
     if (!state) return;
 
-    const agent = new GeneratorAgent({
+    const agent = new PageGenerationAgent({
       ...this.agentDeps,
       db: this.db,
     });

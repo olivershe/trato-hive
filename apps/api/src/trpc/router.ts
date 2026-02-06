@@ -14,6 +14,7 @@
  * - generator - Document export (PPTX/DOCX)
  * - sourcing - Company search and discovery
  * - agent - Custom AI agents [TASK-128]
+ * - pageGeneration - AI page generation [TASK-136]
  *
  * @see apps/api/CLAUDE.md for router patterns
  */
@@ -66,7 +67,7 @@ export const appRouter = router({
   alerts: alertsRouter,
   coworker: coworkerRouter, // Phase 12: Hive Copilot AI co-worker
   agent: agentRouter, // Custom AI agents [TASK-128]
-  pageGeneration: pageGenerationRouter, // AI page generation [TASK-145]
+  pageGeneration: pageGenerationRouter, // AI page generation [TASK-136]
 });
 
 /**

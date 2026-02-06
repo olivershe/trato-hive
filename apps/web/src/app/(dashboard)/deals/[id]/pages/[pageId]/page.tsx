@@ -11,6 +11,7 @@ import { DealPropertiesInlineDatabase } from "@/components/deals/DealPropertiesI
 import { AIGenerateModal } from "@/components/editor/AIGenerateModal";
 import { AIGenerationToolbar } from "@/components/editor/AIGenerationToolbar";
 import { useAIPageGeneration } from "@/hooks/useAIPageGeneration";
+import { useAIGenerateModal } from "@/hooks/useAIGenerateModal";
 
 // Dynamic import to avoid SSR issues with Tiptap/Liveblocks
 const BlockEditor = dynamic(
@@ -145,7 +146,7 @@ export default function PageView() {
   const params = useParams();
   const dealId = params.id as string;
   const pageId = params.pageId as string;
-  const [showGenerateModal, setShowGenerateModal] = useState(false);
+  const { isOpen: showGenerateModal, close: closeGenerateModal } = useAIGenerateModal();
 
   const {
     startGeneration,
@@ -157,13 +158,6 @@ export default function PageView() {
     discard,
     regenerate,
   } = useAIPageGeneration();
-
-  // Listen for the ai:generate-page event from slash command
-  useEffect(() => {
-    const handler = () => setShowGenerateModal(true);
-    window.addEventListener("ai:generate-page", handler);
-    return () => window.removeEventListener("ai:generate-page", handler);
-  }, []);
 
   const handleGenerate = useCallback(
     (params: { prompt: string; template?: GenerationTemplate; enableWebSearch?: boolean }) => {
@@ -222,7 +216,7 @@ export default function PageView() {
       {!isGenerating && !isComplete && page.title === "Untitled" && (
         <div className="px-24 pb-2">
           <button
-            onClick={() => setShowGenerateModal(true)}
+            onClick={() => window.dispatchEvent(new CustomEvent('ai:generate-page'))}
             className="flex items-center gap-2 text-sm text-charcoal/40 hover:text-orange transition-colors group"
           >
             <Sparkles className="w-4 h-4 group-hover:text-orange" />
@@ -248,7 +242,7 @@ export default function PageView() {
       {/* AI Generate Modal */}
       <AIGenerateModal
         isOpen={showGenerateModal}
-        onClose={() => setShowGenerateModal(false)}
+        onClose={closeGenerateModal}
         onGenerate={handleGenerate}
         dealId={dealId}
       />

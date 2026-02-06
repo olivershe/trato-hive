@@ -37,7 +37,7 @@ import type { PageGenerationEvent } from '@trato-hive/ai-core';
 // Configuration
 // =============================================================================
 
-export const generatorAgentConfigSchema = z.object({
+export const pageGenerationAgentConfigSchema = z.object({
   topK: z.number().default(15),
   minScore: z.number().default(0.4),
   maxTokensOutline: z.number().default(1000),
@@ -47,9 +47,9 @@ export const generatorAgentConfigSchema = z.object({
   maxFacts: z.number().default(30),
 });
 
-export type GeneratorAgentConfig = z.infer<typeof generatorAgentConfigSchema>;
+export type PageGenerationAgentConfig = z.infer<typeof pageGenerationAgentConfigSchema>;
 
-export interface GeneratorAgentDependencies {
+export interface PageGenerationAgentDependencies {
   vectorStore: VectorStore;
   embeddings: EmbeddingService;
   llmClient: LLMClient;
@@ -75,17 +75,17 @@ const outlineSchema = z.object({
 // Generator Agent
 // =============================================================================
 
-export class GeneratorAgent {
-  private readonly config: GeneratorAgentConfig;
-  private readonly deps: GeneratorAgentDependencies;
+export class PageGenerationAgent {
+  private readonly config: PageGenerationAgentConfig;
+  private readonly deps: PageGenerationAgentDependencies;
   private readonly ragService: RAGService;
 
   constructor(
-    deps: GeneratorAgentDependencies,
-    config: Partial<GeneratorAgentConfig> = {}
+    deps: PageGenerationAgentDependencies,
+    config: Partial<PageGenerationAgentConfig> = {}
   ) {
     this.deps = deps;
-    this.config = generatorAgentConfigSchema.parse(config);
+    this.config = pageGenerationAgentConfigSchema.parse(config);
     this.ragService = new RAGService();
   }
 
@@ -241,7 +241,7 @@ export class GeneratorAgent {
       this.deps.db &&
       request.context?.companyId
     ) {
-      facts = await this.retrieveFacts(request.context.companyId);
+      facts = await this.retrieveFacts(request.context.companyId, request.organizationId);
     }
 
     // Build context text
@@ -337,11 +337,11 @@ export class GeneratorAgent {
     }));
   }
 
-  private async retrieveFacts(companyId: string): Promise<FactRecord[]> {
+  private async retrieveFacts(companyId: string, organizationId: string): Promise<FactRecord[]> {
     if (!this.deps.db) return [];
 
     const facts = await this.deps.db.fact.findMany({
-      where: { companyId },
+      where: { companyId, company: { organizationId } },
       include: { document: { select: { name: true } } },
       orderBy: { confidence: 'desc' },
       take: this.config.maxFacts,
@@ -401,9 +401,22 @@ export class GeneratorAgent {
 // Factory
 // =============================================================================
 
-export function createGeneratorAgent(
-  deps: GeneratorAgentDependencies,
-  config?: Partial<GeneratorAgentConfig>
-): GeneratorAgent {
-  return new GeneratorAgent(deps, config);
+export function createPageGenerationAgent(
+  deps: PageGenerationAgentDependencies,
+  config?: Partial<PageGenerationAgentConfig>
+): PageGenerationAgent {
+  return new PageGenerationAgent(deps, config);
 }
+
+// =============================================================================
+// Backward-Compat Re-exports
+// =============================================================================
+
+/** @deprecated Use PageGenerationAgent */
+export const GeneratorAgent = PageGenerationAgent;
+/** @deprecated Use createPageGenerationAgent */
+export const createGeneratorAgent = createPageGenerationAgent;
+/** @deprecated Use PageGenerationAgentDependencies */
+export type GeneratorAgentDependencies = PageGenerationAgentDependencies;
+/** @deprecated Use PageGenerationAgentConfig */
+export type GeneratorAgentConfig = PageGenerationAgentConfig;
