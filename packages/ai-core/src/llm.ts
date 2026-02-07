@@ -13,6 +13,9 @@ import {
   type LLMConfig,
   type LLMResponse,
   type LLMGenerateOptions,
+  type LLMStreamOptions,
+  type LLMStreamChunk,
+  type LLMStreamResult,
   type LLMToolGenerateOptions,
   type LLMToolResponse,
   type TokenUsage,
@@ -81,6 +84,104 @@ export class LLMClient {
         }
 
         // Calculate delay with exponential backoff
+        const delay = Math.min(
+          this.retryConfig.initialDelayMs * Math.pow(this.retryConfig.backoffMultiplier, attempt),
+          this.retryConfig.maxDelayMs
+        );
+
+        await this.sleep(delay);
+      }
+    }
+
+    throw new LLMError(
+      `Failed after ${maxRetries + 1} attempts: ${lastError?.message}`,
+      'UNKNOWN',
+      this.config.provider,
+      false,
+      lastError
+    );
+  }
+
+  /**
+   * Stream completion with retry logic, yielding text chunks as they arrive.
+   * Returns a final LLMStreamResult with token usage after the generator completes.
+   *
+   * Usage:
+   *   const stream = llm.streamGenerate(prompt, options);
+   *   for await (const chunk of stream) { process(chunk.text); }
+   *   // After loop, stream.result contains token usage
+   */
+  async *streamGenerate(
+    prompt: string,
+    options: LLMStreamOptions = {}
+  ): AsyncGenerator<LLMStreamChunk, LLMStreamResult> {
+    if (this.config.provider !== 'claude') {
+      throw new LLMError(
+        'Streaming is only supported with Claude provider',
+        'INVALID_REQUEST',
+        this.config.provider
+      );
+    }
+
+    if (!this.claude) {
+      throw new LLMError('Claude client not initialized', 'INVALID_REQUEST', 'claude');
+    }
+
+    const maxRetries = options.maxRetries ?? this.retryConfig.maxRetries;
+    let lastError: Error | undefined;
+
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        const model = this.config.model || 'claude-sonnet-4-5-20250929';
+        const tokensUsed: TokenUsage = { prompt: 0, completion: 0, total: 0 };
+
+        const stream = this.claude.messages.stream({
+          model,
+          max_tokens: options.maxTokens || 4096,
+          temperature: options.temperature,
+          system: options.systemPrompt,
+          messages: [{ role: 'user', content: prompt }],
+        });
+
+        // Handle abort signal
+        if (options.abortSignal) {
+          options.abortSignal.addEventListener('abort', () => {
+            stream.abort();
+          }, { once: true });
+        }
+
+        for await (const event of stream) {
+          // Check abort between events
+          if (options.abortSignal?.aborted) break;
+
+          if (event.type === 'message_start' && event.message.usage) {
+            tokensUsed.prompt = event.message.usage.input_tokens;
+          }
+
+          if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
+            yield { text: event.delta.text };
+          }
+
+          if (event.type === 'message_delta' && event.usage) {
+            tokensUsed.completion = event.usage.output_tokens;
+          }
+        }
+
+        tokensUsed.total = tokensUsed.prompt + tokensUsed.completion;
+        return { tokensUsed };
+      } catch (error) {
+        // Don't retry if aborted
+        if (options.abortSignal?.aborted) {
+          return { tokensUsed: { prompt: 0, completion: 0, total: 0 } };
+        }
+
+        lastError = error as Error;
+        const llmError = this.classifyError(error as Error);
+
+        if (!llmError.retryable || attempt === maxRetries) {
+          throw llmError;
+        }
+
         const delay = Math.min(
           this.retryConfig.initialDelayMs * Math.pow(this.retryConfig.backoffMultiplier, attempt),
           this.retryConfig.maxDelayMs

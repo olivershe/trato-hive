@@ -112,6 +112,16 @@ const renderItems = () => {
 export const suggestionItems = [
     // Intelligent Blocks (Top Priority)
     {
+        title: "Generate with AI",
+        description: "Generate a full structured page with AI",
+        searchTerms: ["ai", "generate", "page", "report", "create", "write"],
+        icon: <Sparkles size={18} className="text-orange" />,
+        command: ({ editor, range }: any) => {
+            editor.chain().focus().deleteRange(range).run();
+            window.dispatchEvent(new CustomEvent("ai:generate-page"));
+        },
+    },
+    {
         title: "Ask AI",
         description: "Ask questions about your deal documents",
         searchTerms: ["ai", "query", "question", "ask", "search", "diligence"],

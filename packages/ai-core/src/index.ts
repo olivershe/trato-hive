@@ -19,3 +19,6 @@ export * from './streaming';
 
 // Document tagging
 export * from './document-tagger';
+
+// Page generation
+export * from './page-generation';

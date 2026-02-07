@@ -1,12 +1,17 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { api } from "@/trpc/react";
-import { Loader2, ChevronRight, Link2 } from "lucide-react";
+import { Loader2, ChevronRight, Link2, Sparkles } from "lucide-react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
+import type { GenerationTemplate } from "@trato-hive/ai-core";
 import { DealPropertiesInlineDatabase } from "@/components/deals/DealPropertiesInlineDatabase";
+import { AIGenerateModal } from "@/components/editor/AIGenerateModal";
+import { AIGenerationToolbar } from "@/components/editor/AIGenerationToolbar";
+import { useAIPageGeneration } from "@/hooks/useAIPageGeneration";
+import { useAIGenerateModal } from "@/hooks/useAIGenerateModal";
 
 // Dynamic import to avoid SSR issues with Tiptap/Liveblocks
 const BlockEditor = dynamic(
@@ -141,6 +146,30 @@ export default function PageView() {
   const params = useParams();
   const dealId = params.id as string;
   const pageId = params.pageId as string;
+  const { isOpen: showGenerateModal, close: closeGenerateModal } = useAIGenerateModal();
+
+  const {
+    startGeneration,
+    isGenerating,
+    isComplete,
+    progress,
+    error: generationError,
+    accept,
+    discard,
+    regenerate,
+    databaseActivity,
+  } = useAIPageGeneration();
+
+  const handleGenerate = useCallback(
+    (params: { prompt: string; template?: GenerationTemplate; enableWebSearch?: boolean }) => {
+      startGeneration({
+        ...params,
+        dealId,
+        context: { dealId },
+      });
+    },
+    [startGeneration, dealId]
+  );
 
   // Fetch page with blocks
   const { data: page, isLoading, error } = api.page.get.useQuery({ id: pageId });
@@ -184,8 +213,41 @@ export default function PageView() {
         <DealPropertiesInlineDatabase dealId={page.dealId} />
       )}
 
+      {/* Empty page AI prompt */}
+      {!isGenerating && !isComplete && (page.title === "Untitled" || page.title === "New Page") && (
+        <div className="px-24 pb-2">
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent('ai:generate-page'))}
+            className="flex items-center gap-2 text-sm text-charcoal/40 hover:text-orange transition-colors group"
+          >
+            <Sparkles className="w-4 h-4 group-hover:text-orange" />
+            <span>Start writing, or generate with AI...</span>
+          </button>
+        </div>
+      )}
+
       {/* Block Editor - full width, no border */}
       <BlockEditor pageId={pageId} />
+
+      {/* AI Generation Toolbar */}
+      <AIGenerationToolbar
+        isGenerating={isGenerating}
+        isComplete={isComplete}
+        error={generationError}
+        progress={progress}
+        databaseActivity={databaseActivity}
+        onAccept={accept}
+        onDiscard={discard}
+        onRegenerate={regenerate}
+      />
+
+      {/* AI Generate Modal */}
+      <AIGenerateModal
+        isOpen={showGenerateModal}
+        onClose={closeGenerateModal}
+        onGenerate={handleGenerate}
+        dealId={dealId}
+      />
     </div>
   );
 }

@@ -12,6 +12,7 @@ const BLOCK_REGISTRY: Record<string, () => Promise<{ default: ComponentType<Copi
   'deal-summary-card': () => import('./DealSummaryCardBlock'),
   'deal-mutation-confirmation': () => import('./DealMutationConfirmationBlock'),
   'knowledge-results': () => import('./KnowledgeResultsBlock'),
+  'page-generation': () => import('./PageGenerationBlock'),
 };
 
 /**

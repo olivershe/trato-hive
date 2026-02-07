@@ -162,7 +162,7 @@ export class DiligenceAgent {
     // 4. Optionally retrieve facts from database
     let facts: FactRecord[] = [];
     if (this.config.includeFacts && this.deps.db && query.companyId) {
-      facts = await this.retrieveFacts(query.companyId);
+      facts = await this.retrieveFacts(query.companyId, query.organizationId);
     }
 
     // 5. Build RAG context
@@ -387,13 +387,13 @@ Answer the follow-up question using the same document context.`;
   /**
    * Retrieve facts for a company from database
    */
-  private async retrieveFacts(companyId: string): Promise<FactRecord[]> {
+  private async retrieveFacts(companyId: string, organizationId: string): Promise<FactRecord[]> {
     if (!this.deps.db) {
       return [];
     }
 
     const facts = await this.deps.db.fact.findMany({
-      where: { companyId },
+      where: { companyId, company: { organizationId } },
       include: {
         document: {
           select: { name: true },

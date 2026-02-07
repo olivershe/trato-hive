@@ -178,7 +178,7 @@ describe('DiligenceAgent', () => {
 
       expect(deps.db!.fact.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: { companyId: 'company-123' },
+          where: { companyId: 'company-123', company: { organizationId: 'org-123' } },
         })
       );
       expect(result.metadata.factsRetrieved).toBe(1);
