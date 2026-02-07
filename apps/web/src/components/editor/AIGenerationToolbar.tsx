@@ -1,6 +1,6 @@
 'use client';
 
-import { Check, X, RefreshCw, Loader2 } from 'lucide-react';
+import { Check, X, RefreshCw, Loader2, Database } from 'lucide-react';
 
 interface AIGenerationToolbarProps {
   isGenerating: boolean;
@@ -12,6 +12,7 @@ interface AIGenerationToolbarProps {
     blocksInserted: number;
     databasesCreated: number;
   } | null;
+  databaseActivity?: string | null;
   onAccept: () => void;
   onDiscard: () => void;
   onRegenerate: () => void;
@@ -22,6 +23,7 @@ export function AIGenerationToolbar({
   isComplete,
   error,
   progress,
+  databaseActivity,
   onAccept,
   onDiscard,
   onRegenerate,
@@ -47,6 +49,14 @@ export function AIGenerationToolbar({
                 <span>{progress.databasesCreated} databases</span>
               </>
             )}
+          </div>
+        )}
+
+        {/* Database activity indicator */}
+        {isGenerating && databaseActivity && (
+          <div className="flex items-center gap-1.5 text-sm text-orange animate-pulse">
+            <Database className="w-3.5 h-3.5" />
+            <span>Creating &apos;{databaseActivity}&apos;...</span>
           </div>
         )}
 

@@ -9,6 +9,7 @@ import {
   type GeneratedBlockType,
   type GenerationTemplate,
 } from '@trato-hive/ai-core';
+import { useStreamingTextInsertion } from './useStreamingTextInsertion';
 
 // =============================================================================
 // Types
@@ -41,6 +42,7 @@ interface UseAIPageGenerationReturn {
   regenerate: () => void;
   error: string | null;
   isComplete: boolean;
+  databaseActivity: string | null;
 }
 
 // =============================================================================
@@ -55,6 +57,9 @@ export function useAIPageGeneration(): UseAIPageGenerationReturn {
   const [progress, setProgress] = useState<GenerationProgress | null>(null);
   const [generationId, setGenerationId] = useState<string | null>(null);
 
+  const [databaseActivity, setDatabaseActivity] = useState<string | null>(null);
+  const databaseActivityTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const lastParamsRef = useRef<Parameters<UseAIPageGenerationReturn['startGeneration']>[0] | null>(null);
   const databaseIdMapRef = useRef<Record<number, string>>({});
   const allBlocksRef = useRef<GeneratedBlock[]>([]);
@@ -67,6 +72,11 @@ export function useAIPageGeneration(): UseAIPageGenerationReturn {
   const generationIdRef = useRef<string | null>(null);
   const isGeneratingRef = useRef(false);
 
+  // Streaming text insertion hook — use ref to avoid triggering useEffect re-runs
+  const streamInsertion = useStreamingTextInsertion(editor);
+  const streamInsertionRef = useRef(streamInsertion);
+  streamInsertionRef.current = streamInsertion;
+
   // Sync refs from state
   useEffect(() => { generationIdRef.current = generationId; }, [generationId]);
   useEffect(() => { isGeneratingRef.current = isGenerating; }, [isGenerating]);
@@ -78,11 +88,12 @@ export function useAIPageGeneration(): UseAIPageGenerationReturn {
   // Poll for progress using tRPC useQuery with refetchInterval.
   // The server tracks lastPolledIndex, so each response contains
   // only events we haven't seen yet.
+  // Reduced to 150ms for smooth streaming (TASK-136).
   const pollQuery = api.pageGeneration.pollProgress.useQuery(
     { generationId: generationId ?? '' },
     {
       enabled: !!generationId && isGenerating,
-      refetchInterval: 500,
+      refetchInterval: 150,
       refetchIntervalInBackground: false,
       // Don't cache — we always want fresh poll results
       gcTime: 0,
@@ -90,7 +101,9 @@ export function useAIPageGeneration(): UseAIPageGenerationReturn {
     }
   );
 
-  // Process new events whenever poll data arrives
+  // Process new events whenever poll data arrives.
+  // Progress deltas are accumulated locally and flushed in a single
+  // setProgress() call to avoid the React max-update-depth error.
   useEffect(() => {
     const data = pollQuery.data;
     if (!data || !editor) return;
@@ -100,15 +113,21 @@ export function useAIPageGeneration(): UseAIPageGenerationReturn {
     // Merge database ID map
     Object.assign(databaseIdMapRef.current, databaseIdMap);
 
+    // Accumulators — one setProgress() call after both loops
+    let newBlocksInserted = 0;
+    let newDbsCreated = 0;
+    let outlineEvent: { sections: { title: string; blockTypes: GeneratedBlockType[] }[] } | null = null;
+    let latestSectionIndex: number | null = null;
+
     // Pass 1: Process database_created events first to populate databaseIdMapRef (#4)
+    let latestDbName: string | null = null;
     for (const event of events) {
       if (event.type === 'database_created') {
-        const dbEvent = event as { type: 'database_created'; databaseId: string; blockIndex: number };
+        const dbEvent = event as { type: 'database_created'; databaseId: string; name: string; blockIndex: number };
         databaseIdMapRef.current[dbEvent.blockIndex] = dbEvent.databaseId;
         createdDatabaseIdsRef.current.push(dbEvent.databaseId);
-        setProgress((prev) =>
-          prev ? { ...prev, databasesCreated: prev.databasesCreated + 1 } : prev
-        );
+        latestDbName = dbEvent.name;
+        newDbsCreated++;
       }
     }
 
@@ -119,21 +138,36 @@ export function useAIPageGeneration(): UseAIPageGenerationReturn {
 
       switch (event.type) {
         case 'outline':
-          setProgress({
-            sections: (event as { type: 'outline'; sections: { title: string; blockTypes: GeneratedBlockType[] }[] }).sections,
-            currentSection: 0,
-            totalSections: (event as { type: 'outline'; sections: { title: string; blockTypes: GeneratedBlockType[] }[] }).sections.length,
-            blocksInserted: 0,
-            databasesCreated: 0,
-          });
+          outlineEvent = event as { type: 'outline'; sections: { title: string; blockTypes: GeneratedBlockType[] }[] };
           break;
 
         case 'section_start':
-          setProgress((prev) =>
-            prev ? { ...prev, currentSection: (event as { type: 'section_start'; index: number }).index } : prev
-          );
+          latestSectionIndex = (event as { type: 'section_start'; index: number }).index;
           break;
 
+        // --- Token-level streaming events (TASK-136) ---
+        case 'block_start': {
+          const bsEvent = event as { type: 'block_start'; blockType: GeneratedBlockType; attrs?: { level?: number } };
+          streamInsertionRef.current.startBlock(bsEvent.blockType, bsEvent.attrs);
+          break;
+        }
+
+        case 'content_delta': {
+          const cdEvent = event as { type: 'content_delta'; text: string };
+          streamInsertionRef.current.appendText(cdEvent.text);
+          break;
+        }
+
+        case 'block_end': {
+          const beEvent = event as { type: 'block_end'; block: GeneratedBlock; blockIndex: number };
+          const dbId = databaseIdMapRef.current[beEvent.blockIndex];
+          streamInsertionRef.current.finalizeBlock(beEvent.block, dbId);
+          allBlocksRef.current.push(beEvent.block);
+          newBlocksInserted++;
+          break;
+        }
+
+        // --- Complete block events (database blocks, non-streamable) ---
         case 'block': {
           const blockEvent = event as { type: 'block'; block: GeneratedBlock; sectionIndex: number };
           allBlocksRef.current.push(blockEvent.block);
@@ -147,9 +181,7 @@ export function useAIPageGeneration(): UseAIPageGenerationReturn {
             insertCountRef.current++;
           }
 
-          setProgress((prev) =>
-            prev ? { ...prev, blocksInserted: prev.blocksInserted + 1 } : prev
-          );
+          newBlocksInserted++;
           break;
         }
 
@@ -160,6 +192,7 @@ export function useAIPageGeneration(): UseAIPageGenerationReturn {
           setIsGenerating(false);
           setIsComplete(true);
           setGenerationId(null);
+          setDatabaseActivity(null);
           break;
 
         case 'error':
@@ -167,8 +200,50 @@ export function useAIPageGeneration(): UseAIPageGenerationReturn {
           setIsGenerating(false);
           setIsComplete(true);
           setGenerationId(null);
+          setDatabaseActivity(null);
           break;
       }
+    }
+
+    // Single batched progress update for the entire poll response
+    if (outlineEvent || latestSectionIndex !== null || newBlocksInserted > 0 || newDbsCreated > 0) {
+      setProgress((prev) => {
+        // If we got an outline event, initialize progress from scratch
+        if (outlineEvent) {
+          const base: GenerationProgress = {
+            sections: outlineEvent.sections,
+            currentSection: 0,
+            totalSections: outlineEvent.sections.length,
+            blocksInserted: newBlocksInserted,
+            databasesCreated: newDbsCreated,
+          };
+          if (latestSectionIndex !== null) {
+            base.currentSection = latestSectionIndex;
+          }
+          return base;
+        }
+
+        // Otherwise merge deltas into existing progress
+        if (!prev) return prev;
+        return {
+          ...prev,
+          blocksInserted: prev.blocksInserted + newBlocksInserted,
+          databasesCreated: prev.databasesCreated + newDbsCreated,
+          ...(latestSectionIndex !== null ? { currentSection: latestSectionIndex } : {}),
+        };
+      });
+    }
+
+    // Show database activity indicator with auto-clear
+    if (latestDbName) {
+      if (databaseActivityTimerRef.current) {
+        clearTimeout(databaseActivityTimerRef.current);
+      }
+      setDatabaseActivity(latestDbName);
+      databaseActivityTimerRef.current = setTimeout(() => {
+        setDatabaseActivity(null);
+        databaseActivityTimerRef.current = null;
+      }, 2500);
     }
 
     // Also stop polling if the server says generation is complete
@@ -177,6 +252,7 @@ export function useAIPageGeneration(): UseAIPageGenerationReturn {
       setIsComplete(true);
       setGenerationId(null);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pollQuery.data, editor, isGenerating]);
 
   const startGeneration: UseAIPageGenerationReturn['startGeneration'] =
@@ -189,11 +265,17 @@ export function useAIPageGeneration(): UseAIPageGenerationReturn {
         setIsComplete(false);
         setError(null);
         setProgress(null);
+        setDatabaseActivity(null);
+        if (databaseActivityTimerRef.current) {
+          clearTimeout(databaseActivityTimerRef.current);
+          databaseActivityTimerRef.current = null;
+        }
         allBlocksRef.current = [];
         databaseIdMapRef.current = {};
         processedEventsRef.current = 0;
         insertCountRef.current = 0;
         createdDatabaseIdsRef.current = [];
+        streamInsertionRef.current.reset();
         lastParamsRef.current = params;
 
         startMutation.mutate(
@@ -226,7 +308,13 @@ export function useAIPageGeneration(): UseAIPageGenerationReturn {
     setProgress(null);
     setError(null);
     setGenerationId(null);
+    setDatabaseActivity(null);
+    if (databaseActivityTimerRef.current) {
+      clearTimeout(databaseActivityTimerRef.current);
+      databaseActivityTimerRef.current = null;
+    }
     createdDatabaseIdsRef.current = [];
+    streamInsertionRef.current.reset();
   }, []);
 
   const discard = useCallback(() => {
@@ -243,9 +331,10 @@ export function useAIPageGeneration(): UseAIPageGenerationReturn {
       createdDatabaseIdsRef.current = [];
     }
 
-    // Undo all changes using actual insert count (#6)
-    const undoCount = insertCountRef.current;
-    for (let i = 0; i < undoCount; i++) {
+    // Undo all changes: streaming inserts + direct inserts
+    const streamingCount = streamInsertionRef.current.reset();
+    const totalUndoCount = insertCountRef.current + streamingCount;
+    for (let i = 0; i < totalUndoCount; i++) {
       editor.commands.undo();
     }
     insertCountRef.current = 0;
@@ -256,6 +345,11 @@ export function useAIPageGeneration(): UseAIPageGenerationReturn {
     setProgress(null);
     setError(null);
     setGenerationId(null);
+    setDatabaseActivity(null);
+    if (databaseActivityTimerRef.current) {
+      clearTimeout(databaseActivityTimerRef.current);
+      databaseActivityTimerRef.current = null;
+    }
     allBlocksRef.current = [];
   }, [editor, generationId, isGenerating, cancelMutation, cleanupMutation]);
 
@@ -279,6 +373,9 @@ export function useAIPageGeneration(): UseAIPageGenerationReturn {
       if (createdDatabaseIdsRef.current.length > 0) {
         cleanupMutation.mutate({ databaseIds: createdDatabaseIdsRef.current });
       }
+      if (databaseActivityTimerRef.current) {
+        clearTimeout(databaseActivityTimerRef.current);
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -292,5 +389,6 @@ export function useAIPageGeneration(): UseAIPageGenerationReturn {
     regenerate,
     error,
     isComplete,
+    databaseActivity,
   };
 }

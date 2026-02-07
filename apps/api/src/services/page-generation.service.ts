@@ -30,6 +30,7 @@ interface GenerationState {
   isComplete: boolean;
   lastPolledIndex: number;
   createdAt: number;
+  abortController: AbortController;
 }
 
 // TTL for completed generations (10 minutes)
@@ -91,6 +92,7 @@ export class PageGenerationService {
       isComplete: false,
       lastPolledIndex: 0,
       createdAt: Date.now(),
+      abortController: new AbortController(),
     });
 
     // Run generation in background (don't await)
@@ -148,6 +150,7 @@ export class PageGenerationService {
     if (!state) {
       return { success: false };
     }
+    state.abortController.abort();
     state.isComplete = true;
     state.events.push({
       type: 'error',
@@ -196,6 +199,7 @@ export class PageGenerationService {
     const agent = new PageGenerationAgent({
       ...this.agentDeps,
       db: this.db,
+      abortSignal: state.abortController.signal,
     });
 
     let globalBlockIndex = 0;
@@ -204,7 +208,7 @@ export class PageGenerationService {
       // Check if cancelled
       if (state.isComplete) break;
 
-      // Track blocks for database creation
+      // Track complete blocks for database creation
       if (event.type === 'block') {
         state.blocks.push(event.block);
 
@@ -223,7 +227,6 @@ export class PageGenerationService {
 
             state.databaseIdMap[globalBlockIndex] = result.databaseId;
 
-            // Emit a database_created event with real ID
             state.events.push({
               type: 'database_created',
               databaseId: result.databaseId,
@@ -241,9 +244,15 @@ export class PageGenerationService {
         globalBlockIndex++;
       }
 
-      // Skip the placeholder database_created events from the agent
+      // Track block_end events for block index counting
+      if (event.type === 'block_end') {
+        globalBlockIndex++;
+      }
+
+      // Skip placeholder database_created events from the agent
       if (event.type === 'database_created') continue;
 
+      // Pass through all events (including block_start, content_delta, block_end)
       state.events.push(event);
 
       if (event.type === 'complete' || event.type === 'error') {

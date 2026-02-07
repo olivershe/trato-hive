@@ -19,6 +19,7 @@ import type {
 } from '@trato-hive/semantic-layer';
 import {
   type LLMClient,
+  type LLMStreamOptions,
   RAGService,
   type RetrievedChunk,
   type FactRecord,
@@ -27,6 +28,7 @@ import {
   type PageOutline,
   type OutlineSection,
   type GenerationTemplate,
+  IncrementalBlockStreamer,
   PAGE_GENERATION_SYSTEM_PROMPT,
   buildOutlinePrompt,
   buildSectionPrompt,
@@ -54,6 +56,7 @@ export interface PageGenerationAgentDependencies {
   embeddings: EmbeddingService;
   llmClient: LLMClient;
   db?: PrismaClient;
+  abortSignal?: AbortSignal;
 }
 
 // =============================================================================
@@ -134,7 +137,7 @@ export class PageGenerationAgent {
         })),
       };
 
-      // 4. Expand each section
+      // 4. Expand each section with token-level streaming
       let globalBlockIndex = 0;
 
       for (let i = 0; i < outline.sections.length; i++) {
@@ -143,35 +146,34 @@ export class PageGenerationAgent {
         yield { type: 'section_start', index: i, title: section.title };
 
         try {
-          const blocks = await this.expandSection(
+          for await (const event of this.expandSectionStreaming(
             section,
             contextText,
-            i + 1 // citation start index offset
-          );
-          totalTokens += blocks.tokensUsed;
+            i + 1,
+            i,
+            globalBlockIndex
+          )) {
+            yield event;
 
-          for (const block of blocks.blocks) {
-            yield {
-              type: 'block',
-              block,
-              sectionIndex: i,
-            };
-
-            // Track database blocks for the service to create
-            if (block.type === 'database' && block.database) {
-              yield {
-                type: 'database_created',
-                databaseId: '', // placeholder — service fills this
-                name: block.database.name,
-                blockIndex: globalBlockIndex,
-              };
-              databaseBlockCount++;
+            // Track tokens from block_end events
+            if (event.type === 'block_end' || event.type === 'block') {
+              // Count database blocks
+              if (event.type === 'block') {
+                const blockEvent = event as { block: GeneratedBlock; sectionIndex: number };
+                if (blockEvent.block.type === 'database' && blockEvent.block.database) {
+                  yield {
+                    type: 'database_created',
+                    databaseId: '',
+                    name: blockEvent.block.database.name,
+                    blockIndex: globalBlockIndex,
+                  };
+                  databaseBlockCount++;
+                }
+              }
+              globalBlockIndex++;
             }
-
-            globalBlockIndex++;
           }
         } catch (error) {
-          // Emit error for this section but continue with others
           yield {
             type: 'block',
             block: {
@@ -255,14 +257,16 @@ export class PageGenerationAgent {
   }
 
   // ===========================================================================
-  // Section Expansion
+  // Streaming Section Expansion (TASK-136)
   // ===========================================================================
 
-  private async expandSection(
+  private async *expandSectionStreaming(
     section: OutlineSection,
     contextText: string,
-    citationStartIndex: number
-  ): Promise<{ blocks: GeneratedBlock[]; tokensUsed: number }> {
+    citationStartIndex: number,
+    sectionIndex: number,
+    startBlockIndex: number
+  ): AsyncGenerator<PageGenerationEvent> {
     const prompt = buildSectionPrompt(
       section.title,
       section.description,
@@ -271,48 +275,43 @@ export class PageGenerationAgent {
       citationStartIndex
     );
 
-    const response = await this.deps.llmClient.generate(prompt, {
+    const streamOptions: LLMStreamOptions = {
       systemPrompt: PAGE_GENERATION_SYSTEM_PROMPT,
       maxTokens: this.config.maxTokensSection,
       temperature: this.config.temperature,
-    });
+      abortSignal: this.deps.abortSignal,
+    };
 
-    // Parse the JSON array from the response
-    const jsonMatch = response.content.match(/\[[\s\S]*\]/);
-    if (!jsonMatch) {
-      return {
-        blocks: [
-          {
-            type: 'heading',
-            level: 2,
-            content: section.title,
-          },
-          {
-            type: 'paragraph',
-            content: response.content,
-          },
-        ],
-        tokensUsed: response.tokensUsed.total,
-      };
+    const streamer = new IncrementalBlockStreamer(sectionIndex, startBlockIndex);
+    let hasYieldedAny = false;
+
+    const stream = this.deps.llmClient.streamGenerate(prompt, streamOptions);
+
+    for await (const chunk of stream) {
+      streamer.feed(chunk.text);
+      for (const event of streamer.flush()) {
+        hasYieldedAny = true;
+        yield event;
+      }
     }
 
-    try {
-      const blocks = JSON.parse(jsonMatch[0]) as GeneratedBlock[];
-      return { blocks, tokensUsed: response.tokensUsed.total };
-    } catch {
-      return {
-        blocks: [
-          {
-            type: 'heading',
-            level: 2,
-            content: section.title,
-          },
-          {
-            type: 'paragraph',
-            content: response.content,
-          },
-        ],
-        tokensUsed: response.tokensUsed.total,
+    // Flush any remaining events
+    for (const event of streamer.flush()) {
+      hasYieldedAny = true;
+      yield event;
+    }
+
+    // Fallback: if the streamer produced nothing, emit heading + raw paragraph
+    if (!hasYieldedAny) {
+      yield {
+        type: 'block',
+        block: { type: 'heading', level: 2, content: section.title },
+        sectionIndex,
+      };
+      yield {
+        type: 'block',
+        block: { type: 'paragraph', content: 'Content could not be parsed from the response.' },
+        sectionIndex,
       };
     }
   }

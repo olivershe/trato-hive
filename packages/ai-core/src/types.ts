@@ -31,6 +31,18 @@ export interface LLMGenerateOptions {
   maxRetries?: number;
 }
 
+export interface LLMStreamOptions extends LLMGenerateOptions {
+  abortSignal?: AbortSignal;
+}
+
+export interface LLMStreamChunk {
+  text: string;
+}
+
+export interface LLMStreamResult {
+  tokensUsed: TokenUsage;
+}
+
 // =============================================================================
 // Error Types
 // =============================================================================

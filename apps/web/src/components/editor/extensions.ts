@@ -143,7 +143,7 @@ export const defaultExtensions: any[] = [
         },
         blockquote: {
             HTMLAttributes: {
-                class: "border-l-4 border-gold bg-alabaster p-4 italic",
+                class: "pl-4",
             },
         },
         codeBlock: {

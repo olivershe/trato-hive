@@ -157,6 +157,7 @@ export default function PageView() {
     accept,
     discard,
     regenerate,
+    databaseActivity,
   } = useAIPageGeneration();
 
   const handleGenerate = useCallback(
@@ -234,6 +235,7 @@ export default function PageView() {
         isComplete={isComplete}
         error={generationError}
         progress={progress}
+        databaseActivity={databaseActivity}
         onAccept={accept}
         onDiscard={discard}
         onRegenerate={regenerate}

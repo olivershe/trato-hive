@@ -196,6 +196,99 @@ describe('LLMClient', () => {
   });
 });
 
+describe('LLMClient.streamGenerate', () => {
+  it('should throw for non-Claude providers', async () => {
+    const client = new LLMClient({
+      provider: 'openai',
+      apiKey: 'test-key',
+    });
+
+    const stream = client.streamGenerate('Hello');
+    await expect(stream.next()).rejects.toThrow('Streaming is only supported with Claude provider');
+  });
+
+  it('should yield text chunks from streaming response', async () => {
+    // Create a mock stream that emits events
+    const mockEvents = [
+      { type: 'message_start', message: { usage: { input_tokens: 10 } } },
+      { type: 'content_block_delta', delta: { type: 'text_delta', text: 'Hello' } },
+      { type: 'content_block_delta', delta: { type: 'text_delta', text: ' world' } },
+      { type: 'message_delta', usage: { output_tokens: 5 } },
+    ];
+
+    const mockStream = {
+      [Symbol.asyncIterator]: async function* () {
+        for (const event of mockEvents) {
+          yield event;
+        }
+      },
+      abort: vi.fn(),
+    };
+
+    const client = new LLMClient({
+      provider: 'claude',
+      apiKey: 'test-key',
+    });
+
+    // Access internal claude client and mock stream method
+    const claudeClient = (client as unknown as { claude: { messages: { stream: ReturnType<typeof vi.fn> } } }).claude;
+    claudeClient.messages.stream = vi.fn().mockReturnValue(mockStream);
+
+    const chunks: string[] = [];
+    const stream = client.streamGenerate('test prompt');
+
+    let result;
+    for (;;) {
+      const next = await stream.next();
+      if (next.done) {
+        result = next.value;
+        break;
+      }
+      chunks.push(next.value.text);
+    }
+
+    expect(chunks).toEqual(['Hello', ' world']);
+    expect(result).toBeDefined();
+    expect(result!.tokensUsed.prompt).toBe(10);
+    expect(result!.tokensUsed.completion).toBe(5);
+    expect(result!.tokensUsed.total).toBe(15);
+  });
+
+  it('should handle AbortController cancellation', async () => {
+    const controller = new AbortController();
+
+    const mockStream = {
+      [Symbol.asyncIterator]: async function* () {
+        yield { type: 'message_start', message: { usage: { input_tokens: 5 } } };
+        yield { type: 'content_block_delta', delta: { type: 'text_delta', text: 'Hi' } };
+        // Abort before more events
+        controller.abort();
+        yield { type: 'content_block_delta', delta: { type: 'text_delta', text: ' more' } };
+      },
+      abort: vi.fn(),
+    };
+
+    const client = new LLMClient({
+      provider: 'claude',
+      apiKey: 'test-key',
+    });
+
+    const claudeClient = (client as unknown as { claude: { messages: { stream: ReturnType<typeof vi.fn> } } }).claude;
+    claudeClient.messages.stream = vi.fn().mockReturnValue(mockStream);
+
+    const chunks: string[] = [];
+    const stream = client.streamGenerate('test', { abortSignal: controller.signal });
+
+    for await (const chunk of stream) {
+      chunks.push(chunk.text);
+    }
+
+    // Should have yielded "Hi" before abort stopped iteration
+    expect(chunks).toContain('Hi');
+    expect(mockStream.abort).toHaveBeenCalled();
+  });
+});
+
 describe('Error Classification', () => {
   let client: LLMClient;
 

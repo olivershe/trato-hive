@@ -8,7 +8,7 @@
 
 /* When focused - subtle indicator */
 .ProseMirror > *.is-focused {
-  border-left-color: theme('colors.bone');
+  border-left-color: theme('colors.charcoal / 10%');
 }
 
 /* Dark mode - slightly more visible */

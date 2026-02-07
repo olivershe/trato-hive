@@ -7,5 +7,6 @@
  */
 export * from './types';
 export * from './block-mapper';
+export * from './block-streamer';
 export * from './prompts';
 export * from './events';

@@ -60,6 +60,34 @@ export interface ErrorEvent {
   message: string;
 }
 
+// =============================================================================
+// Token-Level Streaming Events (TASK-136)
+// =============================================================================
+
+/** A new text block has started streaming. Insert an empty node. */
+export interface BlockStartEvent {
+  type: 'block_start';
+  blockType: GeneratedBlockType;
+  blockIndex: number;
+  sectionIndex: number;
+  attrs?: { level?: number };
+}
+
+/** A chunk of plain text for the current streaming block. */
+export interface ContentDeltaEvent {
+  type: 'content_delta';
+  text: string;
+  blockIndex: number;
+}
+
+/** A text block has finished streaming. Full block available for formatting. */
+export interface BlockEndEvent {
+  type: 'block_end';
+  block: GeneratedBlock;
+  blockIndex: number;
+  sectionIndex: number;
+}
+
 /**
  * Union of all page generation events.
  * Used for the polling-based streaming protocol.
@@ -68,6 +96,9 @@ export type PageGenerationEvent =
   | OutlineEvent
   | SectionStartEvent
   | BlockEvent
+  | BlockStartEvent
+  | ContentDeltaEvent
+  | BlockEndEvent
   | DatabaseCreatedEvent
   | SectionCompleteEvent
   | CompleteEvent
